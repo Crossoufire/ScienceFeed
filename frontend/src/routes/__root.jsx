@@ -3,7 +3,6 @@ import {Toaster} from "@/components/ui/sonner";
 import {Footer} from "@/components/app/Footer";
 import {Navbar} from "@/components/navbar/Navbar";
 import {SheetProvider} from "@/providers/SheetProvider";
-import {RouterSpinner} from "@/components/app/base/RouterSpinner";
 import {createRootRouteWithContext, Outlet, ScrollRestoration} from "@tanstack/react-router";
 
 
@@ -16,10 +15,9 @@ export const Route = createRootRouteWithContext()({
 function RootComponent() {
     return (
         <>
-            <RouterSpinner/>
             <Toaster/>
             <SheetProvider><Navbar/></SheetProvider>
-            <main className="md:max-w-screen-xl container">
+            <main className="md:max-w-screen-lg container">
                 <ScrollRestoration/>
                 <Outlet/>
             </main>
@@ -32,9 +30,9 @@ function RootComponent() {
 
 
 const TanStackRouterDevtools = lazy(() =>
-    import("@tanstack/router-devtools").then((res) => ({default: res.TanStackRouterDevtools}))
+    import("@tanstack/router-devtools").then((res) => ({ default: res.TanStackRouterDevtools }))
 );
 
 const ReactQueryDevtools = lazy(() =>
-    import("@tanstack/react-query-devtools").then((res) => ({default: res.ReactQueryDevtools}))
+    import("@tanstack/react-query-devtools").then((res) => ({ default: res.ReactQueryDevtools }))
 );

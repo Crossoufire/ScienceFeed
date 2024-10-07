@@ -58,7 +58,7 @@ def register_user(data):
         )
     except Exception as e:
         current_app.logger.error(f"ERROR sending an email to account [{new_user.id}]: {e}")
-        return abort(400, "An error occurred while sending your register email. Please try again later")
+        return abort(400, description="An error occurred while sending your register email. Please try again later")
 
     return {}, 204
 
@@ -69,7 +69,7 @@ def new_token():
     """ Create an `access token` and a `refresh token`. The `refresh token` is returned as a cookie """
 
     if not current_user.active:
-        return abort(403, "Your account is not activated, please check your emails")
+        return abort(403, description="Your account is not activated, please check your emails")
 
     token = current_user.generate_auth_token()
     db.session.add(token)
@@ -91,11 +91,11 @@ def refresh(data):
     access_token = data["access_token"]
     refresh_token = request.cookies.get("refresh_token")
     if not access_token or not refresh_token:
-        return abort(401)
+        return abort(401, description="Invalid token")
 
     token = User.verify_refresh_token(refresh_token, access_token)
     if not token:
-        return abort(401)
+        return abort(401, description="Invalid token")
 
     token.expire()
     new_token_ = token.user.generate_auth_token()
@@ -114,7 +114,7 @@ def revoke_token():
 
     token = Token.query.filter_by(access_token=access_token).first()
     if not token:
-        return abort(401)
+        return abort(401, description="Invalid token")
 
     token.expire()
     db.session.commit()
@@ -127,9 +127,9 @@ def revoke_token():
 def reset_password_token(data):
     user = User.query.filter_by(email=data["email"]).first()
     if not user:
-        return abort(400, "This email is invalid")
+        return abort(400, description="This email is invalid")
     if not user.active:
-        return abort(400, "This account is not activated. Please check your emails.")
+        return abort(400, description="This account is not activated. Please check your emails.")
 
     try:
         send_email(
@@ -142,7 +142,7 @@ def reset_password_token(data):
         )
     except Exception as e:
         current_app.logger.error(f"ERROR sending an email to account [{user.id}]: {e}")
-        return abort(400, "An error occurred while sending the password reset email.")
+        return abort(400, description="An error occurred while sending the password reset email.")
 
     return {}, 204
 
@@ -154,9 +154,9 @@ def reset_password(data):
 
     user = User.verify_jwt_token(data["token"])
     if not user:
-        return abort(400, "Invalid or expired token")
+        return abort(400, description="Invalid or expired token")
     if not user.active:
-        return abort(400, "This account is not activated. Please check your emails.")
+        return abort(400, description="This account is not activated. Please check your emails.")
 
     user.password = data["new_password"]
     db.session.commit()
@@ -172,11 +172,11 @@ def register_token():
     try:
         token = request.get_json()["token"]
     except:
-        return abort(400, "The provided token is invalid or expired")
+        return abort(400, description="The provided token is invalid or expired")
 
     user = User.verify_jwt_token(token)
     if not user or user.active:
-        return abort(400, "The provided token is invalid or expired")
+        return abort(400, description="The provided token is invalid or expired")
 
     user.active = True
     user.activated_on = datetime.utcnow()

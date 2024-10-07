@@ -20,7 +20,7 @@ def verify_password(username: str, password: str) -> User:
     user = User.query.filter_by(username=username).first()
 
     if not user or not user.verify_password(password):
-        return abort(401)
+        return abort(401, description="Invalid username or password")
 
     return user
 

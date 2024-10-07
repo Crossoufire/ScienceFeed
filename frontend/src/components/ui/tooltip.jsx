@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 
@@ -36,7 +36,7 @@ const Tooltip = React.forwardRef(({ children, text, subText, side, className, of
                 <TooltipContent ref={ref} sideOffset={offset} side={side} {...props} className={cn("text-sm " +
                     "text-primary bg-primary-foreground", className)}>
                     <TooltipArrow className="fill-primary-foreground"/>
-                    <pre>{text}</pre>
+                    <div>{text}</div>
                     <p>{subText}</p>
                 </TooltipContent>
             </TooltipPrim>

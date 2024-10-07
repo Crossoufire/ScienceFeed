@@ -7,7 +7,7 @@ from time import time
 
 import jwt
 from flask import current_app
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.api.app import db
@@ -155,8 +155,11 @@ class Keyword(db.Model):
     user = db.relationship("User", back_populates="keywords", lazy="select")
     articles = db.relationship("UserArticle", secondary=user_article_keyword, back_populates="keywords", lazy="select")
 
-    def to_dict(self) -> Dict:
+    def to_dict(self, simple: bool = False) -> Dict:
         all_articles = self.articles
+
+        if simple:
+            return dict(id=self.id, name=self.name)
 
         data = dict(
             id=self.id,
@@ -164,6 +167,7 @@ class Keyword(db.Model):
             count=len(self.articles),
             count_archived=len([article for article in all_articles if article.is_archived]),
             count_read=len([article for article in all_articles if article.is_read]),
+            count_deleted=len([article for article in all_articles if article.is_deleted]),
             active=self.active,
         )
 
@@ -187,7 +191,7 @@ class Keyword(db.Model):
         keyword.active = active
 
     @classmethod
-    def get_all_keywords(cls, user: User) -> List[Keyword]:
+    def get_user_keywords(cls, user: User) -> List[Keyword]:
         return cls.query.filter_by(user_id=user.id).all()
 
     @classmethod
@@ -196,15 +200,12 @@ class Keyword(db.Model):
         if not keyword:
             return None
 
-        linked_articles = keyword.articles
-
-        for article in linked_articles:
+        for article in keyword.articles:
             article.keywords.remove(keyword)
             if not article.keywords:
                 db.session.delete(article)
 
         db.session.delete(keyword)
-        db.session.execute(delete(user_article_keyword).where(user_article_keyword.c.keyword_id == keyword_id))
 
 
 class RssFeed(db.Model):
@@ -227,9 +228,9 @@ class RssFeed(db.Model):
         return data
 
     @classmethod
-    def add_rss_feed(cls, publisher: str, journal: str, url: str) -> Optional[RssFeed]:
+    def create_new_rss_feed(cls, publisher: str, journal: str, url: str) -> Optional[RssFeed]:
         if cls.query.filter_by(publisher=publisher, journal=journal, url=url).first():
-            return None
+            return
 
         new_rss_feed = cls(publisher=publisher, journal=journal, url=url)
         db.session.add(new_rss_feed)
@@ -247,7 +248,7 @@ class Article(db.Model):
     title = db.Column(db.String, nullable=False)
     link = db.Column(db.String, nullable=False)
     summary = db.Column(db.String, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    added_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # --- Relationships ------------------------------------------------------------
     rss_feed = db.relationship("RssFeed", back_populates="articles", lazy="select")
@@ -270,25 +271,6 @@ class Article(db.Model):
     def get_article_by_id(cls, article_id: int) -> Optional[Article]:
         return cls.query.filter_by(id=article_id).first()
 
-    @classmethod
-    def get_articles_with_active_keywords(cls) -> List[Article]:
-        return cls.query.filter(Article.keywords.any(Keyword.active == True), Article.is_archived.is_not(True)).all()
-
-    @classmethod
-    def toggle_article_read(cls, article_id: int, read: bool):
-        article = cls.get_article_by_id(article_id)
-        if not article:
-            return None
-        article.is_read = read
-
-    @classmethod
-    def toggle_article_archive(cls, article_id: int, archive: bool):
-        article = cls.get_article_by_id(article_id)
-        if not article:
-            return
-        article.is_read = archive
-        article.is_archived = archive
-
 
 class UserRssFeed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -303,30 +285,18 @@ class UserRssFeed(db.Model):
         return {**self.rss_feed.to_dict()}
 
     @classmethod
-    def get_all_rss_feeds(cls, user: User) -> List[UserRssFeed]:
+    def get_user_rss_feeds(cls, user: User) -> List[UserRssFeed]:
         return cls.query.filter_by(user_id=user.id).all()
 
     @classmethod
-    def add_rss_feed(cls, user: User, rss_feed_id: int) -> Optional[UserRssFeed]:
-        user_feed = cls.query.filter_by(user_id=user.id, rss_feed_id=rss_feed_id).first()
-        if user_feed:
-            return None
-
-        user_feed = cls(user_id=user.id, rss_feed_id=rss_feed_id)
-        db.session.add(user_feed)
-
-        return user_feed
+    def remove_user_rss_feeds(cls, user: User, feed_ids: List[int]):
+        cls.query.filter(cls.user_id == user.id, cls.rss_feed_id.in_(feed_ids)).delete()
 
     @classmethod
-    def save_rss_feeds(cls, user: User, rss_feed_ids: List[int]):
-        feeds = cls.query.filter_by(user_id=user.id).all()
-        for feed in feeds:
-            if feed.rss_feed_id not in rss_feed_ids:
-                db.session.delete(feed)
-
-        for rss_feed_id in rss_feed_ids:
-            if not cls.query.filter_by(user_id=user.id, rss_feed_id=rss_feed_id).first():
-                db.session.add(cls(user_id=user.id, rss_feed_id=rss_feed_id))
+    def add_user_rss_feeds(cls, user: User, feed_ids: List[int]):
+        for feed_id in feed_ids:
+            if not cls.query.filter_by(user_id=user.id, rss_feed_id=feed_id).first():
+                db.session.add(cls(user_id=user.id, rss_feed_id=feed_id))
 
 
 class UserArticle(db.Model):
@@ -336,6 +306,10 @@ class UserArticle(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     is_archived = db.Column(db.Boolean, default=False)
     is_deleted = db.Column(db.Boolean, default=False)
+    added_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    marked_as_deleted_date = db.Column(db.DateTime)
+    marked_as_read_date = db.Column(db.DateTime)
+    marked_as_archived_date = db.Column(db.DateTime)
 
     # --- Relationships ------------------------------------------------------------
     user = db.relationship("User", back_populates="articles", lazy="select")
@@ -354,36 +328,40 @@ class UserArticle(db.Model):
         return data
 
     @classmethod
-    def get_articles_with_active_keywords(cls, user: User) -> List[UserArticle]:
+    def get_dashboard_articles(cls, user: User) -> List[UserArticle]:
         return (
             cls.query.filter_by(user_id=user.id)
             .filter(
                 UserArticle.keywords.any(Keyword.active == True and Keyword.user_id == user.id),
                 UserArticle.is_archived == False,
-            ).all()
+                UserArticle.is_deleted == False,
+            ).order_by(UserArticle.added_date)
+            .all()
         )
 
     @classmethod
-    def toggle_article_read(cls, user: User, article_id: int, read: bool):
-        metadata = cls.query.filter_by(user_id=user.id, article_id=article_id).first()
-        if not metadata:
-            return None
-        metadata.is_read = read
+    def toggle_read_articles(cls, user: User, article_ids: List[int], read: bool):
+        user_articles = cls.query.filter(cls.user_id == user.id, cls.article_id.in_(article_ids)).all()
+        
+        for user_article in user_articles:
+            user_article.is_read = read
+            user_article.marked_as_read_date = datetime.utcnow() if read else None
 
     @classmethod
-    def toggle_article_archive(cls, user: User, article_id: int, archive: bool):
-        metadata = cls.query.filter_by(user_id=user.id, article_id=article_id).first()
-        if not metadata:
-            return None
-        metadata.is_read = archive
-        metadata.is_archived = archive
+    def change_archive_articles(cls, user: User, article_ids: List[int], archive: bool):
+        user_articles = cls.query.filter(cls.user_id == user.id, cls.article_id.in_(article_ids)).all()
+
+        for user_article in user_articles:
+            user_article.is_archived = archive
+            user_article.marked_as_archived_date = datetime.utcnow() if archive else None
+            user_article.is_read = True
+            if not user_article.marked_as_read_date:
+                user_article.marked_as_read_date = datetime.utcnow()
 
     @classmethod
-    def delete_article(cls, user: User, article_id: int):
-        metadata = cls.query.filter_by(user_id=user.id, article_id=article_id).first()
-        if not metadata:
-            return None
+    def change_delete_articles(cls, user: User, article_ids: List[int], delete: bool):
+        user_articles = cls.query.filter(cls.user_id == user.id, cls.article_id.in_(article_ids)).all()
 
-        metadata.is_read = True
-        metadata.is_archived = True
-        metadata.is_deleted = True
+        for user_article in user_articles:
+            user_article.is_deleted = delete
+            user_article.marked_as_deleted_date = datetime.utcnow() if delete else None

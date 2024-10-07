@@ -1,14 +1,11 @@
 import {api} from "@/api/apiClient";
 import {queryClient} from "@/api/queryClient";
+import {authOptions} from "@/api/queryOptions";
 import {useMutation, useQuery} from "@tanstack/react-query";
 
 
 export const useAuth = () => {
-    const { data: currentUser, isLoading } = useQuery({
-        queryKey: ["currentUser"],
-        queryFn: () => api.fetchCurrentUser(),
-        staleTime: Infinity,
-    });
+    const { data: currentUser, isLoading } = useQuery(authOptions());
 
     const setCurrentUser = (updates) => {
         queryClient.setQueryData(["currentUser"], updates);
@@ -22,16 +19,16 @@ export const useAuth = () => {
         },
     });
 
-    const register = useMutation({
-        mutationFn: ({ params }) => api.register(params),
-    });
-
     const logout = useMutation({
         mutationFn: () => api.logout(),
         onSuccess: () => {
             api.removeAccessToken();
             setCurrentUser(null);
         },
+    });
+
+    const register = useMutation({
+        mutationFn: ({ params }) => api.register(params),
     });
 
     return { currentUser, isLoading, login, register, logout, setCurrentUser };

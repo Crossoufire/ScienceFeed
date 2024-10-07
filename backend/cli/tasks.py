@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 import secrets
 
 import feedparser
@@ -215,7 +215,7 @@ def seed_database():
     ]
 
     for feed_dict in RSS_FEEDS:
-        RssFeed.add_rss_feed(**feed_dict)
+        RssFeed.create_new_rss_feed(**feed_dict)
     db.session.commit()
 
     current_app.logger.info("[SYSTEM] - Finished Adding RSS Feeds -")
@@ -232,16 +232,12 @@ def fetch_and_filter_articles():
     ).all()
 
     all_rss_feeds = (
-        RssFeed.query.filter(
-            RssFeed.id.in_(
-                [user_rss_feed.rss_feed_id for user_rss_feed in UserRssFeed.query.all()]
-            )
-        ).all()
+        RssFeed.query.filter(RssFeed.id.in_([user_rss_feed.rss_feed_id for user_rss_feed in UserRssFeed.query.all()])).all()
     )
 
     with ThreadPoolExecutor() as executor:
         all_feeds_parsed = dict(executor.map(
-            lambda rss_feed: (rss_feed.id, {"feed_object": rss_feed, "feed_parsed": feedparser.parse(rss_feed.url)}),
+            lambda rss_feed: (rss_feed.id, dict(feed_object=rss_feed, feed_parsed=feedparser.parse(rss_feed.url))),
             all_rss_feeds)
         )
 
@@ -272,7 +268,10 @@ def fetch_and_filter_articles():
 
                     user_article = UserArticle.query.filter_by(user_id=user.id, article_id=article.id).first()
                     if not user_article:
-                        user_article = UserArticle(user_id=user.id, article_id=article.id)
+                        user_article = UserArticle(
+                            user_id=user.id,
+                            article_id=article.id,
+                        )
                         db.session.add(user_article)
 
                     user_article.keywords.extend([k for k in keywords if k.name in keywords_found])
@@ -363,4 +362,20 @@ def send_feed_emails():
             current_app.logger.error(f"Failed to send un-read articles email to: {user.email}")
 
     current_app.logger.info("[SYSTEM] - Finished Sending Feed Emails -")
+    current_app.logger.info("###############################################################################")
+
+
+def delete_user_deleted_articles():
+    """ Delete all articles that have been marked as deleted by the user after two months """
+
+    current_app.logger.info("###############################################################################")
+    current_app.logger.info("[SYSTEM] - Deleting User Deleted Articles -")
+
+    UserArticle.query.filter(
+        UserArticle.is_deleted == True,
+        UserArticle.marked_as_deleted_date + timedelta(days=60) < datetime.utcnow(),
+    ).delete()
+    db.session.commit()
+
+    current_app.logger.info("[SYSTEM] - Finished Deleting User Deleted Articles -")
     current_app.logger.info("###############################################################################")

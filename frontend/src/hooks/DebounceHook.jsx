@@ -14,7 +14,7 @@ export const useDebounceCallback = (value, delay, callback, ...args) => {
             setTimer(newTimer);
         }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     const clearTimer = () => {
@@ -24,6 +24,7 @@ export const useDebounceCallback = (value, delay, callback, ...args) => {
         }
     };
 };
+
 
 export const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);

@@ -3,8 +3,8 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {FormError} from "@/components/app/base/FormError";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormError} from "@/components/app/FormError";
+import {FormButton} from "@/components/app/FormButton";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 

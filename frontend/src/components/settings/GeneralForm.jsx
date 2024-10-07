@@ -6,8 +6,8 @@ import {Input} from "@/components/ui/input";
 import {Switch} from "@/components/ui/switch";
 import {simpleMutations} from "@/api/mutations";
 import {Separator} from "@/components/ui/separator";
-import {FormError} from "@/components/app/base/FormError";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormError} from "@/components/app/FormError";
+import {FormButton} from "@/components/app/FormButton";
 import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 

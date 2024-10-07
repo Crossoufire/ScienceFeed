@@ -7,7 +7,7 @@ import {simpleMutations} from "@/api/mutations";
 import {keywordsOptions} from "@/api/queryOptions";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {LuPauseCircle, LuPlayCircle, LuPlus, LuTrash2} from "react-icons/lu";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
 
@@ -85,9 +85,10 @@ function KeywordManagerPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>Keyword</TableHead>
-                        <TableHead>Total Articles</TableHead>
-                        <TableHead>Read Articles</TableHead>
-                        <TableHead>Archived Articles</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Read</TableHead>
+                        <TableHead>Archived</TableHead>
+                        <TableHead>Deleted</TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -102,6 +103,7 @@ function KeywordManagerPage() {
                             <TableCell>{keyword.count}</TableCell>
                             <TableCell>{keyword.count_read}</TableCell>
                             <TableCell>{keyword.count_archived}</TableCell>
+                            <TableCell>{keyword.count_deleted}</TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-3">
                                     <Button

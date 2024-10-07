@@ -1,23 +1,36 @@
 import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
 import {LuAlignJustify} from "react-icons/lu";
+import {Loading} from "@/components/app/Loading";
 import {useSheet} from "@/providers/SheetProvider";
-import {Loading} from "@/components/app/base/Loading";
-import {Link as NavLink} from "@tanstack/react-router";
-import * as Nav from "@/components/ui/navigation-menu";
+import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
+import {NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle} from "@/components/ui/navigation-menu";
 
 
 export const Navbar = () => {
+    const router = useRouter();
+    const navigate = useNavigate();
     const { sheetOpen, setSheetOpen } = useSheet();
     const { currentUser, logout, isLoading } = useAuth();
+
+    const logoutUser = () => {
+        logout.mutate(undefined, {
+            onSuccess: async () => {
+                // noinspection JSUnresolvedReference
+                await router.invalidate().then(() => {
+                    navigate({ to: "/" });
+                });
+            },
+        });
+    };
 
     // Login page and public pages when not logged
     if (!currentUser) {
         return (
-            <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-                <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
-                    <NavLink to="/" className="text-lg font-semibold">ScienceFeed</NavLink>
+            <nav className="w-screen z-50 flex items-center fixed top-0 h-14 border-b border-b-neutral-700 bg-background">
+                <div className="md:max-w-screen-lg flex w-full justify-between items-center container">
+                    <NavLink to="/" className="text-base font-semibold">ScienceFeed</NavLink>
                     <div>{isLoading && <Loading/>}</div>
                 </div>
             </nav>
@@ -25,44 +38,44 @@ export const Navbar = () => {
     }
 
     return (
-        <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-            <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
+        <nav className="w-screen z-50 flex items-center fixed top-0 h-14 border-b border-b-neutral-700 bg-background">
+            <div className="md:max-w-screen-lg flex w-full justify-between items-center container">
                 <div className="hidden lg:block">
-                    <Nav.NavigationMenu>
-                        <Nav.NavigationMenuList>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/dashboard" className={Nav.navigationMenuTriggerStyle()}>
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <NavLink to="/dashboard" className={navigationMenuTriggerStyle()}>
                                     ScienceFeed
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/keywords" className={Nav.navigationMenuTriggerStyle()}>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <NavLink to="/keywords" className={navigationMenuTriggerStyle()}>
                                     Keywords
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/rss-manager" className={Nav.navigationMenuTriggerStyle()}>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <NavLink to="/rss-manager" className={navigationMenuTriggerStyle()}>
                                     RSS Manager
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                        </Nav.NavigationMenuList>
-                    </Nav.NavigationMenu>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
                 </div>
                 <div className="hidden lg:block">
-                    <Nav.NavigationMenu>
-                        <Nav.NavigationMenuList>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/settings" className={Nav.navigationMenuTriggerStyle()}>
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <NavLink to="/settings" className={navigationMenuTriggerStyle()}>
                                     Settings
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
-                                <Button variant="ghost" onClick={() => logout.mutate()} className="text-lg font-semibold">
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <Button variant="ghost" size="sm" onClick={logoutUser} className="text-base font-semibold">
                                     Logout
                                 </Button>
-                            </Nav.NavigationMenuItem>
-                        </Nav.NavigationMenuList>
-                    </Nav.NavigationMenu>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
                 </div>
                 <div className="lg:hidden ml-auto mr-2">
                     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -71,28 +84,28 @@ export const Navbar = () => {
                         </SheetTrigger>
                         <SheetContent side="left" className="max-sm:w-full">
                             <SheetHeader><SheetTitle></SheetTitle><SheetDescription></SheetDescription></SheetHeader>
-                            <Nav.NavigationMenu className="mt-3">
-                                <Nav.NavigationMenuList className="flex flex-col items-start gap-3">
-                                    <Nav.NavigationMenuItem>
-                                        <NavLink to="/dashboard" className={Nav.navigationMenuTriggerStyle()}
+                            <NavigationMenu className="mt-3">
+                                <NavigationMenuList className="flex flex-col items-start gap-3">
+                                    <NavigationMenuItem>
+                                        <NavLink to="/dashboard" className={navigationMenuTriggerStyle()}
                                                  onClick={() => setSheetOpen(false)}>
                                             Dashboard
                                         </NavLink>
-                                    </Nav.NavigationMenuItem>
-                                    <Nav.NavigationMenuItem>
-                                        <NavLink to="/keywords" className={Nav.navigationMenuTriggerStyle()}
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/keywords" className={navigationMenuTriggerStyle()}
                                                  onClick={() => setSheetOpen(false)}>
                                             Keywords
                                         </NavLink>
-                                    </Nav.NavigationMenuItem>
-                                    <Nav.NavigationMenuItem>
-                                        <NavLink to="/rss-manager" className={Nav.navigationMenuTriggerStyle()}
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/rss-manager" className={navigationMenuTriggerStyle()}
                                                  onClick={() => setSheetOpen(false)}>
                                             RSS Manager
                                         </NavLink>
-                                    </Nav.NavigationMenuItem>
-                                </Nav.NavigationMenuList>
-                            </Nav.NavigationMenu>
+                                    </NavigationMenuItem>
+                                </NavigationMenuList>
+                            </NavigationMenu>
                         </SheetContent>
                     </Sheet>
                 </div>

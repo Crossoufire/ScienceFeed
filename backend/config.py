@@ -45,11 +45,8 @@ class Config:
 
 class DevConfig(Config):
     DEBUG = True
+    DELTA_MINUTES = int("0")
     ACCESS_TOKEN_MINUTES = int("99999999")
-
-
-class ProdConfig(Config):
-    pass
 
 
 class TestConfig(Config):
@@ -59,9 +56,9 @@ class TestConfig(Config):
 
 
 def get_config():
-    env = os.getenv("FLASK_ENV", "development")
-    if env == "production":
-        return ProdConfig
+    env = os.getenv("FLASK_ENV", "production")
+    if env == "development":
+        return DevConfig
     elif env == "testing":
         return TestConfig
-    return DevConfig
+    return Config

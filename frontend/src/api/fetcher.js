@@ -3,7 +3,6 @@ import {APIError} from "@/api/apiError";
 
 
 export const fetcher = async ({ url, queryOrData, options = {}, method = "get" }) => {
-
     const response = await api[method](url, queryOrData, options);
     if (!response.ok) {
         throw new APIError(

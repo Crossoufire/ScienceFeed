@@ -3,9 +3,9 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {simpleMutations} from "@/api/mutations.js";
-import {PageTitle} from "@/components/app/base/PageTitle";
-import {FormError} from "@/components/app/base/FormError";
-import {FormButton} from "@/components/app/base/FormButton";
+import {PageTitle} from "@/components/app/PageTitle";
+import {FormError} from "@/components/app/FormError";
+import {FormButton} from "@/components/app/FormButton";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 

@@ -6,7 +6,6 @@ export const queryClient = new QueryClient({
     queryCache: new QueryCache({
         onError: (error, query) => {
             // noinspection JSUnresolvedReference
-            console.error({ ...error });
             if (query.meta?.errorMessage) {
                 toast.error(query.meta.errorMessage);
             }

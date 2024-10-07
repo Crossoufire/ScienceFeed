@@ -1,19 +1,28 @@
 import {toast} from "sonner";
-import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {Link, useNavigate} from "@tanstack/react-router";
-import {FormError} from "@/components/app/base/FormError";
-import {FormButton} from "@/components/app/base/FormButton";
+import {useLayoutEffect, useState} from "react";
+import {FormError} from "@/components/app/FormError";
+import {FormButton} from "@/components/app/FormButton";
+import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const LoginForm = () => {
+    const router = useRouter();
     const { login } = useAuth();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [errorMessage, setErrorMessage] = useState("");
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
+
+    useLayoutEffect(() => {
+        if (!currentUser) return;
+        // noinspection JSUnresolvedReference
+        void router.invalidate();
+        void navigate({ to: `/profile/${currentUser.username}` });
+    }, [currentUser]);
 
     const onSubmit = (data) => {
         setErrorMessage("");
@@ -25,7 +34,7 @@ export const LoginForm = () => {
                 return toast.error(error.message);
             },
             onSuccess: async () => {
-                await navigate({ to: `/dashboard` });
+                await navigate({ to: "/dashboard" });
             },
         });
     };

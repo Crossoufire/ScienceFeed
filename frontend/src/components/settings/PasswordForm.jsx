@@ -4,8 +4,8 @@ import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {simpleMutations} from "@/api/mutations";
-import {FormError} from "@/components/app/base/FormError";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormError} from "@/components/app/FormError";
+import {FormButton} from "@/components/app/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 

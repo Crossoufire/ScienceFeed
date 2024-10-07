@@ -23,13 +23,13 @@ def log_http_exception(error: HTTPException):
 
 
 @errors.app_errorhandler(HTTPException)
-def http_error(error: HTTPException, message: str = None):
+def http_error(error: HTTPException):
     log_http_exception(error)
 
     data = dict(
         code=error.code,
         message=error.name,
-        description=message if message else error.description,
+        description=error.description,
     )
 
     return data, error.code

@@ -3,7 +3,8 @@ from flask import current_app
 from sqlalchemy import text
 
 from backend.api.app import db
-from backend.cli.tasks import seed_database, add_new_user, fetch_and_filter_articles, send_feed_emails
+from backend.cli.tasks import (seed_database, add_new_user, fetch_and_filter_articles, send_feed_emails,
+                               delete_user_deleted_articles)
 
 
 def create_cli_commands():
@@ -25,7 +26,7 @@ def create_cli_commands():
     @current_app.cli.command()
     def vacuum_db():
         """ Run VACUUM on SQLite. """
-        db.session.execute(text("ANALYZE"))
+        db.session.execute(text("VACUUM"))
         click.echo("VACUUM operation completed successfully")
 
     @current_app.cli.command()
@@ -44,9 +45,16 @@ def create_cli_commands():
         send_feed_emails()
 
     @current_app.cli.command()
-    def scheduled_tasks():
+    def delete_deleted_articles():
+        """ Delete user articles marked as deleted by the user after 2 months. """
+        delete_user_deleted_articles()
+
+    @current_app.cli.command()
+    @click.pass_context
+    def scheduled_tasks(ctx):
         """ Run scheduled tasks. """
         ffa()
-        vacuum_db()
-        analyze_db()
+        ctx.forward(vacuum_db)
+        ctx.forward(analyze_db)
         send_feed_emails()
+        delete_user_deleted_articles()

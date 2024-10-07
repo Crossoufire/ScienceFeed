@@ -1,17 +1,18 @@
 import {toast} from "sonner";
-import {useForm} from "react-hook-form";
+import {useRef, useState} from "react";
 import {Input} from "@/components/ui/input";
 import {queryClient} from "@/api/queryClient";
 import {Button} from "@/components/ui/button";
 import {simpleMutations} from "@/api/mutations";
-import {LuPlus, LuSave, LuX} from "react-icons/lu";
-import {rssManagerOptions} from "@/api/queryOptions";
+import {useDebounce} from "@/hooks/DebounceHook";
+import {Separator} from "@/components/ui/separator";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
-import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/components/app/base/PageTitle";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
+import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {LuCheckCircle, LuLoader2, LuSearch, LuX} from "react-icons/lu";
+import {rssManagerOptions, rssSearchOptions} from "@/api/queryOptions";
+import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -22,223 +23,144 @@ export const Route = createFileRoute("/_private/rss-manager")({
 
 
 function RssManager() {
-    const [isOpen, setIsOpen] = useState(false);
-    const rssData = useSuspenseQuery(rssManagerOptions()).data;
-
-    const onOpenChange = () => {
-        setIsOpen(!isOpen);
-    };
+    const userRssFeeds = useSuspenseQuery(rssManagerOptions()).data;
 
     return (
-        <PageTitle title="RSS Feeds Manager" subtitle="Manage your RSS feeds.">
-            <FormAddRSSFeed
-                open={isOpen}
-                rssData={rssData}
-                onOpenChange={onOpenChange}
-            />
-            <RssFeedGroups
-                initialRSSData={rssData}
-                onOpenChange={onOpenChange}
-            />
+        <PageTitle title="RSS Feeds Manager" subtitle="Search and Manage your RSS feeds.">
+            <SearchRSSFeeds userRssFeeds={userRssFeeds}/>
+            <UserRssFeeds userRssFeeds={userRssFeeds}/>
         </PageTitle>
     );
 }
 
 
-function FormAddRSSFeed({ rssData, open, onOpenChange }) {
-    const { addRssFeed } = simpleMutations();
-    const allRSSFeeds = useMemo(() => rssData.rss_feeds.concat(rssData.user_rss_feeds), [rssData]);
-    const form = useForm({ defaultValues: { publisher: "", journal: "", url: "" }, shouldFocusError: false });
+function SearchRSSFeeds() {
+    const commandRef = useRef(null);
+    const { addRssFeeds } = simpleMutations();
+    const [search, setSearch] = useState("");
+    const [isOpen, setIsOpen] = useState(false);
+    const [debouncedSearch] = useDebounce(search, 350);
+    const { data, isLoading, error } = useQuery(rssSearchOptions(debouncedSearch));
 
-    const onSubmit = (data) => {
-        if (allRSSFeeds.some(feed => feed.url === data.url)) {
-            form.setError("url", {
-                type: "manual",
-                message: "This URL already exists in the database."
-            });
-            return;
-        }
+    const handleAddRssFeed = (rssFeed) => {
+        if (rssFeed.is_active) return;
 
-        const existingSetting = allRSSFeeds.find(feed => feed.publisher === data.publisher && feed.journal === data.journal);
-        if (existingSetting && existingSetting.url !== data.url) {
-            if (!confirm("This publisher and journal combination already exists with a different URL." +
-                "Do you still want to add this RSS Feed?")) return;
-        }
-
-        addRssFeed.mutate({ publisher: data.publisher, journal: data.journal, url: data.url }, {
-            onError: () => toast.error("Failed to add the new RSS Feed"),
+        addRssFeeds.mutate({ rssFeedsIds: [rssFeed.id] }, {
+            onError: () => toast.error("Failed to add this RSS Feed"),
             onSuccess: async () => {
-                toast.success("RSS Feed added successfully");
+                toast.success("RSS Feed successfully added");
                 await queryClient.invalidateQueries({ queryKey: ["rssManager"] });
-                onOpenChange();
             },
-            onSettled: () => form.reset(),
         });
     };
 
+    const handleInputChange = (ev) => {
+        setIsOpen(true);
+        setSearch(ev.target.value);
+    };
+
+    const resetSearch = () => {
+        setSearch("");
+        setIsOpen(false);
+    };
+
+    useOnClickOutside(commandRef, resetSearch);
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="space-y-4 mt-6 mb-8">
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-6 mb-8">
-                        <FormField
-                            control={form.control}
-                            name="publisher"
-                            rules={{ required: "Please enter a publisher" }}
-                            render={({ field }) =>
-                                <FormItem>
-                                    <FormLabel>Publisher</FormLabel>
-                                    <FormControl>
-                                        <Input {...field}/>
-                                    </FormControl>
-                                    <FormMessage/>
-                                </FormItem>
+        <div ref={commandRef} className="mt-6">
+            <div className="relative">
+                <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                <Input
+                    value={search}
+                    className="w-[350px] pl-8"
+                    onChange={handleInputChange}
+                    placeholder="Search RSS feeds..."
+                />
+            </div>
+            {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
+                <div className="z-50 absolute w-[500px] rounded-lg border shadow-md mt-1">
+                    <Command>
+                        <CommandList className="max-h-[350px] overflow-y-auto">
+                            {isLoading &&
+                                <div className="flex items-center justify-center p-4">
+                                    <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                </div>
                             }
-                        />
-                        <FormField
-                            control={form.control}
-                            name="journal"
-                            rules={{ required: "Please enter a journal" }}
-                            render={({ field }) =>
-                                <FormItem>
-                                    <FormLabel>Journal</FormLabel>
-                                    <FormControl>
-                                        <Input {...field}/>
-                                    </FormControl>
-                                    <FormMessage/>
-                                </FormItem>
+                            {error && (
+                                error.status === 429 ?
+                                    <CommandEmpty>Too many requests. Please wait a bit and try again.</CommandEmpty>
+                                    :
+                                    <CommandEmpty>An error occurred. Please try again.</CommandEmpty>
+                            )}
+                            {data && data.length === 0 &&
+                                <CommandEmpty>No results found.</CommandEmpty>
                             }
-                        />
-                        <FormField
-                            control={form.control}
-                            name="url"
-                            rules={{ required: "Please enter a url" }}
-                            render={({ field }) =>
-                                <FormItem>
-                                    <FormLabel>URL</FormLabel>
-                                    <FormControl>
-                                        <Input {...field}/>
-                                    </FormControl>
-                                    <FormMessage/>
-                                </FormItem>
-                            }
-                        />
-                        <Button type="submit" disabled={addRssFeed.isPending}>
-                            Add RSS Feed
-                        </Button>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
+                            {data && data.length > 0 &&
+                                data.map(rssFeed =>
+                                    <SearchComponent
+                                        rssFeed={rssFeed}
+                                        handleAddRssFeed={handleAddRssFeed}
+                                    />
+                                )}
+                        </CommandList>
+                    </Command>
+                </div>
+            }
+        </div>
     );
 }
 
 
-function RssFeedGroups({ initialRSSData, onOpenChange }) {
-    const { saveRssFeeds } = simpleMutations();
-    const [userSearch, setUserSearch] = useState("");
-    const [hasChanges, setHasChanges] = useState(false);
-    const [globalSearch, setGlobalSearch] = useState("");
-    const [globalFeeds, setGlobalFeeds] = useState(initialRSSData.rss_feeds);
-    const [userFeeds, setUserFeeds] = useState(initialRSSData.user_rss_feeds);
+function SearchComponent({ rssFeed, handleAddRssFeed }) {
+    return (
+        <div role="button" onClick={() => handleAddRssFeed(rssFeed)}>
+            <CommandItem key={rssFeed.id} className="cursor-pointer py-2" disabled={rssFeed.is_active}>
+                <div className="grid grid-cols-[50px,auto,1fr] gap-2 items-center w-full">
+                    <div className="font-semibold truncate" title={rssFeed.publisher}>
+                        {rssFeed.publisher}
+                    </div>
+                    <div className="text-neutral-600">|</div>
+                    <div className="flex items-center">
+                        <span className="truncate">{rssFeed.journal}</span>
+                        {rssFeed.is_active && <LuCheckCircle className="ml-2 text-green-500 flex-shrink-0"/>}
+                    </div>
+                </div>
+            </CommandItem>
+            <Separator className="my-1"/>
+        </div>
+    );
+}
 
-    useEffect(() => {
-        const filteredGlobalFeeds = initialRSSData.rss_feeds.filter(
-            globalFeed => !initialRSSData.user_rss_feeds.some(userFeed => userFeed.id === globalFeed.id)
-        );
-        setGlobalFeeds(filteredGlobalFeeds);
-        setUserFeeds(initialRSSData.user_rss_feeds);
-    }, [initialRSSData]);
 
-    const handleAddFeed = useCallback((feed) => {
-        setHasChanges(true);
-        setGlobalFeeds(prev => prev.filter(f => f.id !== feed.id));
-        setUserFeeds(prev => [...prev, feed]);
-    }, []);
+function UserRssFeeds({ userRssFeeds }) {
+    const { removeRssFeed } = simpleMutations();
 
-    const handleRemoveFeed = useCallback((feed) => {
-        setHasChanges(true);
-        setUserFeeds(prev => prev.filter(f => f.id !== feed.id));
-        setGlobalFeeds(prev => [...prev, feed]);
-    }, []);
-
-    const saveChanges = () => {
-        const rssFeedsIds = userFeeds.map(feed => feed.id);
-
-        saveRssFeeds.mutate({ rssFeedsIds }, {
-            onError: () => toast.error("Failed to save the changes"),
-            onSuccess: () => toast.success("Changes saved successfully"),
-            onSettled: () => setHasChanges(false),
+    const handleRemoveRssFeed = (rssFeed) => {
+        removeRssFeed.mutate({ rssIds: [rssFeed.id] }, {
+            onError: () => toast.error("Failed to remove this RSS Feed"),
+            onSuccess: async () => {
+                toast.success("RSS Feed successfully removed");
+                await queryClient.invalidateQueries({ queryKey: ["rssManager"] });
+            },
         });
     };
 
-    const filteredGlobalFeeds = globalFeeds.filter(feed =>
-        feed.publisher.toLowerCase().includes(globalSearch.toLowerCase()) ||
-        feed.journal.toLowerCase().includes(globalSearch.toLowerCase())
-    );
-
-    const filteredUserFeeds = userFeeds.filter(feed =>
-        feed.publisher.toLowerCase().includes(userSearch.toLowerCase()) ||
-        feed.journal.toLowerCase().includes(userSearch.toLowerCase())
-    );
-
     return (
-        <>
-            <div className="flex items-center justify-end gap-3">
-                <Button onClick={() => onOpenChange()} className="flex items-center gap-2">
-                    <LuPlus className="h-4 w-4"/> Add RSS Feed
-                </Button>
-                <Button onClick={saveChanges} disabled={!hasChanges || saveRssFeeds.isPending} className="flex items-center gap-2">
-                    <LuSave className="h-4 w-4"/> Save Changes
-                </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-8">
-                <div className="mt-5">
-                    <h3 className="text-lg font-semibold mb-4">Global RSS Feeds</h3>
-                    <Input
-                        value={globalSearch}
-                        className="mb-4 w-[250px]"
-                        placeholder="Search global feeds..."
-                        onChange={(ev) => setGlobalSearch(ev.target.value)}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                        {filteredGlobalFeeds.map(feed =>
-                            <div key={feed.id} className="py-2 px-4 border border-neutral-700 rounded-md flex justify-between
-                        items-center hover:bg-secondary/50 transition-colors">
-                                <div>
-                                    <p><strong>Publisher:</strong> {feed.publisher}</p>
-                                    <p><strong>Journal:</strong> {feed.journal}</p>
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => handleAddFeed(feed)}>
-                                    <LuPlus className="h-4 w-4"/>
-                                </Button>
-                            </div>
-                        )}
+        <div className="mt-5">
+            <h3 className="text-lg font-semibold mb-4">My RSS Feeds</h3>
+            <div className="grid grid-cols-2 gap-3">
+                {userRssFeeds.map(feed =>
+                    <div key={feed.id} className="flex items-center justify-between bg-secondary py-2 px-4 rounded-md">
+                        <div>
+                            <p><strong>Publisher:</strong> {feed.publisher}</p>
+                            <p><strong>Journal:</strong> {feed.journal}</p>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveRssFeed(feed)}>
+                            <LuX className="h-4 w-4"/>
+                        </Button>
                     </div>
-                </div>
-                <div className="mt-5">
-                    <h3 className="text-lg font-semibold mb-4">My RSS Feeds</h3>
-                    <Input
-                        value={userSearch}
-                        className="mb-4 w-[250px]"
-                        placeholder="Search my feeds..."
-                        onChange={(ev) => setUserSearch(ev.target.value)}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                        {filteredUserFeeds.map(feed =>
-                            <div key={feed.id} className="flex items-center justify-between bg-secondary py-2 px-4 rounded-md">
-                                <div>
-                                    <p><strong>Publisher:</strong> {feed.publisher}</p>
-                                    <p><strong>Journal:</strong> {feed.journal}</p>
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => handleRemoveFeed(feed)}>
-                                    <LuX className="h-4 w-4"/>
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                )}
             </div>
-        </>
+        </div>
     );
 }
