@@ -235,7 +235,7 @@ def fetch_and_filter_articles():
         RssFeed.query.filter(RssFeed.id.in_([user_rss_feed.rss_feed_id for user_rss_feed in UserRssFeed.query.all()])).all()
     )
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         all_feeds_parsed = dict(executor.map(
             lambda rss_feed: (rss_feed.id, dict(feed_object=rss_feed, feed_parsed=feedparser.parse(rss_feed.url))),
             all_rss_feeds)

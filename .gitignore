@@ -100,16 +100,16 @@ venv.bak/
 # BACKEND STUFF
 backend/cache/*
 backend/.env
-frontend/.env.developement
-frontend/.env.production
-build/*
 backend/.flaskenv
 backend/poetry.lock
 
 
 # FRONTEND STUFF
-/frontend/node_modules
-/frontend/package-lock.json
+build/*
+frontend/node_modules
+frontend/package-lock.json
 frontend/src/routeTree.gen.*
+frontend/.env.*
 
 # -------------------------------------------------------------------------------------
+
