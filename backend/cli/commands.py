@@ -50,15 +50,20 @@ def create_cli_commands():
         delete_user_deleted_articles()
 
     @current_app.cli.command()
-    @click.pass_context
-    def daily_scheduled_tasks(ctx):
+    def daily_scheduled_tasks():
         """ Run daily scheduled tasks. """
-        ffa()
-        ctx.forward(vacuum_db)
-        ctx.forward(analyze_db)
-        
+
+        fetch_and_filter_articles()
+
+        db.session.execute(text("VACUUM"))
+        click.echo("VACUUM operation completed successfully")
+
+        db.session.execute(text("ANALYZE"))
+        click.echo("ANALYZE operation completed successfully")
+
     @current_app.cli.command()
     def weekly_scheduled_tasks():
         """ Run weekly scheduled tasks. """
+
         send_feed_emails()
         delete_user_deleted_articles()
