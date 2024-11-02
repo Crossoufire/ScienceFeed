@@ -94,7 +94,7 @@ def dashboard():
     else:
         base_query = base_query.filter(UserArticle.keywords.any(Keyword.active == True and Keyword.user_id == current_user.id))
 
-    results = base_query.order_by(UserArticle.added_date).paginate(page=page, per_page=20, error_out=True)
+    results = base_query.order_by(UserArticle.added_date.desc()).paginate(page=page, per_page=20, error_out=True)
 
     keywords = (
         Keyword.query.join(UserArticle.keywords).filter(
