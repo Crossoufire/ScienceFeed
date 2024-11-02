@@ -322,6 +322,7 @@ class UserArticle(db.Model):
             user_id=self.user.id,
             is_read=self.is_read,
             is_archived=self.is_archived,
+            added_date=self.added_date,
             keywords=[keyword.name for keyword in self.keywords],
             **self.article.to_dict(),
         )
@@ -342,7 +343,7 @@ class UserArticle(db.Model):
     @classmethod
     def toggle_read_articles(cls, user: User, article_ids: List[int], read: bool):
         user_articles = cls.query.filter(cls.user_id == user.id, cls.article_id.in_(article_ids)).all()
-        
+
         for user_article in user_articles:
             user_article.is_read = read
             user_article.marked_as_read_date = datetime.utcnow() if read else None

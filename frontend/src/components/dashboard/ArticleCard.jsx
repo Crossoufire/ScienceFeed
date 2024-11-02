@@ -1,4 +1,4 @@
-import {cn} from "@/utils/functions";
+import {cn, formatDateTime} from "@/utils/functions";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Checkbox} from "@/components/ui/checkbox";
@@ -48,6 +48,7 @@ export const ArticleCard = (props) => {
                             )}
                         </div>
                         <div className="flex items-center flex-wrap gap-3">
+                            <div>{formatDateTime(article.added_date)}</div>
                             <Button
                                 size="sm"
                                 disabled={isDisabled || isEditing}

@@ -290,9 +290,9 @@ def fetch_and_filter_articles_one_user(user: User):
     all_user_rss_feeds = [user_feed.rss_feed for user_feed in user.rss_feeds]
     keywords = [keyword for keyword in user.keywords if keyword.active]
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         all_feeds_parsed = dict(executor.map(
-            lambda rss_feed: (rss_feed.id, {"feed_object": rss_feed, "feed_parsed": feedparser.parse(rss_feed.url)}),
+            lambda rss_feed: (rss_feed.id, dict(feed_object=rss_feed, feed_parsed=feedparser.parse(rss_feed.url))),
             all_user_rss_feeds)
         )
 
@@ -371,11 +371,12 @@ def delete_user_deleted_articles():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Deleting User Deleted Articles -")
 
+    cutoff_date = datetime.utcnow() - timedelta(days=60)
+
     UserArticle.query.filter(
         UserArticle.is_deleted == True,
-        UserArticle.marked_as_deleted_date + timedelta(days=60) < datetime.utcnow(),
+        UserArticle.marked_as_deleted_date <= cutoff_date,
     ).delete()
-    db.session.commit()
 
     current_app.logger.info("[SYSTEM] - Finished Deleting User Deleted Articles -")
     current_app.logger.info("###############################################################################")
