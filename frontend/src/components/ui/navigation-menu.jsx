@@ -1,7 +1,7 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
+import {ChevronDown} from "lucide-react";
 import {cva} from "class-variance-authority";
-import {ChevronDownIcon} from "@radix-ui/react-icons";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 
 
@@ -10,7 +10,7 @@ const NavigationMenuItem = NavigationMenuPrimitive.Item;
 const NavigationMenuLink = NavigationMenuPrimitive.Link;
 
 
-const navigationMenuTriggerStyle = cva("group inline-flex h-7 w-max items-center justify-center rounded-md " +
+const navTrigStyle = cva("group inline-flex h-7 w-max items-center justify-center rounded-md " +
     "bg-transparent px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground " +
     "focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none " +
     "disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
@@ -39,10 +39,10 @@ NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
 const NavigationMenuTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
     <NavigationMenuPrimitive.Trigger
         ref={ref}
-        className={cn(navigationMenuTriggerStyle(), "group", className)}
+        className={cn(navTrigStyle(), "group", className)}
         {...props}>
         {children}{" "}
-        <ChevronDownIcon
+        <ChevronDown
             className="relative top-[1px] ml-1 h-3 w-3 transition duration-300 group-data-[state=open]:rotate-180"
             aria-hidden="true"/>
     </NavigationMenuPrimitive.Trigger>
@@ -88,7 +88,7 @@ NavigationMenuIndicator.displayName = NavigationMenuPrimitive.Indicator.displayN
 
 
 export {
-    navigationMenuTriggerStyle,
+    navTrigStyle,
     NavigationMenu,
     NavigationMenuList,
     NavigationMenuItem,

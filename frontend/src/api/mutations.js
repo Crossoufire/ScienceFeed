@@ -72,24 +72,28 @@ export const simpleMutations = () => {
     const removeRssFeed = useMutation({ mutationFn: mutationFunctionsMap.removeRssFeed });
     const addRssFeeds = useMutation({ mutationFn: mutationFunctionsMap.addRssFeeds });
 
-    const articlesRead = useMutation({ mutationFn: mutationFunctionsMap.toggleArticlesRead });
-
     return {
-        articlesRead, createRssFeed, removeRssFeed, addKeyword, deleteKeyword, toggleKeyword,
-        resetPassword, forgotPassword, passwordSettings, generalSettings, addRssFeeds, registerToken
+        createRssFeed, removeRssFeed, addKeyword, deleteKeyword, toggleKeyword, resetPassword, forgotPassword,
+        passwordSettings, generalSettings, addRssFeeds, registerToken
     };
 };
 
 
+export const useArticlesRead = (filters) => useMutation({
+    mutationFn: mutationFunctionsMap.toggleArticlesRead,
+    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
+});
+
+
 export const useArchiveArticles = (filters) => useMutation({
     mutationFn: mutationFunctionsMap.archiveArticles,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
+    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
 });
 
 
 export const useRssFetcher = (filters) => useMutation({
     mutationFn: mutationFunctionsMap.rssFetcher,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
+    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
 });
 
 

@@ -5,10 +5,10 @@ import {Button} from "@/components/ui/button";
 import {queryClient} from "@/api/queryClient";
 import {simpleMutations} from "@/api/mutations";
 import {keywordsOptions} from "@/api/queryOptions";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/components/app/PageTitle";
-import {LuPauseCircle, LuPlayCircle, LuPlus, LuTrash2} from "react-icons/lu";
+import {PauseCircle, PlayCircle, Plus, Trash2} from "lucide-react";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
 
 
@@ -76,7 +76,7 @@ function KeywordManagerPage() {
                         }}
                     />
                     <Button size="sm" onClick={handleAddNewKeyword} disabled={addKeyword.isPending}>
-                        <LuPlus className="mr-2 h-4 w-4"/> Add Keyword
+                        <Plus className="mr-2 h-4 w-4"/> Add Keyword
                     </Button>
                 </div>
                 {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
@@ -113,10 +113,10 @@ function KeywordManagerPage() {
                                         variant={keyword.active ? "warning" : "green"}
                                         className={!keyword.active && "bg-green-700"}
                                     >
-                                        {keyword.active ? <LuPauseCircle className="h-4 w-4"/> : <LuPlayCircle className="h-4 w-4"/>}
+                                        {keyword.active ? <PauseCircle className="h-4 w-4"/> : <PlayCircle className="h-4 w-4"/>}
                                     </Button>
                                     <Button variant="destructive" size="sm" onClick={() => handleDeleteKeyword(keyword)}>
-                                        <LuTrash2 className="h-4 w-4"/>
+                                        <Trash2 className="h-4 w-4"/>
                                     </Button>
                                 </div>
                             </TableCell>

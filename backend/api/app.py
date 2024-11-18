@@ -22,9 +22,9 @@ ma = Marshmallow()
 
 
 def import_blueprints(app: Flask):
+    from backend.api.routes import main as main_bp
     from backend.api.tokens import tokens as tokens_bp
     from backend.api.errors import errors as errors_bp
-    from backend.api.routes import main as main_bp
 
     api_blueprints = [tokens_bp, errors_bp, main_bp]
 
@@ -34,17 +34,12 @@ def import_blueprints(app: Flask):
 
 def create_app_logger(app: Flask):
     log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "ScienceFeed.log")
-
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-    if not os.path.exists(log_file_path):
-        with open(log_file_path, "a"):
-            pass
 
     handler = RotatingFileHandler(log_file_path, maxBytes=3000000, backupCount=15)
     handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s"))
     handler.setLevel(logging.INFO)
 
-    app.logger.setLevel(logging.INFO)
     app.logger.addHandler(handler)
     app.logger.info("ScienceFeed is starting up...")
 

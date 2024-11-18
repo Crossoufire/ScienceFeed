@@ -1,19 +1,18 @@
 import {toast} from "sonner";
-import {useEffect, useState} from "react";
-import {queryClient} from "@/api/queryClient";
-import {Button} from "@/components/ui/button";
+import {useState} from "react";
 import {dashboardOptions} from "@/api/queryOptions";
 import {PageTitle} from "@/components/app/PageTitle";
 import {Pagination} from "@/components/app/Pagination";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/hooks/DebounceHook";
+import {CancelButton} from "@/components/app/CancelButton";
 import {InputSearch} from "@/components/dashboard/InputSearch";
 import {OptionsMenu} from "@/components/dashboard/OptionsMenu";
 import {ArticleCard} from "@/components/dashboard/ArticleCard";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {KeywordsBadges} from "@/components/dashboard/KeywordsBadges";
 import {EditionButtons} from "@/components/dashboard/EditionButtons";
-import {simpleMutations, useArchiveArticles, useDeleteArticles, useRssFetcher} from "@/api/mutations";
+import {useArchiveArticles, useArticlesRead, useDeleteArticles, useRssFetcher} from "@/api/mutations";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -24,14 +23,14 @@ export const Route = createFileRoute("/_private/dashboard")({
 });
 
 
-const DEFAULT = { search: "", page: 1, keywords_ids: [] };
+const DEFAULT = { search: "", page: 1, keywords_ids: [], show_archived: false };
 
 
 function Dashboard() {
     const navigate = useNavigate();
     const filters = Route.useSearch();
-    const { articlesRead } = simpleMutations();
     const rssFetcherMutation = useRssFetcher(filters);
+    const readArticlesMutation = useArticlesRead(filters);
     const deleteArticlesMutation = useDeleteArticles(filters);
     const [isEditing, setIsEditing] = useState(false);
     const archiveArticlesMutation = useArchiveArticles(filters);
@@ -47,11 +46,15 @@ function Dashboard() {
 
     const onResetClick = async () => {
         setSearchQuery(DEFAULT.search);
-        await fetchData({ ...DEFAULT, keywords_ids: activeKeywordsIds });
+        await fetchData({ ...DEFAULT, show_archived: filters.show_archived, keywords_ids: activeKeywordsIds });
     };
 
     const onPageChange = async (newPage) => {
         await fetchData((prev) => ({ ...prev, page: newPage }));
+    };
+
+    const onShowArchive = async () => {
+        await fetchData({ ...filters, show_archived: !filters.show_archived });
     };
 
     const onBulkActionClick = (action) => {
@@ -97,19 +100,18 @@ function Dashboard() {
     };
 
     const onReadClick = (articleIds, readValue) => {
-        articlesRead.mutate({ articleIds, readValue }, {
+        readArticlesMutation.mutate({ articleIds, readValue }, {
             onError: () => toast.error("Failed to change the article(s) read status"),
-            onSuccess: async () => {
-                toast.success("Article(s) status successfully changed");
-                await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] });
-            },
+            onSuccess: () => toast.success("Article(s) status successfully changed"),
         });
     };
 
     const onArchiveClick = (articleIds) => {
-        archiveArticlesMutation.mutate({ articleIds, archive: true }, {
-            onError: () => toast.error("Failed to archived the article(s)"),
-            onSuccess: () => toast.success("Article(s) successfully archived"),
+        const archive = !filters.show_archived;
+        const text = archive ? "archived" : "unarchived";
+        archiveArticlesMutation.mutate({ articleIds, archive: archive }, {
+            onError: () => toast.error(`Failed to ${text} the article(s)`),
+            onSuccess: () => toast.success(`Article(s) ${text}`),
         });
     };
 
@@ -137,12 +139,10 @@ function Dashboard() {
         });
     };
 
-    useDebounceCallback(searchQuery, 350, fetchData, {
-        search: searchQuery, page: DEFAULT.page, keywords_ids: activeKeywordsIds,
-    });
+    useDebounceCallback(searchQuery, 350, fetchData, { ...filters, search: searchQuery, keywords_ids: activeKeywordsIds });
 
     const isFetching = (
-        articlesRead.isPending ||
+        readArticlesMutation.isPending ||
         deleteArticlesMutation.isPending ||
         archiveArticlesMutation.isPending ||
         rssFetcherMutation.isPending
@@ -160,6 +160,7 @@ function Dashboard() {
                 <OptionsMenu
                     isEditing={isEditing}
                     isDisabled={isFetching}
+                    onShowArchive={onShowArchive}
                     onEditModeClick={onEditModeClick}
                     onRssFetcherClick={onRssFetcherClick}
                 />
@@ -207,44 +208,4 @@ function Dashboard() {
 }
 
 
-function CancelButton({ duration, filters, articleIds }) {
-    const deleteArticles = useDeleteArticles(filters);
-    const [progress, setProgress] = useState(100);
 
-    const handleUndoClick = () => {
-        deleteArticles.mutate({ articleIds, isDeleted: false }, {
-            onError: () => toast.error("Failed to undo the article(s) deletion"),
-            onSuccess: () => {
-                toast.dismiss();
-                toast.success("Article(s) successfully restored");
-            },
-        });
-    };
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setProgress((prevProgress) => {
-                if (prevProgress > 0) {
-                    return prevProgress - (100 / (duration / 100));
-                }
-                clearInterval(interval);
-                return 0;
-            });
-        }, 100);
-        return () => clearInterval(interval);
-    }, [duration]);
-
-    return (
-        <div className="relative ml-2">
-            <Button size="xs" onClick={() => handleUndoClick()} disabled={deleteArticles.isPending}>
-                Undo
-            </Button>
-            <div className="absolute bottom-0 left-0 right-0 h-1 w-full">
-                <div
-                    style={{ width: `${progress}%` }}
-                    className="h-full bg-blue-500 transition-all duration-100 ease-linear rounded-md"
-                />
-            </div>
-        </div>
-    );
-}

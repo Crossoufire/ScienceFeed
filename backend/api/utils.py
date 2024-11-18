@@ -1,5 +1,6 @@
 import re
 from typing import List
+from datetime import datetime, timezone
 
 
 def find_matching_keywords_regex(keywords, data_dict) -> List[str]:
@@ -19,3 +20,11 @@ def clean_html_with_regex(html):
     clean_text = re.sub(r"\s+", " ", clean_text).strip()
 
     return clean_text
+
+
+def aware_utcnow():
+    return datetime.now(timezone.utc)
+
+
+def naive_utcnow():
+    return aware_utcnow().replace(tzinfo=None)

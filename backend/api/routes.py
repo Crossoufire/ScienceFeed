@@ -1,11 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from flask import Blueprint, jsonify, request, abort, current_app
 from sqlalchemy import or_, and_
+from flask import Blueprint, jsonify, request, abort, current_app
 
 from backend.api.app import db
 from backend.api.handlers import current_user, token_auth
 from backend.api.models import Keyword, RssFeed, UserRssFeed, UserArticle, User, Article
+from backend.api.utils import naive_utcnow
 
 
 main = Blueprint("main_api", __name__)
@@ -54,10 +55,10 @@ def rss_feed_search():
 
     data = []
     for result in results:
-        toto = result.to_dict()
+        result_as_dict = result.to_dict()
         if result.id in user_feeds:
-            toto["is_active"] = True
-        data.append(toto)
+            result_as_dict["is_active"] = True
+        data.append(result_as_dict)
 
     return jsonify(data=data), 200
 
@@ -69,12 +70,14 @@ def dashboard():
 
     page = int(request.args.get("page", 1))
     search = request.args.get("search", None)
+    archived = request.args.get("show_archived", False)
     keywords_ids = request.args.get("keywords_ids").split(",") if request.args.get("keywords_ids") else []
 
     base_query = UserArticle.query.filter(
         UserArticle.user_id == current_user.id,
-        UserArticle.is_archived == False,
         UserArticle.is_deleted == False,
+        UserArticle.is_archived == False if archived != "true" else True,
+        True if archived != "true" else UserArticle.is_read == True,
     )
 
     if search:
@@ -94,7 +97,9 @@ def dashboard():
     else:
         base_query = base_query.filter(UserArticle.keywords.any(Keyword.active == True and Keyword.user_id == current_user.id))
 
-    results = base_query.order_by(UserArticle.added_date.desc()).paginate(page=page, per_page=20, error_out=True)
+    results = base_query.order_by(
+        UserArticle.added_date.desc() if archived != "true" else UserArticle.marked_as_archived_date.desc()
+    ).paginate(page=page, per_page=20, error_out=True)
 
     keywords = (
         Keyword.query.join(UserArticle.keywords).filter(
@@ -104,12 +109,12 @@ def dashboard():
     )
 
     data = dict(
-        articles=[article.to_dict() for article in results.items],
-        keywords=[keyword.to_dict(simple=True) for keyword in keywords],
         page=results.page,
         pages=results.pages,
         total=results.total,
-        per_page=results.per_page
+        per_page=results.per_page,
+        articles=[article.to_dict() for article in results.items],
+        keywords=[keyword.to_dict(simple=True) for keyword in keywords],
     )
 
     return jsonify(data=data), 200
@@ -176,9 +181,9 @@ def create_rss_feed():
 
     try:
         data = request.get_json()
-        publisher = data["publisher"]
-        journal = data["journal"]
         url = data["url"]
+        journal = data["journal"]
+        publisher = data["publisher"]
     except:
         return abort(400, description="Invalid request")
 
@@ -342,13 +347,13 @@ def fetch_user_rss_feeds():
 
     from backend.cli.tasks import fetch_and_filter_articles_one_user
 
-    if (current_user.last_rss_update and datetime.utcnow() < current_user.last_rss_update +
+    if (current_user.last_rss_update and naive_utcnow() < current_user.last_rss_update +
             timedelta(minutes=current_app.config["DELTA_MINUTES"])):
-        diff = (current_user.last_rss_update + timedelta(minutes=current_app.config["DELTA_MINUTES"])) - datetime.utcnow()
+        diff = (current_user.last_rss_update + timedelta(minutes=current_app.config["DELTA_MINUTES"])) - naive_utcnow()
         diff_in_minutes = diff.total_seconds() // 60
         return jsonify(data=f"Rss Fetcher will be up in {int(diff_in_minutes)} minutes"), 200
 
-    current_user.last_rss_update = datetime.utcnow()
+    current_user.last_rss_update = naive_utcnow()
     db.session.commit()
 
     fetch_and_filter_articles_one_user(current_user)

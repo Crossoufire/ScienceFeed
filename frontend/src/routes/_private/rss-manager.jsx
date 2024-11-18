@@ -9,8 +9,8 @@ import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
+import {CheckCircle, Loader2, Search, X} from "lucide-react";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
-import {LuCheckCircle, LuLoader2, LuSearch, LuX} from "react-icons/lu";
 import {rssManagerOptions, rssSearchOptions} from "@/api/queryOptions";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 
@@ -69,7 +69,7 @@ function SearchRSSFeeds() {
     return (
         <div ref={commandRef} className="mt-6">
             <div className="relative">
-                <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
                     value={search}
                     className="w-[350px] pl-8"
@@ -83,7 +83,7 @@ function SearchRSSFeeds() {
                         <CommandList className="max-h-[350px] overflow-y-auto">
                             {isLoading &&
                                 <div className="flex items-center justify-center p-4">
-                                    <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                    <Loader2 className="h-6 w-6 animate-spin"/>
                                 </div>
                             }
                             {error && (
@@ -122,7 +122,7 @@ function SearchComponent({ rssFeed, handleAddRssFeed }) {
                     <div className="text-neutral-600">|</div>
                     <div className="flex items-center">
                         <span className="truncate">{rssFeed.journal}</span>
-                        {rssFeed.is_active && <LuCheckCircle className="ml-2 text-green-500 flex-shrink-0"/>}
+                        {rssFeed.is_active && <CheckCircle className="ml-2 text-green-500 flex-shrink-0"/>}
                     </div>
                 </div>
             </CommandItem>
@@ -156,7 +156,7 @@ function UserRssFeeds({ userRssFeeds }) {
                             <p><strong>Journal:</strong> {feed.journal}</p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => handleRemoveRssFeed(feed)}>
-                            <LuX className="h-4 w-4"/>
+                            <X className="h-4 w-4"/>
                         </Button>
                     </div>
                 )}

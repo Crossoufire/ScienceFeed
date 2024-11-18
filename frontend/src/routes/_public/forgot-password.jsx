@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {simpleMutations} from "@/api/mutations.js";
+import {simpleMutations} from "@/api/mutations";
 import {PageTitle} from "@/components/app/PageTitle";
 import {FormError} from "@/components/app/FormError";
 import {FormButton} from "@/components/app/FormButton";

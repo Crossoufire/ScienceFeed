@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Sidebar} from "@/components/app/Sidebar";
-import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/PageTitle";
+import {createFileRoute} from "@tanstack/react-router";
 import {GeneralForm} from "@/components/settings/GeneralForm";
 import {PasswordForm} from "@/components/settings/PasswordForm";
 

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Tuple, Dict
 
-from flask import Blueprint, request, abort, url_for, current_app
 from werkzeug.http import dump_cookie
+from flask import Blueprint, request, abort, url_for, current_app
 
 from backend.api.app import db
-from backend.api.email import send_email
-from backend.api.handlers import basic_auth, token_auth
+from backend.api.schemas import *
 from backend.api.models import Token
 from backend.api.decorators import body
-from backend.api.schemas import *
+from backend.api.email import send_email
+from backend.api.handlers import basic_auth, token_auth
+from backend.api.utils import naive_utcnow
 
 
 tokens = Blueprint("api_tokens", __name__)
@@ -41,7 +41,7 @@ def register_user(data):
         username=data["username"],
         email=data["email"],
         password=data["password"],
-        registered_on=datetime.utcnow(),
+        registered_on=naive_utcnow(),
         active=False,
     )
     db.session.add(new_user)
@@ -179,7 +179,7 @@ def register_token():
         return abort(400, description="The provided token is invalid or expired")
 
     user.active = True
-    user.activated_on = datetime.utcnow()
+    user.activated_on = naive_utcnow()
 
     db.session.commit()
     current_app.logger.info(f"[INFO] - [{user.id}] Account activated.")

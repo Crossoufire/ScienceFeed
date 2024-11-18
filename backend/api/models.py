@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, timedelta
-from typing import Dict, Optional, List
 from time import time
+from datetime import timedelta
+from typing import Dict, Optional, List
 
 import jwt
 from flask import current_app
@@ -11,6 +11,7 @@ from sqlalchemy import select
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.api.app import db
+from backend.api.utils import naive_utcnow
 
 
 user_article_keyword = db.Table(
@@ -33,21 +34,21 @@ class Token(db.Model):
 
     def generate(self):
         self.access_token = secrets.token_urlsafe()
-        self.access_expiration = datetime.utcnow() + timedelta(minutes=current_app.config["ACCESS_TOKEN_MINUTES"])
+        self.access_expiration = naive_utcnow() + timedelta(minutes=current_app.config["ACCESS_TOKEN_MINUTES"])
         self.refresh_token = secrets.token_urlsafe()
-        self.refresh_expiration = datetime.utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
+        self.refresh_expiration = naive_utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
 
     def expire(self, delay: int = None):
         # Add 5 second delay for simultaneous requests
         if delay is None:
             delay = 5 if not current_app.testing else 0
 
-        self.access_expiration = datetime.utcnow() + timedelta(seconds=delay)
-        self.refresh_expiration = datetime.utcnow() + timedelta(seconds=delay)
+        self.access_expiration = naive_utcnow() + timedelta(seconds=delay)
+        self.refresh_expiration = naive_utcnow() + timedelta(seconds=delay)
 
     @classmethod
     def clean(cls):
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        yesterday = naive_utcnow() - timedelta(days=1)
         cls.query.filter(cls.refresh_expiration < yesterday).delete()
         db.session.commit()
 
@@ -60,7 +61,7 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False)
-    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime, default=naive_utcnow)
     active = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String)
     send_feed_emails = db.Column(db.Boolean, default=True)
@@ -85,11 +86,11 @@ class User(db.Model):
         data = dict(
             id=self.id,
             username=self.username,
-            registered_on=self.registered_on,
             last_seen=self.last_seen,
+            registered_on=self.registered_on,
+            last_rss_update=self.last_rss_update,
             send_feed_emails=self.send_feed_emails,
             max_articles_per_email=self.max_articles_per_email,
-            last_rss_update=self.last_rss_update,
         )
         return data
 
@@ -97,7 +98,7 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def ping(self):
-        self.last_seen = datetime.utcnow()
+        self.last_seen = naive_utcnow()
 
     def revoke_all_tokens(self):
         Token.query.filter(Token.user == self).delete()
@@ -118,9 +119,10 @@ class User(db.Model):
 
     @staticmethod
     def verify_access_token(access_token: str) -> User:
+        # noinspection PyTypeChecker
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
         if token:
-            if token.access_expiration > datetime.utcnow():
+            if token.access_expiration > naive_utcnow():
                 token.user.ping()
                 db.session.commit()
                 return token.user
@@ -129,7 +131,7 @@ class User(db.Model):
     def verify_refresh_token(refresh_token: str, access_token: str) -> Optional[Token]:
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
         if token:
-            if token.refresh_expiration > datetime.utcnow():
+            if token.refresh_expiration > naive_utcnow():
                 return token
 
             # Try to refresh with expired token: revoke all tokens from user as precaution
@@ -248,7 +250,7 @@ class Article(db.Model):
     title = db.Column(db.String, nullable=False)
     link = db.Column(db.String, nullable=False)
     summary = db.Column(db.String, nullable=False)
-    added_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    added_date = db.Column(db.DateTime, nullable=False, default=naive_utcnow)
 
     # --- Relationships ------------------------------------------------------------
     rss_feed = db.relationship("RssFeed", back_populates="articles", lazy="select")
@@ -257,13 +259,13 @@ class Article(db.Model):
     def to_dict(self) -> Dict:
         data = dict(
             id=self.id,
-            rss_feed_id=self.rss_feed.id,
-            title=self.title,
             link=self.link,
+            title=self.title,
             summary=self.summary,
-            publisher=self.rss_feed.publisher,
-            journal=self.rss_feed.journal,
             url=self.rss_feed.url,
+            rss_feed_id=self.rss_feed.id,
+            journal=self.rss_feed.journal,
+            publisher=self.rss_feed.publisher,
         )
         return data
 
@@ -306,7 +308,7 @@ class UserArticle(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     is_archived = db.Column(db.Boolean, default=False)
     is_deleted = db.Column(db.Boolean, default=False)
-    added_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    added_date = db.Column(db.DateTime, nullable=False, default=naive_utcnow)
     marked_as_deleted_date = db.Column(db.DateTime)
     marked_as_read_date = db.Column(db.DateTime)
     marked_as_archived_date = db.Column(db.DateTime)
@@ -318,11 +320,13 @@ class UserArticle(db.Model):
 
     def to_dict(self) -> Dict:
         data = dict(
-            user_article_id=self.id,
             user_id=self.user.id,
             is_read=self.is_read,
-            is_archived=self.is_archived,
+            user_article_id=self.id,
             added_date=self.added_date,
+            is_archived=self.is_archived,
+            read_date=self.marked_as_read_date,
+            archive_date=self.marked_as_archived_date,
             keywords=[keyword.name for keyword in self.keywords],
             **self.article.to_dict(),
         )
@@ -346,7 +350,7 @@ class UserArticle(db.Model):
 
         for user_article in user_articles:
             user_article.is_read = read
-            user_article.marked_as_read_date = datetime.utcnow() if read else None
+            user_article.marked_as_read_date = naive_utcnow() if read else None
 
     @classmethod
     def change_archive_articles(cls, user: User, article_ids: List[int], archive: bool):
@@ -354,10 +358,10 @@ class UserArticle(db.Model):
 
         for user_article in user_articles:
             user_article.is_archived = archive
-            user_article.marked_as_archived_date = datetime.utcnow() if archive else None
+            user_article.marked_as_archived_date = naive_utcnow() if archive else None
             user_article.is_read = True
             if not user_article.marked_as_read_date:
-                user_article.marked_as_read_date = datetime.utcnow()
+                user_article.marked_as_read_date = naive_utcnow()
 
     @classmethod
     def change_delete_articles(cls, user: User, article_ids: List[int], delete: bool):
@@ -365,4 +369,4 @@ class UserArticle(db.Model):
 
         for user_article in user_articles:
             user_article.is_deleted = delete
-            user_article.marked_as_deleted_date = datetime.utcnow() if delete else None
+            user_article.marked_as_deleted_date = naive_utcnow() if delete else None

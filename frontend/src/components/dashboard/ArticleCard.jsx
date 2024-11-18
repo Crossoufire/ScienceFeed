@@ -1,13 +1,16 @@
-import {cn, formatDateTime} from "@/utils/functions";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
+import {useSearch} from "@tanstack/react-router";
 import {Checkbox} from "@/components/ui/checkbox";
-import {LuArchive, LuBook, LuCheckCircle, LuTrash2} from "react-icons/lu";
+import {cn, formatDateTime} from "@/utils/functions";
+import {Archive, Book, CheckCircle, Info, Trash2} from "lucide-react";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 
 
 export const ArticleCard = (props) => {
     const { article, isEditing, isDisabled, selected, onSelectionClick, onArchiveClick, onDeleteClick, onReadClick } = props;
+    const filters = useSearch({ strict: false });
     const isRead = article.is_read ? "bg-card" : "bg-cyan-950";
 
     return (
@@ -47,26 +50,37 @@ export const ArticleCard = (props) => {
                                 </Badge>
                             )}
                         </div>
-                        <div className="flex items-center flex-wrap gap-3">
-                            <div>{formatDateTime(article.added_date)}</div>
-                            <Button
-                                size="sm"
-                                disabled={isDisabled || isEditing}
-                                variant={article.is_read ? "secondary" : "default"}
-                                onClick={() => onReadClick([article.id], !article.is_read)}
-                            >
-                                {article.is_read ?
-                                    <><LuCheckCircle className="mr-2 h-4 w-4 text-green-700"/> Read</>
-                                    :
-                                    <><LuBook className="mr-2 h-4 w-4"/> Mark as Read</>
-                                }
-                            </Button>
+                        <div className="text-sm flex items-center flex-wrap gap-3">
+                            {!filters?.show_archived &&
+                                <Button
+                                    size="sm"
+                                    disabled={isDisabled || isEditing}
+                                    variant={article.is_read ? "secondary" : "default"}
+                                    onClick={() => onReadClick([article.id], !article.is_read)}
+                                >
+                                    {article.is_read ?
+                                        <><CheckCircle className="mr-2 h-4 w-4 text-green-700"/> Read</>
+                                        :
+                                        <><Book className="mr-2 h-4 w-4"/> Mark as Read</>
+                                    }
+                                </Button>
+                            }
                             <Button variant="warning" size="sm" onClick={() => onArchiveClick([article.id])} disabled={isDisabled || isEditing}>
-                                <LuArchive className="mr-2 h-4 w-4"/> Archive
+                                <Archive className="mr-2 h-4 w-4"/>
+                                {filters?.show_archived ? "Un-archive" : "Archive"}
                             </Button>
                             <Button variant="destructive" size="sm" onClick={() => onDeleteClick([article.id])} disabled={isDisabled || isEditing}>
-                                <LuTrash2 className="mr-2 h-4 w-4"/> Delete
+                                <Trash2 className="mr-2 h-4 w-4"/> Delete
                             </Button>
+                            <Popover>
+                                <PopoverTrigger>
+                                    <Info className="w-4 h-4"/>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[250px]" align="end">
+                                    <div>Added: {formatDateTime(article.added_date, { includeTime: true })}</div>
+                                    <div>Read: {formatDateTime(article.read_date, { includeTime: true })}</div>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     </CardFooter>
                 </div>

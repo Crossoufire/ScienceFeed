@@ -54,9 +54,9 @@
         <h2><a href="{{ article.link }}">{{ article.title }}</a></h2>
         <p><strong>Publisher:</strong> {{ article.publisher }}</p>
         <p><strong>Journal:</strong> {{ article.journal }}</p>
-        <p class="keywords">
-            <strong>Keywords:</strong> {{ article.keywords|join(", ") }}
-        </p>
+        {#        <p class="keywords">#}
+        {#            <strong>Keywords:</strong> {{ article.keywords|join(", ") }}#}
+        {#        </p>#}
     </div>
 {% endfor %}
 </body>

@@ -39,7 +39,7 @@ def _send_async_feed_email(app: Flask, to: str, username: str, subject: str, tem
             template + ".html",
             username=username,
             articles=articles,
-            dashboard_url=f"https://localhost:3000/dashboard",
+            dashboard_url=f"https://localhost:3000/dashboard" if app.debug else "https://science-feed.mylists.info/dashboard",
         )
         msg = Message(
             subject=f"ScienceFeed - {subject}",
