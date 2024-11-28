@@ -231,11 +231,13 @@ class RssFeed(db.Model):
 
     @classmethod
     def create_new_rss_feed(cls, publisher: str, journal: str, url: str) -> Optional[RssFeed]:
-        if cls.query.filter_by(publisher=publisher, journal=journal, url=url).first():
-            return
+        # URL must be unique for each RSS Feed -> Sufficient condition
+        if cls.query.filter_by(url=url).first():
+            return None
 
         new_rss_feed = cls(publisher=publisher, journal=journal, url=url)
         db.session.add(new_rss_feed)
+        db.session.flush()
 
         return new_rss_feed
 

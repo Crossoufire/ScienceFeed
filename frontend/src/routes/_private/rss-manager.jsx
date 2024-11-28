@@ -1,5 +1,6 @@
 import {toast} from "sonner";
 import {useRef, useState} from "react";
+import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {queryClient} from "@/api/queryClient";
 import {Button} from "@/components/ui/button";
@@ -9,10 +10,12 @@ import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
-import {CheckCircle, Loader2, Search, X} from "lucide-react";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {CheckCircle, Loader2, Plus, Search, X} from "lucide-react";
 import {rssManagerOptions, rssSearchOptions} from "@/api/queryOptions";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -27,7 +30,11 @@ function RssManager() {
 
     return (
         <PageTitle title="RSS Feeds Manager" subtitle="Search and Manage your RSS feeds.">
-            <SearchRSSFeeds userRssFeeds={userRssFeeds}/>
+            <div className="flex items-center justify-between mt-6">
+                <SearchRSSFeeds userRssFeeds={userRssFeeds}/>
+                <CreateNewRSSFeed/>
+            </div>
+
             <UserRssFeeds userRssFeeds={userRssFeeds}/>
         </PageTitle>
     );
@@ -67,7 +74,7 @@ function SearchRSSFeeds() {
     useOnClickOutside(commandRef, resetSearch);
 
     return (
-        <div ref={commandRef} className="mt-6">
+        <div ref={commandRef}>
             <div className="relative">
                 <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
@@ -111,6 +118,89 @@ function SearchRSSFeeds() {
 }
 
 
+function CreateNewRSSFeed() {
+    const { createRssFeed } = simpleMutations();
+    const [open, setOpen] = useState(false);
+    const form = useForm({ defaultValues: { url: "", journal: "", publisher: "" } });
+
+    const onSubmit = (data) => {
+        createRssFeed.mutate({ url: data.url, journal: data.journal, publisher: data.publisher }, {
+            onError: (error) => toast.error(error?.description ?? "Failed to add this RSS Feed"),
+            onSuccess: async () => {
+                form.reset();
+                setOpen(false);
+                toast.success("RSS Feed successfully added");
+                await queryClient.invalidateQueries({ queryKey: ["rssManager"] });
+            },
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button size="sm">
+                    <Plus className="w-4 h-4 mr-2"/> Add New RSS Feed
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add RSS Feed</DialogTitle>
+                    <DialogDescription>Add a new RSS feed to your account.</DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="url"
+                            render={({ field }) =>
+                                <FormItem>
+                                    <FormLabel>URL</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="http://feeds.rsc.org/rss/cp" {...field}/>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            }
+                        />
+                        <FormField
+                            control={form.control}
+                            name="journal"
+                            rules={{ required: { value: true, message: "Journal name cannot be empty" } }}
+                            render={({ field }) =>
+                                <FormItem>
+                                    <FormLabel>Journal</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Journal Name" {...field}/>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            }
+                        />
+                        <FormField
+                            control={form.control}
+                            name="publisher"
+                            rules={{ required: { value: true, message: "Publisher name cannot be empty" } }}
+                            render={({ field }) =>
+                                <FormItem>
+                                    <FormLabel>Publisher</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Publisher Name" {...field}/>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            }
+                        />
+                        <Button type="submit" disabled={createRssFeed.isPending || !form.formState.isDirty || !form.formState.isValid}>
+                            {createRssFeed.isPending ? "Adding..." : "Add RSS Feed"}
+                        </Button>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+
 function SearchComponent({ rssFeed, handleAddRssFeed }) {
     return (
         <div role="button" onClick={() => handleAddRssFeed(rssFeed)}>
@@ -122,7 +212,7 @@ function SearchComponent({ rssFeed, handleAddRssFeed }) {
                     <div className="text-neutral-600">|</div>
                     <div className="flex items-center">
                         <span className="truncate">{rssFeed.journal}</span>
-                        {rssFeed.is_active && <CheckCircle className="ml-2 text-green-500 flex-shrink-0"/>}
+                        {rssFeed.is_active && <CheckCircle className="w-4 h-4 ml-2 text-green-500 flex-shrink-0"/>}
                     </div>
                 </div>
             </CommandItem>
@@ -155,7 +245,7 @@ function UserRssFeeds({ userRssFeeds }) {
                             <p><strong>Publisher:</strong> {feed.publisher}</p>
                             <p><strong>Journal:</strong> {feed.journal}</p>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveRssFeed(feed)}>
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveRssFeed(feed)} title="Remove RSS Feed">
                             <X className="h-4 w-4"/>
                         </Button>
                     </div>

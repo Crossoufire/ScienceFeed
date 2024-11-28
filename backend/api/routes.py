@@ -187,6 +187,9 @@ def create_rss_feed():
     except:
         return abort(400, description="Invalid request")
 
+    if journal == "" or publisher == "" or url == "":
+        return abort(400, description="Journal, publisher and url cannot be empty")
+
     new_feed = RssFeed.create_new_rss_feed(publisher, journal, url)
     if not new_feed:
         return abort(400, description="This RSS feed already exists")
