@@ -1,12 +1,8 @@
-
-
-/** @type {import('tailwindcss').Config} */
+/** @type {import("tailwindcss").Config} */
 module.exports = {
     darkMode: ["class"],
     content: [
-        "./pages/**/*.{js,jsx}",
-        "./components/**/*.{js,jsx}",
-        "./app/**/*.{js,jsx}",
+        "./index.html",
         "./src/**/*.{js,jsx}",
     ],
     prefix: "",
@@ -15,20 +11,20 @@ module.exports = {
             center: true,
             padding: "0.5rem",
             screens: {
-                "xs": "490px",
-                "sm": "640px",
-                "md": "768px",
-                "lg": "1025px",
-                "xl": "1320px",
+                xs: "490px",
+                sm: "640px",
+                md: "768px",
+                lg: "1025px",
+                xl: "1320px",
                 "2xl": "1400px",
             },
         },
         screens: {
-            "xs": "490px",
-            "sm": "640px",
-            "md": "768px",
-            "lg": "1025px",
-            "xl": "1320px",
+            xs: "490px",
+            sm: "640px",
+            md: "768px",
+            lg: "1025px",
+            xl: "1320px",
             "2xl": "1400px",
         },
         extend: {

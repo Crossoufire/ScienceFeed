@@ -75,8 +75,11 @@ def new_token():
     db.session.add(token)
     Token.clean()
     db.session.commit()
+    
+    response = token_response(token)
+    response[0]["data"] = current_user.to_dict()
 
-    return token_response(token)
+    return response
 
 
 @tokens.route("/tokens", methods=["PUT"])

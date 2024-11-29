@@ -70,13 +70,15 @@ def dashboard():
 
     page = int(request.args.get("page", 1))
     search = request.args.get("search", None)
-    archived = request.args.get("show_archived", False)
+    archived = request.args.get("show_archived", "false")
     keywords_ids = request.args.get("keywords_ids").split(",") if request.args.get("keywords_ids") else []
+
+    is_archived = False if archived != "true" else True
 
     base_query = UserArticle.query.filter(
         UserArticle.user_id == current_user.id,
         UserArticle.is_deleted == False,
-        UserArticle.is_archived == False if archived != "true" else True,
+        UserArticle.is_archived == is_archived,
         True if archived != "true" else UserArticle.is_read == True,
     )
 

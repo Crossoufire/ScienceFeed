@@ -35,12 +35,11 @@
         "vite": "^5.4.11"
     },
     "devDependencies": {
-        "@tailwindcss/typography": "^0.5.15",
         "@tanstack/react-query-devtools": "^5.60.5",
-        "@tanstack/eslint-plugin-query": "^5.60.1",
         "@tanstack/router-devtools": "^1.82.1",
         "@tanstack/router-plugin": "^1.81.9",
         "@vitejs/plugin-react": "^4.3.3",
+        "@tailwindcss/typography": "^0.5.15",
         "autoprefixer": "^10.4.20",
         "postcss": "^8.4.49",
         "tailwind-merge": "^2.5.4",

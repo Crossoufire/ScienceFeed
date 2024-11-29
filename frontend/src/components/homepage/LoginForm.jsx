@@ -1,28 +1,19 @@
 import {toast} from "sonner";
+import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {useLayoutEffect, useState} from "react";
+import {Link} from "@tanstack/react-router";
 import {FormError} from "@/components/app/FormError";
 import {FormButton} from "@/components/app/FormButton";
-import {Link, useNavigate, useRouter} from "@tanstack/react-router";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
-export const LoginForm = () => {
-    const router = useRouter();
+export const LoginForm = ({ open, onOpenChange }) => {
     const { login } = useAuth();
-    const navigate = useNavigate();
-    const { currentUser } = useAuth();
     const [errorMessage, setErrorMessage] = useState("");
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
-
-    useLayoutEffect(() => {
-        if (!currentUser) return;
-        // noinspection JSUnresolvedReference
-        void router.invalidate();
-        void navigate({ to: `/profile/${currentUser.username}` });
-    }, [currentUser]);
 
     const onSubmit = (data) => {
         setErrorMessage("");
@@ -33,62 +24,67 @@ export const LoginForm = () => {
                 }
                 return toast.error(error.message);
             },
-            onSuccess: async () => {
-                await navigate({ to: "/dashboard" });
-            },
+            onSuccess: () => onOpenChange(false),
         });
     };
 
     return (
-        <div className="bg-card px-5 p-3 rounded-md">
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="space-y-2">
-                        <FormField
-                            control={form.control}
-                            name="username"
-                            rules={{ required: "Please enter a valid username" }}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Username</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            placeholder="Username"
-                                        />
-                                    </FormControl>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            rules={{ required: "This field is required" }}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            type="password"
-                                            placeholder="********"
-                                        />
-                                    </FormControl>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                    {errorMessage && <FormError message={errorMessage}/>}
-                    <FormButton disabled={login.isPending}>
-                        Login
-                    </FormButton>
-                </form>
-            </Form>
-            <Link to="/forgot-password" className="text-blue-500">
-                <div className="mt-4">Forgot password?</div>
-            </Link>
-        </div>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[400px] bg-neutral-950">
+                <DialogHeader>
+                    <DialogTitle>Login to ScienceFeed</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-3">
+                        <div className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="username"
+                                rules={{ required: "Please enter a valid username" }}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Username</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                placeholder="Username"
+                                            />
+                                        </FormControl>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                rules={{ required: "This field is required" }}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex items-center justify-between">
+                                            Password
+                                            <Link to="/forgot-password" tabIndex="-1" onClick={() => onOpenChange(false)}>
+                                                <div className="underline font-normal text-sm">Forgot password?</div>
+                                            </Link>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                type="password"
+                                                placeholder="********"
+                                            />
+                                        </FormControl>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        {errorMessage && <FormError message={errorMessage}/>}
+                        <FormButton disabled={login.isPending}>
+                            Login
+                        </FormButton>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
     );
 };

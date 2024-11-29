@@ -13,9 +13,9 @@ export const useAuth = () => {
 
     const login = useMutation({
         mutationFn: ({ username, password }) => api.login(username, password),
-        onSuccess: async (data) => {
+        onSuccess: (data) => {
             api.setAccessToken(data.body.access_token);
-            await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+            queryClient.setQueryData(["currentUser"], data.body.data);
         },
     });
 

@@ -5,11 +5,11 @@ import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {FormError} from "@/components/app/FormError";
 import {FormButton} from "@/components/app/FormButton";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
-export const RegisterForm = ({ onTabChange }) => {
+export const RegisterForm = ({ open, onOpenChange }) => {
     const { register } = useAuth();
     const [errors, setErrors] = useState({});
     const form = useForm({
@@ -41,21 +41,19 @@ export const RegisterForm = ({ onTabChange }) => {
             },
             onSuccess: async () => {
                 toast.success("Your account has been created. Check your email to activate your account");
-                onTabChange("login");
+                onOpenChange(false);
             },
         });
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex justify-center">
-                    Create an account
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[425px] bg-neutral-950">
+                <DialogHeader>
+                    <DialogTitle>Register to ScienceFeed</DialogTitle>
+                </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-3">
                         <div className="space-y-4">
                             <FormField
                                 control={form.control}
@@ -151,7 +149,7 @@ export const RegisterForm = ({ onTabChange }) => {
                         </FormButton>
                     </form>
                 </Form>
-            </CardContent>
-        </Card>
+            </DialogContent>
+        </Dialog>
     );
 };

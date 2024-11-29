@@ -142,7 +142,7 @@ function CreateNewRSSFeed() {
                     <Plus className="w-4 h-4 mr-2"/> Add New RSS Feed
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-neutral-950">
                 <DialogHeader>
                     <DialogTitle>Add RSS Feed</DialogTitle>
                     <DialogDescription>Add a new RSS feed to your account.</DialogDescription>
