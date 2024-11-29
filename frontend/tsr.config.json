@@ -1,4 +1,5 @@
 {
+    "autoCodeSplitting": true,
     "quoteStyle": "double",
     "disableTypes": true,
     "disableManifestGeneration": true,
