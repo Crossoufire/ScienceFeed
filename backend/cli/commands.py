@@ -1,6 +1,6 @@
 import click
-from flask import current_app
 from sqlalchemy import text
+from flask import current_app
 
 from backend.api.app import db
 from backend.cli.tasks import (seed_database, add_new_user, fetch_and_filter_articles, send_feed_emails,
@@ -35,9 +35,10 @@ def create_cli_commands():
         seed_database()
 
     @current_app.cli.command()
-    def ffa():
+    @click.option("--user_id", "-u", default=None, help="Target user ID")
+    def ffa(user_id: int = None):
         """ Fetch and filter articles. """
-        fetch_and_filter_articles()
+        fetch_and_filter_articles(user_id)
 
     @current_app.cli.command()
     def send_emails():

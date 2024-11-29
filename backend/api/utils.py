@@ -1,10 +1,10 @@
 import re
-from typing import List
+from typing import List, Dict
 from datetime import datetime, timezone
 
 
-def find_matching_keywords_regex(keywords, data_dict) -> List[str]:
-    pattern = re.compile(r"\b(" + "|".join(re.escape(k.lower()) for k in keywords) + r")\b", re.IGNORECASE)
+def find_matching_keywords_regex(keywords: List[str], data_dict: Dict) -> List[str]:
+    pattern = re.compile(r"(" + "|".join(re.escape(k.lower()) for k in keywords) + r")", re.IGNORECASE)
 
     def find_matches(text):
         if not isinstance(text, str):

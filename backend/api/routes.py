@@ -348,7 +348,7 @@ def delete_articles():
 def fetch_user_rss_feeds():
     """ Refresh and fetch the current user's RSS Feeds """
 
-    from backend.cli.tasks import fetch_and_filter_articles_one_user
+    from backend.cli.tasks import fetch_and_filter_articles
 
     if (current_user.last_rss_update and naive_utcnow() < current_user.last_rss_update +
             timedelta(minutes=current_app.config["DELTA_MINUTES"])):
@@ -359,6 +359,6 @@ def fetch_user_rss_feeds():
     current_user.last_rss_update = naive_utcnow()
     db.session.commit()
 
-    fetch_and_filter_articles_one_user(current_user)
+    fetch_and_filter_articles(current_user.id)
 
     return {}, 204

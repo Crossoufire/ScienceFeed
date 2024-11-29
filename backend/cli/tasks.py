@@ -1,40 +1,19 @@
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
 import secrets
+from datetime import timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 import feedparser
-from flask import current_app
 from sqlalchemy import or_
+from flask import current_app
+from feedparser import FeedParserDict
 from sqlalchemy.orm import joinedload, contains_eager
 
 from backend.api.app import db
 from backend.api.email import send_feed_email
 from backend.api.models import RssFeed, User, Article, UserArticle, Keyword, UserRssFeed
-from backend.api.utils import find_matching_keywords_regex, clean_html_with_regex
-
-
-def add_new_user(username: str, email: str):
-    """ Add a new user to the database """
-
-    new_password = secrets.token_hex(6)
-
-    user = User.query.filter(or_(User.username == username, User.email == email)).first()
-    if user:
-        raise Exception("This username/email is already taken")
-
-    user = User(
-        username=username,
-        email=email,
-        password=new_password,
-        registered_on=datetime.utcnow(),
-        active=True,
-    )
-    db.session.add(user)
-    db.session.commit()
-
-    print(f"User {username} created and activated with password: {new_password}")
+from backend.api.utils import find_matching_keywords_regex, clean_html_with_regex, naive_utcnow
 
 
 def seed_database():
@@ -222,19 +201,45 @@ def seed_database():
     current_app.logger.info("###############################################################################")
 
 
-def fetch_and_filter_articles():
+def add_new_user(username: str, email: str):
+    """ Add a new user to the database """
+
+    new_password = secrets.token_hex(6)
+
+    user = User.query.filter(or_(User.username == username, User.email == email)).first()
+    if user:
+        raise Exception("This username/email is already taken")
+
+    user = User(
+        username=username,
+        email=email,
+        password=new_password,
+        registered_on=naive_utcnow(),
+        active=True,
+    )
+    db.session.add(user)
+    db.session.commit()
+
+    print(f"User {username} created and activated with password: {new_password}")
+
+
+def fetch_and_filter_articles(target_user_id: int = None):
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Adding New Articles to Users Based on Keywords -")
 
-    users = User.query.filter_by(active=True).options(
+    filter_ = dict(active=True) if not target_user_id else dict(id=target_user_id)
+
+    # Get all users with RSS feeds and active keywords
+    users = User.query.filter_by(**filter_).options(
         joinedload(User.rss_feeds),
         joinedload(User.keywords.and_(Keyword.active == True))
     ).all()
 
-    all_rss_feeds = (
-        RssFeed.query.filter(RssFeed.id.in_([user_rss_feed.rss_feed_id for user_rss_feed in UserRssFeed.query.all()])).all()
-    )
+    # Get all RSS Feeds used by users (subgroup of all RSS Feeds)
+    all_rss_feeds_ids = list(set([user_rss_feed.rss_feed_id for user_rss_feed in UserRssFeed.query.all()]))
+    all_rss_feeds = RssFeed.query.filter(RssFeed.id.in_(all_rss_feeds_ids)).all()
 
+    # Parse Feeds with threads (I/O bound) to dict: {rss_feed_id: {feed_object: RssFeed, feed_parsed: dict(data)}}
     with ThreadPoolExecutor(max_workers=4) as executor:
         all_feeds_parsed = dict(executor.map(
             lambda rss_feed: (rss_feed.id, dict(feed_object=rss_feed, feed_parsed=feedparser.parse(rss_feed.url))),
@@ -242,19 +247,23 @@ def fetch_and_filter_articles():
         )
 
     for user in users:
-        keywords = [keyword for keyword in user.keywords if keyword.active]
+        # Retrieve all user RSS Feeds IDs and keywords names
         user_rss_feed_ids = [user_feed.rss_feed_id for user_feed in user.rss_feeds]
+        keywords_names = [keyword.name for keyword in user.keywords]
 
         for feed_id in user_rss_feed_ids:
+            # Should always be true
             if feed_id in all_feeds_parsed:
-                feed_parsed = all_feeds_parsed[feed_id]["feed_parsed"]
-                rss_feed = all_feeds_parsed[feed_id]["feed_object"]
+                rss_feed: RssFeed = all_feeds_parsed[feed_id]["feed_object"]
+                feed_parsed: FeedParserDict = all_feeds_parsed[feed_id]["feed_parsed"]
 
+                # Retrieve all articles from parsed RSS Feed
                 for entry in feed_parsed.entries:
-                    keywords_found = find_matching_keywords_regex([k.name for k in keywords], entry)
+                    keywords_found = find_matching_keywords_regex(keywords_names, entry)
                     if not keywords_found:
                         continue
 
+                    # Check if article already exists (not super strong check but should be enough)
                     article = Article.query.filter_by(title=entry.title).first()
                     if not article:
                         article = Article(
@@ -266,71 +275,18 @@ def fetch_and_filter_articles():
                         db.session.add(article)
                         db.session.flush()
 
+                    # Check if user already has this article
                     user_article = UserArticle.query.filter_by(user_id=user.id, article_id=article.id).first()
                     if not user_article:
-                        user_article = UserArticle(
-                            user_id=user.id,
-                            article_id=article.id,
-                        )
+                        user_article = UserArticle(user_id=user.id, article_id=article.id)
                         db.session.add(user_article)
+                        db.session.flush()
 
-                    user_article.keywords.extend([k for k in keywords if k.name in keywords_found])
+                    user_article.keywords.extend([k for k in user.keywords if k.name in keywords_found])
 
         db.session.commit()
 
     current_app.logger.info("[SYSTEM] - Finished Adding New Articles Based on Keywords -")
-    current_app.logger.info("###############################################################################")
-
-
-def fetch_and_filter_articles_one_user(user: User):
-    current_app.logger.info("###############################################################################")
-    current_app.logger.info(f"[SYSTEM] - Adding New Articles to User `{user.username}` Based on Keywords -")
-
-    user_articles = user.articles
-    all_user_rss_feeds = [user_feed.rss_feed for user_feed in user.rss_feeds]
-    keywords = [keyword for keyword in user.keywords if keyword.active]
-
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        all_feeds_parsed = dict(executor.map(
-            lambda rss_feed: (rss_feed.id, dict(feed_object=rss_feed, feed_parsed=feedparser.parse(rss_feed.url))),
-            all_user_rss_feeds)
-        )
-
-    for rss_feed in all_user_rss_feeds:
-        if rss_feed.id in all_feeds_parsed:
-            feed_parsed = all_feeds_parsed[rss_feed.id]["feed_parsed"]
-            rss_feed = all_feeds_parsed[rss_feed.id]["feed_object"]
-
-            for entry in feed_parsed.entries:
-                keywords_found = find_matching_keywords_regex([k.name for k in keywords], entry)
-                if not keywords_found:
-                    continue
-
-                article = Article.query.filter_by(title=entry.title).first()
-                if not article:
-                    article = Article(
-                        rss_feed_id=rss_feed.id,
-                        title=entry.title,
-                        link=entry.link,
-                        summary=clean_html_with_regex(entry.summary),
-                    )
-                    db.session.add(article)
-                    db.session.flush()
-
-                is_article_in_user_articles = False
-                for user_article in user_articles:
-                    if user_article.article_id == article.id:
-                        is_article_in_user_articles = True
-                        break
-
-                if not is_article_in_user_articles:
-                    user_article = UserArticle(user_id=user.id, article_id=article.id)
-                    db.session.add(user_article)
-                    user_article.keywords.extend([k for k in keywords if k.name in keywords_found])
-
-    db.session.commit()
-
-    current_app.logger.info(f"[SYSTEM] - Finished Adding New Articles to User `{user.username}` Based on Keywords -")
     current_app.logger.info("###############################################################################")
 
 
@@ -371,7 +327,7 @@ def delete_user_deleted_articles():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Deleting User Deleted Articles -")
 
-    cutoff_date = datetime.utcnow() - timedelta(days=60)
+    cutoff_date = naive_utcnow() - timedelta(days=60)
 
     UserArticle.query.filter(
         UserArticle.is_deleted == True,
