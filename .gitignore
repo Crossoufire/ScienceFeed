@@ -101,7 +101,7 @@ venv.bak/
 backend/cache/*
 backend/.env
 backend/.flaskenv
-backend/poetry.lock
+backend/uv.lock
 
 
 # FRONTEND STUFF
@@ -112,4 +112,5 @@ frontend/src/routeTree.gen.*
 frontend/.env.*
 
 # -------------------------------------------------------------------------------------
+
 

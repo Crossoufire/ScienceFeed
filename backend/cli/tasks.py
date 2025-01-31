@@ -12,7 +12,7 @@ from sqlalchemy.orm import joinedload, contains_eager
 
 from backend.api.app import db
 from backend.api.email import send_feed_email
-from backend.api.models import RssFeed, User, Article, UserArticle, Keyword, UserRssFeed
+from backend.api.models import RssFeed, User, Article, UserArticle, Keyword, UserRssFeed, user_article_keyword
 from backend.api.utils import find_matching_keywords_regex, clean_html_with_regex, naive_utcnow
 
 
@@ -227,7 +227,7 @@ def fetch_and_filter_articles(target_user_id: int = None):
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Adding New Articles to Users Based on Keywords -")
 
-    filter_ = dict(active=True) if not target_user_id else dict(id=target_user_id)
+    filter_ = {"active": True} if not target_user_id else {"id": target_user_id}
 
     # Get all users with RSS feeds and active keywords
     users = User.query.filter_by(**filter_).options(
@@ -247,42 +247,49 @@ def fetch_and_filter_articles(target_user_id: int = None):
         )
 
     for user in users:
-        # Retrieve all user RSS Feeds IDs and keywords names
+        # Retrieve all user RSS Feeds IDs
         user_rss_feed_ids = [user_feed.rss_feed_id for user_feed in user.rss_feeds]
-        keywords_names = [keyword.name for keyword in user.keywords]
+
+        # Retrieve all active keywords names
+        keywords_names = [keyword.name for keyword in user.keywords if keyword.active]
+        if not keywords_names:
+            continue
 
         for feed_id in user_rss_feed_ids:
-            # Should always be true
-            if feed_id in all_feeds_parsed:
-                rss_feed: RssFeed = all_feeds_parsed[feed_id]["feed_object"]
-                feed_parsed: FeedParserDict = all_feeds_parsed[feed_id]["feed_parsed"]
+            # Should never happen
+            if feed_id not in all_feeds_parsed:
+                current_app.logger.error(f"RSS Feed ID {feed_id} not found in parsed feeds, the fuck?")
+                continue
 
-                # Retrieve all articles from parsed RSS Feed
-                for entry in feed_parsed.entries:
-                    keywords_found = find_matching_keywords_regex(keywords_names, entry)
-                    if not keywords_found:
-                        continue
+            rss_feed: RssFeed = all_feeds_parsed[feed_id]["feed_object"]
+            feed_parsed: FeedParserDict = all_feeds_parsed[feed_id]["feed_parsed"]
 
-                    # Check if article already exists (not super strong check but should be enough)
-                    article = Article.query.filter_by(title=entry.title).first()
-                    if not article:
-                        article = Article(
-                            rss_feed_id=rss_feed.id,
-                            title=entry.title,
-                            link=entry.link,
-                            summary=clean_html_with_regex(entry.summary),
-                        )
-                        db.session.add(article)
-                        db.session.flush()
+            # Retrieve all articles from parsed RSS Feed
+            for entry in feed_parsed.entries:
+                keywords_found = find_matching_keywords_regex(keywords_names, entry)
+                if not keywords_found:
+                    continue
 
-                    # Check if user already has this article
-                    user_article = UserArticle.query.filter_by(user_id=user.id, article_id=article.id).first()
-                    if not user_article:
-                        user_article = UserArticle(user_id=user.id, article_id=article.id)
-                        db.session.add(user_article)
-                        db.session.flush()
+                # Check if article already exists (not super strong check but should be enough)
+                article = Article.query.filter_by(title=entry.title).first()
+                if not article:
+                    article = Article(
+                        rss_feed_id=rss_feed.id,
+                        title=entry.title,
+                        link=entry.link,
+                        summary=clean_html_with_regex(entry.summary),
+                    )
+                    db.session.add(article)
+                    db.session.flush()
 
-                    user_article.keywords.extend([k for k in user.keywords if k.name in keywords_found])
+                # Check if user already has this article
+                user_article = UserArticle.query.filter_by(user_id=user.id, article_id=article.id).first()
+                if not user_article:
+                    user_article = UserArticle(user_id=user.id, article_id=article.id)
+                    db.session.add(user_article)
+                    db.session.flush()
+
+                user_article.keywords.extend([k for k in user.keywords if k.name in keywords_found])
 
         db.session.commit()
 
@@ -329,10 +336,24 @@ def delete_user_deleted_articles():
 
     cutoff_date = naive_utcnow() - timedelta(days=60)
 
+    # All articles that will be deleted
+    user_articles_to_delete = UserArticle.query.filter(
+        UserArticle.is_deleted == True,
+        UserArticle.marked_as_deleted_date <= cutoff_date,
+    ).all()
+
+    # Delete relationships for these user articles
+    if user_articles_to_delete:
+        user_article_ids = [user_article.id for user_article in user_articles_to_delete]
+        db.session.execute(user_article_keyword.delete().where(user_article_keyword.c.user_article_id.in_(user_article_ids)))
+
+    # Delete user articles
     UserArticle.query.filter(
         UserArticle.is_deleted == True,
         UserArticle.marked_as_deleted_date <= cutoff_date,
     ).delete()
+
+    db.session.commit()
 
     current_app.logger.info("[SYSTEM] - Finished Deleting User Deleted Articles -")
     current_app.logger.info("###############################################################################")

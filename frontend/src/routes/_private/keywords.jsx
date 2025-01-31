@@ -44,7 +44,7 @@ function KeywordManagerPage() {
     };
 
     const handleDeleteKeyword = async (keyword) => {
-        if (!confirm(`Are you sure, it will be removed from all articles (${keyword.count})`)) return;
+        if (!confirm(`Are you sure ? This keyword will be removed from (${keyword.count}) articles. All the articles that only have this keyword will also be deleted.`)) return;
 
         deleteKeyword.mutate({ keywordId: keyword.id }, {
             onError: () => toast.error("Failed to delete keyword"),
@@ -55,7 +55,12 @@ function KeywordManagerPage() {
     };
 
     const handleToggleKeyword = async (keyword) => {
-        if (!confirm(`By deactivating this keyword, the associated articles will not be shown in your feed anymore. Do you want to continue?`)) return;
+        if (keyword.active) {
+            if (!confirm(`By deactivating this keyword, the associated articles will not be shown in your feed anymore. Do you want to continue?`)) return;
+        }
+        else {
+            if (!confirm(`By activating this keyword, the associated articles will be shown in your feed. Do you want to continue?`)) return;
+        }
 
         toggleKeyword.mutate({ keywordId: keyword.id, active: !keyword.active }, {
             onError: () => toast.error("Failed to toggle the keyword"),

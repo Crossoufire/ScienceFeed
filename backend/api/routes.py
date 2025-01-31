@@ -361,6 +361,10 @@ def fetch_user_rss_feeds():
     current_user.last_rss_update = naive_utcnow()
     db.session.commit()
 
+    user_keywords = [keyword.name for keyword in current_user.keywords if keyword.active]
+    if not user_keywords:
+        return jsonify(data="At least one active keyword is required to fetch articles"), 200
+
     fetch_and_filter_articles(current_user.id)
 
     return {}, 204

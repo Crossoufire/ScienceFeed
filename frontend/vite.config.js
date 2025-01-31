@@ -21,11 +21,6 @@ export default defineConfig({
         },
     },
     server: {
-        watch: {
-            usePolling: true,
-            interval: 800,
-            binaryInterval: 800,
-        },
         open: true,
         port: 3000,
         proxy: {

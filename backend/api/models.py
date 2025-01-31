@@ -39,7 +39,7 @@ class Token(db.Model):
         self.refresh_expiration = naive_utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
 
     def expire(self, delay: int = None):
-        # Add 5 second delay for simultaneous requests
+        # Add 5-second delay for simultaneous requests
         if delay is None:
             delay = 5 if not current_app.testing else 0
 
@@ -198,11 +198,12 @@ class Keyword(db.Model):
 
     @classmethod
     def delete_keyword(cls, user: User, keyword_id: int):
-        keyword = cls.query.filter_by(user_id=user.id, id=keyword_id).first()
+        keyword = cls.query.filter_by(id=keyword_id, user_id=user.id).first()
         if not keyword:
             return None
 
-        for article in keyword.articles:
+        user_articles = list(keyword.articles)
+        for article in user_articles:
             article.keywords.remove(keyword)
             if not article.keywords:
                 db.session.delete(article)
