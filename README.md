@@ -25,17 +25,16 @@ If you like this work, you can buy me a coffee! &nbsp;
 ## Prerequisites
 
 * Python 3.10+
-* Poetry (https://python-poetry.org/)
-* (optional) WSL2 recommended for Windows to use cron jobs
+* UV (recommanded)
 
 ## Steps
 
-1. Clone this repo and install the requirements using Poetry
+1. Clone this repo and install the requirements using UV
 
 ```
 git clone https://www.github.com/Crossoufire/ScienceFeed.git
 cd ScienceFeed/backend
-poetry install
+uv sync
 ```
 
 3. Set up the `.flaskenv` file
@@ -58,7 +57,7 @@ MAIL_USERNAME=<mail@mail.com>
 MAIL_PASSWORD=<password>
 ```
 
-5. Run the command `poetry run python server.py` inside the `ScienceFeed/backend` folder.
+5. Run the command `uv run python server.py` inside the `ScienceFeed/backend` folder.
    The backend will be served by default at `localhost:5000`.
 
 ---
@@ -69,7 +68,6 @@ MAIL_PASSWORD=<password>
 
 - npm > 9.0
 - Node.js > 19.0
-- (optional) WSL2 recommended for Windows
 
 ## Steps
 
@@ -87,7 +85,6 @@ npm install
 VITE_BASE_API_URL=http://localhost:5000
 VITE_REGISTER_CALLBACK=http://localhost:3000/register_token
 VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset_password
-VITE_OAUTH2_CALLBACK=http://localhost:3000/oauth2/{provider}/callback
 ```
 
 3. Run the command `npm run dev` inside the `ScienceFeed/frontend` folder. The frontend will be served by default at `localhost:3000`.
