@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {simpleMutations} from "@/api/mutations";
+import {useSimpleMutations} from "@/api/mutations";
 import {FormError} from "@/components/app/FormError";
 import {FormButton} from "@/components/app/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -11,7 +11,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const PasswordForm = () => {
     const { setCurrentUser } = useAuth();
-    const { passwordSettings } = simpleMutations();
+    const { passwordSettings } = useSimpleMutations();
     const [errors, setErrors] = useState("");
     const form = useForm({
         defaultValues: {
@@ -28,7 +28,6 @@ export const PasswordForm = () => {
         passwordSettings.mutate({ data }, {
             onError: (error) => setErrors(error.description),
             onSuccess: (data) => {
-                console.log(data);
                 setCurrentUser(data.updated_user);
                 toast.success("Settings successfully updated");
             }

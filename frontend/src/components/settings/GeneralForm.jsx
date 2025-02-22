@@ -4,7 +4,7 @@ import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {Switch} from "@/components/ui/switch";
-import {simpleMutations} from "@/api/mutations";
+import {useSimpleMutations} from "@/api/mutations";
 import {Separator} from "@/components/ui/separator";
 import {FormError} from "@/components/app/FormError";
 import {FormButton} from "@/components/app/FormButton";
@@ -13,7 +13,7 @@ import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, Form
 
 export const GeneralForm = () => {
     const form = useForm();
-    const { generalSettings } = simpleMutations();
+    const { generalSettings } = useSimpleMutations();
     const { currentUser, setCurrentUser } = useAuth();
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -99,8 +99,7 @@ export const GeneralForm = () => {
                             )}
                         />
                     </div>
-                    <Separator className="mt-4"/>
-                    <FormButton className="mt-3" disabled={generalSettings.isPending}>
+                    <FormButton className="mt-6" disabled={generalSettings.isPending}>
                         Update
                     </FormButton>
                 </form>

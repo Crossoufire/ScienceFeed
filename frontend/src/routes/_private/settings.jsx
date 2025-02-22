@@ -1,9 +1,8 @@
-import {useState} from "react";
-import {Sidebar} from "@/components/app/Sidebar";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 import {GeneralForm} from "@/components/settings/GeneralForm";
 import {PasswordForm} from "@/components/settings/PasswordForm";
+import {Separator} from "@/components/ui/separator";
 
 
 // noinspection JSUnusedGlobalSymbols,JSCheckFunctionSignatures
@@ -13,23 +12,25 @@ export const Route = createFileRoute("/_private/settings")({
 
 
 function SettingsPage() {
-    const [selectedTab, handleTabChange] = useState("General");
-
-    const tabConfig = [
-        { sidebarTitle: "General", form: <GeneralForm/> },
-        { sidebarTitle: "Password", form: <PasswordForm/> },
-    ];
-
     return (
         <PageTitle title="Settings" subtitle="Customize Your Profile: Manage Your Preferences and Account Settings">
-            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr] gap-10 mt-6">
-                <Sidebar
-                    items={tabConfig}
-                    selectedTab={selectedTab}
-                    onTabChange={handleTabChange}
-                />
-                {tabConfig.find(tab => tab.sidebarTitle === selectedTab)?.form}
+            <div className="grid grid-cols-2 gap-12 mt-4">
+                <div>
+                    <h3 className="text-lg font-semibold mb-4 bg-secondary py-1.5 px-3 rounded-md">
+                        General Settings
+                        <Separator/>
+                    </h3>
+                    <GeneralForm/>
+                </div>
+                <div>
+                    <h3 className="text-lg font-semibold mb-4 bg-secondary py-1.5 px-3 rounded-md">
+                        Change Password
+                        <Separator/>
+                    </h3>
+                    <PasswordForm/>
+                </div>
             </div>
+
         </PageTitle>
     );
 }

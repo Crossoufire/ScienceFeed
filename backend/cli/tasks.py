@@ -12,8 +12,8 @@ from sqlalchemy.orm import joinedload, contains_eager
 
 from backend.api.app import db
 from backend.api.email import send_feed_email
-from backend.api.models import RssFeed, User, Article, UserArticle, Keyword, UserRssFeed, user_article_keyword
 from backend.api.utils import find_matching_keywords_regex, clean_html_with_regex, naive_utcnow
+from backend.api.models import RssFeed, User, Article, UserArticle, Keyword, UserRssFeed, user_article_keyword
 
 
 def seed_database():

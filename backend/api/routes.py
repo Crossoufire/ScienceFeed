@@ -4,9 +4,9 @@ from sqlalchemy import or_, and_
 from flask import Blueprint, jsonify, request, abort, current_app
 
 from backend.api.app import db
+from backend.api.utils import naive_utcnow
 from backend.api.handlers import current_user, token_auth
 from backend.api.models import Keyword, RssFeed, UserRssFeed, UserArticle, User, Article
-from backend.api.utils import naive_utcnow
 
 
 main = Blueprint("main_api", __name__)
@@ -63,30 +63,26 @@ def rss_feed_search():
     return jsonify(data=data), 200
 
 
-@main.route("/dashboard", methods=["GET"])
+@main.route("/dashboard/articles", methods=["GET"])
 @token_auth.login_required
-def dashboard():
-    """ User's dashboard page """
+def dashboard_articles():
+    """ User's articles dashboard page """
 
     page = int(request.args.get("page", 1))
     search = request.args.get("search", None)
-    archived = request.args.get("show_archived", "false")
     keywords_ids = request.args.get("keywords_ids").split(",") if request.args.get("keywords_ids") else []
-
-    is_archived = False if archived != "true" else True
 
     base_query = UserArticle.query.filter(
         UserArticle.user_id == current_user.id,
+        UserArticle.is_archived == False,
         UserArticle.is_deleted == False,
-        UserArticle.is_archived == is_archived,
-        True if archived != "true" else UserArticle.is_read == True,
     )
 
     if search:
-        base_query = base_query.filter(
-            or_(UserArticle.article.has(Article.title.ilike(f"%{search}%")),
-                UserArticle.article.has(Article.summary.ilike(f"%{search}%")))
-        )
+        base_query = base_query.filter(or_(
+            UserArticle.article.has(Article.title.ilike(f"%{search}%")),
+            UserArticle.article.has(Article.summary.ilike(f"%{search}%"))
+        ))
 
     if keywords_ids:
         base_query = base_query.filter(
@@ -97,11 +93,11 @@ def dashboard():
             ))
         )
     else:
-        base_query = base_query.filter(UserArticle.keywords.any(Keyword.active == True and Keyword.user_id == current_user.id))
+        base_query = base_query.filter(
+            UserArticle.keywords.any(Keyword.active == True and Keyword.user_id == current_user.id)
+        )
 
-    results = base_query.order_by(
-        UserArticle.added_date.desc() if archived != "true" else UserArticle.marked_as_archived_date.desc()
-    ).paginate(page=page, per_page=20, error_out=True)
+    results = base_query.order_by(UserArticle.added_date.desc()).paginate(page=page, per_page=20, error_out=True)
 
     keywords = (
         Keyword.query.join(UserArticle.keywords).filter(
@@ -117,6 +113,88 @@ def dashboard():
         per_page=results.per_page,
         articles=[article.to_dict() for article in results.items],
         keywords=[keyword.to_dict(simple=True) for keyword in keywords],
+    )
+
+    return jsonify(data=data), 200
+
+
+@main.route("/dashboard/archived", methods=["GET"])
+@token_auth.login_required
+def dashboard_archived():
+    """ User's archived dashboard page """
+
+    page = int(request.args.get("page", 1))
+    search = request.args.get("search", None)
+
+    base_query = UserArticle.query.filter(UserArticle.user_id == current_user.id, UserArticle.is_archived == True)
+    if search:
+        base_query = base_query.filter(
+            or_(UserArticle.article.has(Article.title.ilike(f"%{search}%")),
+                UserArticle.article.has(Article.summary.ilike(f"%{search}%")))
+        )
+
+    results = base_query.order_by(UserArticle.marked_as_archived_date.desc()).paginate(page=page, per_page=20, error_out=True)
+
+    data = dict(
+        page=results.page,
+        pages=results.pages,
+        total=results.total,
+        per_page=results.per_page,
+        articles=[article.to_dict() for article in results.items],
+    )
+
+    return jsonify(data=data), 200
+
+
+@main.route("/dashboard/deleted", methods=["GET"])
+@token_auth.login_required
+def dashboard_deleted():
+    """ User's deleted dashboard page """
+
+    page = int(request.args.get("page", 1))
+    search = request.args.get("search", None)
+
+    base_query = UserArticle.query.filter(UserArticle.user_id == current_user.id, UserArticle.is_deleted == True)
+    if search:
+        base_query = base_query.filter(
+            or_(UserArticle.article.has(Article.title.ilike(f"%{search}%")),
+                UserArticle.article.has(Article.summary.ilike(f"%{search}%")))
+        )
+
+    results = base_query.order_by(UserArticle.marked_as_deleted_date.desc()).paginate(page=page, per_page=20, error_out=True)
+
+    data = dict(
+        page=results.page,
+        pages=results.pages,
+        total=results.total,
+        per_page=results.per_page,
+        articles=[article.to_dict() for article in results.items],
+    )
+
+    return jsonify(data=data), 200
+
+
+@main.route("/dashboard/quantities", methods=["GET"])
+@token_auth.login_required
+def dashboard_quantities():
+    """ Get the quantities of articles for the current user """
+
+    result = (
+        db.session.query(
+            db.session.query(UserArticle).filter(
+                UserArticle.user_id == current_user.id,
+                UserArticle.is_archived == False,
+                UserArticle.is_deleted == False,
+            ).count(),
+            db.session.query(UserArticle).filter(UserArticle.user_id == current_user.id, UserArticle.is_deleted == True).count(),
+            db.session.query(UserArticle).filter(UserArticle.user_id == current_user.id, UserArticle.is_archived == True).count(),
+        ).one()
+    )
+
+    data = dict(
+        articles=result[0] or 0,
+        deleted_articles=result[1] or 0,
+        archived_articles=result[2] or 0,
     )
 
     return jsonify(data=data), 200

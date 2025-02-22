@@ -1,31 +1,19 @@
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {Checkbox} from "@/components/ui/checkbox";
+import {formatDateTime} from "@/utils/functions";
 import {Archive, Info, Trash2} from "lucide-react";
-import {cn, formatDateTime} from "@/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/card";
 
 
-export const ArticleCard = ({ article, isEditing, selected, onSelectionClick, onArchiveClick, onDeleteClick }) => {
-    // const isRead = article.is_read ? "bg-card" : "bg-cyan-950";
-
+export const ArchivedArticleCard = ({ article, onArchiveClick, onDeleteClick }) => {
     return (
-        <Card
-            onClick={() => onSelectionClick(article.id)}
-            className={cn(`relative bg-cyan-950 max-sm:w-full flex flex-col h-[230px]`, isEditing && "cursor-pointer")}
-        >
+        <Card className="relative bg-cyan-950 max-sm:w-full flex flex-col h-[230px]">
             <div className="flex items-center gap-2">
-                {isEditing && (
-                    <div className="ml-3">
-                        <Checkbox checked={selected.includes(article.id)}/>
-                    </div>
-                )}
                 <div className="w-full">
                     <CardHeader>
                         <CardTitle>
-                            <a target="_blank" rel="noopener noreferrer" href={isEditing ? null : article.link}
-                               className={cn("line-clamp-2", !isEditing && "hover:underline")}>
+                            <a target="_blank" rel="noopener noreferrer" href={article.link} className="line-clamp-2 hover:underline">
                                 {article.title}
                             </a>
                         </CardTitle>
@@ -51,17 +39,10 @@ export const ArticleCard = ({ article, isEditing, selected, onSelectionClick, on
                     ))}
                 </div>
                 <div className="text-sm flex items-center flex-wrap gap-3">
-                    {/*<Button size="sm" disabled={isEditing} onClick={() => onReadClick([article.id], !article.is_read)}>*/}
-                    {/*    {article.is_read ?*/}
-                    {/*        <CheckCircle className="h-4 w-4 text-green-700"/>*/}
-                    {/*        :*/}
-                    {/*        <><Book className="h-4 w-4"/> Mark as Read</>*/}
-                    {/*    }*/}
-                    {/*</Button>*/}
-                    <Button variant="warning" size="sm" onClick={() => onArchiveClick([article.id])} disabled={isEditing} title="Archive">
-                        <Archive className="h-4 w-4"/>
+                    <Button variant="warning" size="sm" onClick={() => onArchiveClick([article.id])} title="Un-Archive">
+                        <Archive className="h-4 w-4"/> Un-Archive
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => onDeleteClick([article.id])} disabled={isEditing} title="Delete">
+                    <Button variant="destructive" size="sm" onClick={() => onDeleteClick([article.id])} title="Delete">
                         <Trash2 className="h-4 w-4"/>
                     </Button>
                     <Popover>
@@ -70,7 +51,7 @@ export const ArticleCard = ({ article, isEditing, selected, onSelectionClick, on
                         </PopoverTrigger>
                         <PopoverContent className="w-[250px]" align="end">
                             <div>Added: {formatDateTime(article.added_date, { includeTime: true })}</div>
-                            {/*<div>Read: {formatDateTime(article.read_date, { includeTime: true })}</div>*/}
+                            <div>Archived: {formatDateTime(article.archive_date, { includeTime: true })}</div>
                         </PopoverContent>
                     </Popover>
                 </div>

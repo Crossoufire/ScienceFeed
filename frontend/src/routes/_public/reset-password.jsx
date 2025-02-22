@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {simpleMutations} from "@/api/mutations.js";
+import {useSimpleMutations} from "@/api/mutations";
 import {FormError} from "@/components/app/FormError";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
@@ -20,7 +20,7 @@ function ResetPasswordPage() {
     const form = useForm();
     const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const { resetPassword } = simpleMutations();
+    const { resetPassword } = useSimpleMutations();
     const [errorMessage, setErrorMessage] = useState("");
 
     const onSubmit = (data) => {

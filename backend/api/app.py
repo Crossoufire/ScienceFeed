@@ -1,24 +1,25 @@
-import logging
 import os
-from logging.handlers import SMTPHandler, RotatingFileHandler
+import sys
+import logging
 from typing import Type
+from logging.handlers import SMTPHandler, RotatingFileHandler
 
 from flask import Flask
 from flask_cors import CORS
 from flask_mail import Mail
-from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
 
-from backend.config import Config, get_config
+from backend.config import Config, get_config, default_db_uri, basedir
 
 
 # Load globally accessible plugins
 mail = Mail()
-db = SQLAlchemy()
-migrate = Migrate()
 cors = CORS()
+db = SQLAlchemy()
 ma = Marshmallow()
+migrate = Migrate()
 
 
 def import_blueprints(app: Flask):
@@ -32,16 +33,28 @@ def import_blueprints(app: Flask):
         app.register_blueprint(blueprint, url_prefix="/api")
 
 
-def create_app_logger(app: Flask):
-    log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "ScienceFeed.log")
+def create_file_handler(app: Flask):
+    """ Create a RotatingFileHandler """
+
+    import socket
+    import platform
+
+    log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "science-feed.log")
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
     handler = RotatingFileHandler(log_file_path, maxBytes=3000000, backupCount=15)
-    handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s"))
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
     handler.setLevel(logging.INFO)
 
+    env = os.getenv("FLASK_ENV", "production").lower() or "production"
+
     app.logger.addHandler(handler)
-    app.logger.info("ScienceFeed is starting up...")
+    app.logger.setLevel(logging.INFO)
+
+    app.logger.info(
+        f"ScienceFeed is starting up... "
+        f"[ENV: {env}, DEBUG: {app.debug}, Python: {platform.python_version()}, Host: {socket.gethostname()}]"
+    )
 
 
 def create_mail_handler(app: Flask):
@@ -60,36 +73,66 @@ def create_mail_handler(app: Flask):
     app.logger.addHandler(mail_handler)
 
 
+def setup_app_and_db(app: Flask):
+    """
+    On app starts:
+    - Create `instance` folder if default db location used
+    - Set up the pragmas for SQLite
+    - Create all the tables
+    - Seed the database with RSS Feeds if empty
+    """
+
+    from sqlalchemy import text
+    from backend.api.models import RssFeed
+    from backend.cli.tasks import seed_database
+
+    # Ensure `instance` folder exists if default db location used
+    if app.config["SQLALCHEMY_DATABASE_URI"] == default_db_uri:
+        instance_folder = os.path.join(basedir, "instance")
+        os.makedirs(instance_folder, exist_ok=True)
+
+    # Configure SQLite database PRAGMA
+    engine = db.session.get_bind()
+    with engine.connect() as conn:
+        pragmas_values = [app.config["SQLITE_JOURNAL_MODE"], app.config["SQLITE_SYNCHRONOUS"]]
+        pragmas_to_check = ["journal_mode", "synchronous"]
+        for pn, pv in zip(pragmas_to_check, pragmas_values):
+            conn.execute(text(f"PRAGMA {pn}={pv}"))
+            value = conn.execute(text(f"PRAGMA {pn}")).scalar()
+            if app.config["CREATE_FILE_LOGGER"]:
+                app.logger.info(f"SQLITE PRAGMA {pn.upper()}: {value.upper() if isinstance(value, str) else value}")
+
+    # Create all tables
+    db.create_all()
+
+    # Seed database with RSS Feeds if empty
+    if RssFeed.query.count() == 0:
+        seed_database()
+
+
 def create_app(config_class: Type[Config] = None) -> Flask:
     app = Flask(__name__, static_url_path="/api/static")
 
-    if config_class is None:
-        config_class = get_config()
-
-    app.config.from_object(config_class)
     app.url_map.strict_slashes = False
+    app.config.from_object(config_class or get_config())
 
-    mail.init_app(app)
     db.init_app(app)
     ma.init_app(app)
+    mail.init_app(app)
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
     with app.app_context():
-        from backend.cli.commands import create_cli_commands
-        from backend.api.models import RssFeed
-        from backend.cli.tasks import seed_database
+        # No logs in terminal when using CLI
+        if app.config["CREATE_FILE_LOGGER"] and not sys.stdin.isatty():
+            create_file_handler(app)
 
-        import_blueprints(app)
-        create_cli_commands()
-
-        db.create_all()
-
-        if RssFeed.query.count() == 0:
-            seed_database()
-
-        if not app.debug and not app.testing:
-            create_app_logger(app)
+        if app.config["CREATE_MAIL_HANDLER"]:
             create_mail_handler(app)
+
+        from backend.cli.commands import register_cli_commands
+        register_cli_commands()
+        setup_app_and_db(app)
+        import_blueprints(app)
 
         return app

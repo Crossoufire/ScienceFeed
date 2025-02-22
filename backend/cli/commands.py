@@ -7,7 +7,7 @@ from backend.api.models import UserArticle, user_article_keyword
 from backend.cli.tasks import seed_database, add_new_user, fetch_and_filter_articles, send_feed_emails, delete_user_deleted_articles
 
 
-def create_cli_commands():
+def register_cli_commands():
     """ Register commands to the Flask CLI """
 
     @current_app.cli.command()

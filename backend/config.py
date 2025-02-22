@@ -5,60 +5,93 @@ from dotenv import load_dotenv
 
 load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))
+default_db_uri = f"sqlite:///{os.path.join(basedir, 'instance', 'site.db')}"
 
 
 def as_bool(value: str) -> bool:
     if value:
-        return value.lower() in ["true", "yes", "on", "1"]
+        return value.lower() in ["true", "yes", "on", "1", "t", "y"]
     return False
 
 
 class Config:
+    # Flask options
     DEBUG = False
     TESTING = False
 
-    # Database option
-    SQLALCHEMY_DATABASE_URI = (
-            os.environ.get("SCIENCEFEED_DATABASE_URI") or
-            f"sqlite:///{os.path.join(basedir + '/instance', 'site.db')}"
-    )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Handlers options
+    CREATE_FILE_LOGGER = True
+    CREATE_MAIL_HANDLER = True
 
-    # RSS Fetcher Options
-    DELTA_MINUTES = int(os.environ.get("DELTA_MINUTES") or "5")
+    # SQLite options
+    SQLITE_JOURNAL_MODE = "WAL"
+    SQLITE_SYNCHRONOUS = "NORMAL"
+
+    # Database options
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
+    SQLALCHEMY_DATABASE_URI = (os.environ.get("SCIENCEFEED_DATABASE_URI") or default_db_uri)
 
     # Security options
+    MAX_CONTENT_LENGTH = 8 * 1024 * 1024
     SECRET_KEY = os.environ.get("SECRET_KEY", "top-secret!")
-    ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES") or "15")
     REFRESH_TOKEN_DAYS = int(os.environ.get("REFRESH_TOKEN_DAYS") or "7")
     RESET_TOKEN_MINUTES = int(os.environ.get("RESET_TOKEN_MINUTES") or "15")
-    MAX_CONTENT_LENGTH = 8 * 1024 * 1024
+    ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES") or "15")
 
-    # Email options
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT") or "25")
-    MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS"))
-    MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL"))
+    # Admin e-mail options
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT") or "25")
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
+    MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS") or "True")
+    MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL") or "False")
+
+    # RSS Fetcher Options
+    DELTA_MINUTES = int(os.environ.get("DELTA_MINUTES") or "20")
 
 
 class DevConfig(Config):
+    # Flask options
     DEBUG = True
+    TESTING = False
+
+    # Handlers options
+    CREATE_FILE_LOGGER = False
+    CREATE_MAIL_HANDLER = False
+
+    # SQLite options
+    SQLITE_JOURNAL_MODE = "DELETE"
+    SQLITE_SYNCHRONOUS = "FULL"
+
+    # Security options
+    ACCESS_TOKEN_MINUTES = int("15")
+
+    # RSS Fetcher Options
     DELTA_MINUTES = int("0")
-    ACCESS_TOKEN_MINUTES = int("99999999")
 
 
 class TestConfig(Config):
+    # Flask options
+    DEBUG = False
     TESTING = True
     SERVER_NAME = "localhost:5000"
+
+    # Handlers options
+    CREATE_FILE_LOGGER = False
+    CREATE_MAIL_HANDLER = False
+
+    # Database options
     SQLALCHEMY_DATABASE_URI = "sqlite://"
 
 
 def get_config():
-    env = os.getenv("FLASK_ENV", "production")
+    """ Get the config class based on the FLASK_ENV environment variable or default to Config (production) """
+
+    env = os.getenv("FLASK_ENV", "production").lower()
     if env == "development":
         return DevConfig
     elif env == "testing":
         return TestConfig
+
     return Config

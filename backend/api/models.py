@@ -118,7 +118,7 @@ class User(db.Model):
         return token
 
     @staticmethod
-    def verify_access_token(access_token: str) -> User:
+    def verify_access_token(access_token: str) -> Optional[User]:
         # noinspection PyTypeChecker
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
         if token:
@@ -329,6 +329,7 @@ class UserArticle(db.Model):
             added_date=self.added_date,
             is_archived=self.is_archived,
             read_date=self.marked_as_read_date,
+            delete_date=self.marked_as_deleted_date,
             archive_date=self.marked_as_archived_date,
             keywords=[keyword.name for keyword in self.keywords],
             **self.article.to_dict(),

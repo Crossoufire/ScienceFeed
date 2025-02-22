@@ -4,14 +4,16 @@ import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {queryClient} from "@/api/queryClient";
 import {Button} from "@/components/ui/button";
-import {simpleMutations} from "@/api/mutations";
+import {useIsMobile} from "@/hooks/use-mobile";
+import {useSimpleMutations} from "@/api/mutations";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
+import {MutedText} from "@/components/app/MutedText";
 import {createFileRoute} from "@tanstack/react-router";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
-import {CheckCircle, Loader2, Plus, Search, X} from "lucide-react";
+import {CheckCircle, Loader2, Plus, Search, Trash} from "lucide-react";
 import {rssManagerOptions, rssSearchOptions} from "@/api/queryOptions";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -30,11 +32,10 @@ function RssManager() {
 
     return (
         <PageTitle title="RSS Feeds Manager" subtitle="Search and Manage your RSS feeds.">
-            <div className="flex items-center justify-between mt-6">
+            <div className="flex flex-wrap items-center justify-between mt-4 gap-3">
                 <SearchRSSFeeds userRssFeeds={userRssFeeds}/>
                 <CreateNewRSSFeed/>
             </div>
-
             <UserRssFeeds userRssFeeds={userRssFeeds}/>
         </PageTitle>
     );
@@ -43,7 +44,7 @@ function RssManager() {
 
 function SearchRSSFeeds() {
     const commandRef = useRef(null);
-    const { addRssFeeds } = simpleMutations();
+    const { addRssFeeds } = useSimpleMutations();
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [debouncedSearch] = useDebounce(search, 350);
@@ -119,7 +120,7 @@ function SearchRSSFeeds() {
 
 
 function CreateNewRSSFeed() {
-    const { createRssFeed } = simpleMutations();
+    const { createRssFeed } = useSimpleMutations();
     const [open, setOpen] = useState(false);
     const form = useForm({ defaultValues: { url: "", journal: "", publisher: "" } });
 
@@ -223,7 +224,8 @@ function SearchComponent({ rssFeed, handleAddRssFeed }) {
 
 
 function UserRssFeeds({ userRssFeeds }) {
-    const { removeRssFeed } = simpleMutations();
+    const isMobile = useIsMobile();
+    const { removeRssFeed } = useSimpleMutations();
 
     const handleRemoveRssFeed = (rssFeed) => {
         removeRssFeed.mutate({ rssIds: [rssFeed.id] }, {
@@ -235,22 +237,45 @@ function UserRssFeeds({ userRssFeeds }) {
         });
     };
 
+    const sortedRssFeeds = [...userRssFeeds].sort((a, b) => {
+        const publisherComp = a.publisher.localeCompare(b.publisher);
+        if (publisherComp !== 0) {
+            return publisherComp;
+        }
+        return a.journal.localeCompare(b.journal);
+    });
+
+    const groupedRssFeeds = sortedRssFeeds.reduce((acc, feed) => {
+        const publisher = feed.publisher;
+        if (!acc[publisher]) {
+            acc[publisher] = [];
+        }
+        acc[publisher].push(feed);
+        return acc;
+    }, {});
+
     return (
-        <div className="mt-5">
-            <h3 className="text-lg font-semibold mb-4">My RSS Feeds</h3>
-            <div className="grid grid-cols-2 gap-3">
-                {userRssFeeds.map(feed =>
-                    <div key={feed.id} className="flex items-center justify-between bg-secondary py-2 px-4 rounded-md">
-                        <div>
-                            <p><strong>Publisher:</strong> {feed.publisher}</p>
-                            <p><strong>Journal:</strong> {feed.journal}</p>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveRssFeed(feed)} title="Remove RSS Feed">
-                            <X className="h-4 w-4"/>
-                        </Button>
+        <div>
+            {Object.entries(groupedRssFeeds).map(([publisher, feeds]) => (
+                <div key={publisher}>
+                    <h3 className="text-lg font-semibold mb-2 mt-4">
+                        {publisher}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+                        {feeds.map((feed) => (
+                            <div key={feed.id} className="flex items-center justify-between bg-secondary py-2 px-4 rounded-md">
+                                <div>
+                                    <p className="font-medium">{feed.journal}</p>
+                                    {!isMobile && <MutedText>{feed.url}</MutedText>}
+                                </div>
+                                <Button size="icon" variant="ghost" title="Remove RSS Feed" onClick={() => handleRemoveRssFeed(feed)}>
+                                    <Trash className="h-4 w-4"/>
+                                </Button>
+                            </div>
+                        ))}
                     </div>
-                )}
-            </div>
+                </div>
+            ))}
         </div>
     );
 }

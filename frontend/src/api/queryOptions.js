@@ -10,9 +10,21 @@ export const authOptions = () => queryOptions({
 });
 
 
-export const dashboardOptions = (search) => queryOptions({
-    queryKey: ["dashboard", search],
-    queryFn: () => fetcher({ url: "/dashboard", queryOrData: search }),
+export const dashboardArticlesOptions = (search) => queryOptions({
+    queryKey: ["dashboard-articles", search],
+    queryFn: () => fetcher({ url: "/dashboard/articles", queryOrData: search }),
+});
+
+
+export const dashboardArchivedOptions = (search) => queryOptions({
+    queryKey: ["dashboard-archived", search],
+    queryFn: () => fetcher({ url: "/dashboard/archived", queryOrData: search }),
+});
+
+
+export const dashboardDeletedOptions = (search) => queryOptions({
+    queryKey: ["dashboard-deleted", search],
+    queryFn: () => fetcher({ url: "/dashboard/deleted", queryOrData: search }),
 });
 
 

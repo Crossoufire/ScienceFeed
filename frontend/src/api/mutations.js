@@ -1,3 +1,4 @@
+import {toast} from "sonner";
 import {queryClient} from "@/api/queryClient";
 import {useMutation} from "@tanstack/react-query";
 import {fetcher, postFetcher} from "@/api/fetcher";
@@ -56,7 +57,7 @@ const mutationFunctionsMap = {
 };
 
 
-export const simpleMutations = () => {
+export const useSimpleMutations = () => {
     const resetPassword = useMutation({ mutationFn: mutationFunctionsMap.resetPassword });
     const registerToken = useMutation({ mutationFn: mutationFunctionsMap.registerToken });
     const forgotPassword = useMutation({ mutationFn: mutationFunctionsMap.forgotPassword });
@@ -81,23 +82,70 @@ export const simpleMutations = () => {
 
 export const useArticlesRead = (filters) => useMutation({
     mutationFn: mutationFunctionsMap.toggleArticlesRead,
-    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
+    onMutate: async (variables) => {
+        await queryClient.cancelQueries({ queryKey: ["dashboard-articles", filters] });
+        const previousData = queryClient.getQueryData(["dashboard-articles", filters]);
+        queryClient.setQueryData(["dashboard-articles", filters], (oldData) => ({
+            ...oldData,
+            articles: oldData.articles.map(article => ({
+                ...article,
+                is_read: variables.articleIds.includes(article.id) ? variables.readValue : article.is_read,
+                read_date: variables.articleIds.includes(article.id) ?
+                    variables.readValue ? new Date() : "--"
+                    :
+                    article.read_date,
+            })),
+        }));
+        return { previousData };
+    },
+    onError: (error, variables, context) => {
+        queryClient.setQueryData(["dashboard-articles", filters], context.previousData);
+    },
 });
 
 
-export const useArchiveArticles = (filters) => useMutation({
+export const useArchiveArticles = (filters, queryKeyString) => useMutation({
     mutationFn: mutationFunctionsMap.archiveArticles,
-    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
+    onMutate: async (variables) => {
+        await queryClient.cancelQueries({ queryKey: [queryKeyString, filters] });
+        const previousData = queryClient.getQueryData([queryKeyString, filters]);
+        queryClient.setQueryData([queryKeyString, filters], (oldData) => ({
+            ...oldData,
+            total: oldData.total - variables.articleIds.length,
+            articles: oldData.articles.filter(article => !variables.articleIds.includes(article.id)),
+        }));
+        return { previousData };
+    },
+    onError: (error, variables, context) => {
+        queryClient.setQueryData([queryKeyString, filters], context.previousData);
+    },
+});
+
+
+export const useDeleteArticles = (filters, queryKeyString) => useMutation({
+    mutationFn: mutationFunctionsMap.deleteArticles,
+    onMutate: async (variables) => {
+        await queryClient.cancelQueries({ queryKey: [queryKeyString, filters] });
+        const previousData = queryClient.getQueryData([queryKeyString, filters]);
+        queryClient.setQueryData([queryKeyString, filters], (oldData) => ({
+            ...oldData,
+            total: oldData.total - variables.articleIds.length,
+            articles: oldData.articles.filter(article => !variables.articleIds.includes(article.id)),
+        }));
+        return { previousData };
+    },
+    onError: (error, variables, context) => {
+        queryClient.setQueryData([queryKeyString, filters], context.previousData);
+    },
 });
 
 
 export const useRssFetcher = (filters) => useMutation({
     mutationFn: mutationFunctionsMap.rssFetcher,
-    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
-});
-
-
-export const useDeleteArticles = (filters) => useMutation({
-    mutationFn: mutationFunctionsMap.deleteArticles,
-    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ["dashboard", filters] }),
+    onError: () => toast.error("An error occurred while running the RSS Fetcher"),
+    onSuccess: async (data) => {
+        await queryClient.invalidateQueries({ queryKey: ["dashboard-articles", filters] });
+        if (data) return toast.warning(data);
+        toast.success("RSS Fetcher successfully finished");
+    },
 });

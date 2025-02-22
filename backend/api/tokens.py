@@ -10,8 +10,8 @@ from backend.api.schemas import *
 from backend.api.models import Token
 from backend.api.decorators import body
 from backend.api.email import send_email
-from backend.api.handlers import basic_auth, token_auth
 from backend.api.utils import naive_utcnow
+from backend.api.handlers import basic_auth, token_auth
 
 
 tokens = Blueprint("api_tokens", __name__)
@@ -75,7 +75,7 @@ def new_token():
     db.session.add(token)
     Token.clean()
     db.session.commit()
-    
+
     response = token_response(token)
     response[0]["data"] = current_user.to_dict()
 

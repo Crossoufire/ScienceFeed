@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {simpleMutations} from "@/api/mutations";
+import {useSimpleMutations} from "@/api/mutations";
 import {PageTitle} from "@/components/app/PageTitle";
 import {FormError} from "@/components/app/FormError";
 import {FormButton} from "@/components/app/FormButton";
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_public/forgot-password")({
 
 function ForgotPasswordPage() {
     const navigate = useNavigate();
-    const { forgotPassword } = simpleMutations();
+    const { forgotPassword } = useSimpleMutations();
     const form = useForm({ defaultValues: { email: "" } });
     const [errorMessage, setErrorMessage] = useState("");
 

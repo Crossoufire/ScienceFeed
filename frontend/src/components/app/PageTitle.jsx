@@ -12,7 +12,7 @@ export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }) => 
             {onlyHelmet ?
                 children
                 :
-                <div className="mt-6 mb-5 flex flex-col mx-auto">
+                <div className="mt-2 mb-5 flex flex-col mx-auto">
                     <div className="text-2xl font-medium">{title}</div>
                     <MutedText className="text-muted-foreground not-italic">{subtitle}</MutedText>
                     <Separator/>

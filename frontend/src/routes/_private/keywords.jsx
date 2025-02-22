@@ -1,15 +1,16 @@
 import {toast} from "sonner";
 import {useState} from "react";
+import {cn} from "@/utils/functions";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {queryClient} from "@/api/queryClient";
-import {simpleMutations} from "@/api/mutations";
+import {useSimpleMutations} from "@/api/mutations";
 import {keywordsOptions} from "@/api/queryOptions";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PauseCircle, PlayCircle, Plus, Trash2} from "lucide-react";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -23,7 +24,7 @@ function KeywordManagerPage() {
     const keywords = useSuspenseQuery(keywordsOptions()).data;
     const [newKeyword, setNewKeyword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const { addKeyword, deleteKeyword, toggleKeyword } = simpleMutations();
+    const { addKeyword, deleteKeyword, toggleKeyword } = useSimpleMutations();
 
     const handleAddNewKeyword = () => {
         if (newKeyword.trim() === "") {
@@ -56,10 +57,10 @@ function KeywordManagerPage() {
 
     const handleToggleKeyword = async (keyword) => {
         if (keyword.active) {
-            if (!confirm(`By deactivating this keyword, the associated articles will not be shown in your feed anymore. Do you want to continue?`)) return;
+            if (!confirm(`By deactivating this keyword, the associated articles will not be shown in your dashboard anymore. Do you want to continue?`)) return;
         }
         else {
-            if (!confirm(`By activating this keyword, the associated articles will be shown in your feed. Do you want to continue?`)) return;
+            if (!confirm(`By activating this keyword, the associated articles will be shown in your dashboard. Do you want to continue?`)) return;
         }
 
         toggleKeyword.mutate({ keywordId: keyword.id, active: !keyword.active }, {
@@ -69,9 +70,9 @@ function KeywordManagerPage() {
     };
 
     return (
-        <PageTitle title="Keyword Manager" subtitle="Manage your keywords.">
-            <div className="mt-6">
-                <div className="flex items-center gap-3 max-sm:w-full w-[350px]">
+        <PageTitle title="Keyword Manager" subtitle="Manage your RSS keywords.">
+            <div className="mt-4">
+                <div className="flex items-center gap-3 max-sm:w-full w-[400px]">
                     <Input
                         value={newKeyword}
                         placeholder="Enter a new keyword"
@@ -81,12 +82,12 @@ function KeywordManagerPage() {
                         }}
                     />
                     <Button size="sm" onClick={handleAddNewKeyword} disabled={addKeyword.isPending}>
-                        <Plus className="mr-2 h-4 w-4"/> Add Keyword
+                        <Plus className="h-4 w-4"/> Add Keyword
                     </Button>
                 </div>
-                {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+                {errorMessage && <p className="text-red-500 text-sm mt-1 ml-0.5">{errorMessage}</p>}
             </div>
-            <Table className="mt-8">
+            <Table className="mt-6">
                 <TableHeader>
                     <TableRow>
                         <TableHead>Keyword</TableHead>
@@ -94,14 +95,14 @@ function KeywordManagerPage() {
                         <TableHead>Read</TableHead>
                         <TableHead>Archived</TableHead>
                         <TableHead>Deleted</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="w-[120px]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {keywords.map(keyword =>
                         <TableRow key={keyword.id} className="text-base">
                             <TableCell>
-                                <div className={keyword.active ? "text-green-500" : "text-amber-500"}>
+                                <div className={cn("font-semibold", keyword.active ? "text-green-500" : "text-amber-500")}>
                                     {keyword.name}
                                 </div>
                             </TableCell>
