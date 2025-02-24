@@ -1,8 +1,8 @@
 # Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-# Install project into `/app`
-WORKDIR /app
+# Install project into `/app/backend`
+WORKDIR /app/backend
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
@@ -17,17 +17,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Add rest of project source code and install it
-ADD . /app
+ADD . /app/backend
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
-# Place executables in env
-ENV PATH="/app/.venv/bin:$PATH"
+# Place executables in env and add project to PYTHONPATH
+ENV PATH="/app/backend/.venv/bin:$PATH"
+ENV PYTHONPATH="$PYTHONPATH:/app"
 
 # Expose Flask app port
 EXPOSE 5000
 
-# Set environment variables
-ENV FLASK_APP=server.py
-ENV FLASK_ENV=production
-
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "-w", "1", "backend.server:app", "--preload"]
+CMD ["uv", "run", "gunicorn", "-b", "0.0.0.0:5000", "-w", "1", "server:app", "--preload"]

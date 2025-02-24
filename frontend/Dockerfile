@@ -1,14 +1,17 @@
 # Use Node.js runtime as parent image
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 # Install project into `/app`
 WORKDIR /app
 
-# Copy frontend code into container
-COPY . .
+# Copy package.json into container
+COPY ./frontend/package*.json ./
 
 # Install frontend dependencies
 RUN npm install
+
+# Copy source code into container
+COPY ./frontend .
 
 # Build React application for production
 RUN npm run build
@@ -19,7 +22,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration file
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
