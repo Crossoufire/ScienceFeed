@@ -42,23 +42,24 @@ def register_user(data):
         email=data["email"],
         password=data["password"],
         registered_on=naive_utcnow(),
-        active=False,
+        active=True if not current_app.config["SEND_EMAIL_TO_ACTIVATE_USER"] else False,
     )
     db.session.add(new_user)
     db.session.commit()
 
-    try:
-        send_email(
-            to=new_user.email,
-            username=new_user.username,
-            subject="Register account",
-            template="register",
-            callback=data["callback"],
-            token=new_user.generate_jwt_token(),
-        )
-    except Exception as e:
-        current_app.logger.error(f"ERROR sending an email to account [{new_user.id}]: {e}")
-        return abort(400, description="An error occurred while sending your register email. Please try again later")
+    if current_app.config["SEND_EMAIL_TO_ACTIVATE_USER"]:
+        try:
+            send_email(
+                to=new_user.email,
+                template="register",
+                username=new_user.username,
+                subject="Register account",
+                callback=data["callback"],
+                token=new_user.generate_jwt_token(),
+            )
+        except Exception as e:
+            current_app.logger.error(f"ERROR sending an email to account [{new_user.id}]: {e}")
+            return abort(400, description="An error occurred while sending your register email. Please try again later")
 
     return {}, 204
 
@@ -133,6 +134,9 @@ def reset_password_token(data):
         return abort(400, description="This email is invalid")
     if not user.active:
         return abort(400, description="This account is not activated. Please check your emails.")
+
+    if not current_app.config["SEND_EMAIL_TO_ACTIVATE_USER"]:
+        return abort(500, description="The mail server is not configured to send emails. Please check your configuration.")
 
     try:
         send_email(

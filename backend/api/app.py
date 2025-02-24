@@ -109,6 +109,11 @@ def setup_app_and_db(app: Flask):
     if RssFeed.query.count() == 0:
         seed_database()
 
+    # Fetch and filter articles for all users
+    if app.config["FETCH_ON_START"]:
+        from backend.cli.tasks import fetch_and_filter_articles
+        fetch_and_filter_articles()
+
 
 def create_app(config_class: Type[Config] = None) -> Flask:
     app = Flask(__name__, static_url_path="/api/static")

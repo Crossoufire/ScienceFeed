@@ -301,6 +301,10 @@ def send_feed_emails():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Sending Feed Emails -")
 
+    if not current_app.config["SEND_EMAIL_TO_ACTIVATE_USER"]:
+        current_app.logger.info("[SYSTEM] - The mail server is not configured to send emails. Skipping feed emails.")
+        return
+
     users = (
         db.session.query(User)
         .outerjoin(UserArticle, (User.id == UserArticle.user_id) & (UserArticle.is_archived == False) & (UserArticle.is_read == False))
@@ -329,7 +333,7 @@ def send_feed_emails():
 
 
 def delete_user_deleted_articles():
-    """ Delete all articles that have been marked as deleted by the user after two months """
+    """ Delete all UserArticles that have been marked as deleted by the user after 2 months """
 
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Deleting User Deleted Articles -")

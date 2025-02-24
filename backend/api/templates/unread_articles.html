@@ -45,8 +45,6 @@
     </style>
 </head>
 <body>
-<a href="{{ dashboard_url }}" class="button">Go to Dashboard</a>
-
 <h1>Your Unread Articles From ScienceFeed</h1>
 
 {% for article in articles %}
@@ -54,9 +52,6 @@
         <h3><a href="{{ article.link }}">{{ article.title }}</a></h3>
         <p><strong>Publisher:</strong> {{ article.publisher }}</p>
         <p><strong>Journal:</strong> {{ article.journal }}</p>
-        {#        <p class="keywords">#}
-        {#            <strong>Keywords:</strong> {{ article.keywords|join(", ") }}#}
-        {#        </p>#}
     </div>
 {% endfor %}
 </body>

@@ -35,18 +35,13 @@ def send_email(to: str, username: str, subject: str, template: str, callback: st
 
 def _send_async_feed_email(app: Flask, to: str, username: str, subject: str, template: str, articles: List[Dict]):
     with app.app_context():
-        email_html = render_template(
-            template + ".html",
-            username=username,
-            articles=articles,
-            dashboard_url=f"https://localhost:3000/dashboard/articles" if app.debug else "https://science-feed.mylists.info/dashboard/articles",
-        )
+        email_html = render_template(template + ".html", username=username, articles=articles)
         msg = Message(
-            subject=f"ScienceFeed - {subject}",
-            sender=current_app.config["MAIL_USERNAME"],
             recipients=[to],
             html=email_html,
+            subject=f"ScienceFeed - {subject}",
             bcc=[current_app.config["MAIL_USERNAME"]],
+            sender=current_app.config["MAIL_USERNAME"],
             reply_to=current_app.config["MAIL_USERNAME"],
         )
         mail.send(msg)

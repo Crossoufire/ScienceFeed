@@ -23,11 +23,9 @@ class Config:
     CREATE_FILE_LOGGER = True
     CREATE_MAIL_HANDLER = True
 
-    # SQLite options
+    # Database options
     SQLITE_JOURNAL_MODE = "WAL"
     SQLITE_SYNCHRONOUS = "NORMAL"
-
-    # Database options
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
     SQLALCHEMY_DATABASE_URI = (os.environ.get("SCIENCEFEED_DATABASE_URI") or default_db_uri)
@@ -39,15 +37,17 @@ class Config:
     RESET_TOKEN_MINUTES = int(os.environ.get("RESET_TOKEN_MINUTES") or "15")
     ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES") or "15")
 
-    # Admin e-mail options
+    # Email options
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_PORT = int(os.environ.get("MAIL_PORT") or "25")
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
     MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS") or "True")
     MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL") or "False")
+    SEND_EMAIL_TO_ACTIVATE_USER = os.environ.get("SEND_EMAIL_TO_ACTIVATE_USER", "False")
 
     # RSS Fetcher Options
+    FETCH_ON_START = True
     DELTA_MINUTES = int(os.environ.get("DELTA_MINUTES") or "20")
 
 
@@ -60,14 +60,18 @@ class DevConfig(Config):
     CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
 
-    # SQLite options
+    # Database options
     SQLITE_JOURNAL_MODE = "DELETE"
     SQLITE_SYNCHRONOUS = "FULL"
+
+    # Email options
+    SEND_EMAIL_TO_ACTIVATE_USER = False
 
     # Security options
     ACCESS_TOKEN_MINUTES = int("15")
 
     # RSS Fetcher Options
+    FETCH_ON_START = False
     DELTA_MINUTES = int("0")
 
 
@@ -80,6 +84,12 @@ class TestConfig(Config):
     # Handlers options
     CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
+
+    # Email options
+    SEND_EMAIL_TO_ACTIVATE_USER = False
+
+    # RSS Fetcher Options
+    FETCH_ON_START = False
 
     # Database options
     SQLALCHEMY_DATABASE_URI = "sqlite://"
