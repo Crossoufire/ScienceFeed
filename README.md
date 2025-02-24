@@ -1,11 +1,9 @@
-# ScienceFeed
+## ScienceFeed
 
 [ScienceFeed](https://science-feed.mylists.info) is a platform allowing you to follow RSS feeds from scientific journals
 and get updates based on keywords.
 
-contact: <contact.us.at.mylists@gmail.com>
-
-# Key Features
+## Key Features
 
 * Add personalized keywords
 * Add RSS feeds from scientific journals
@@ -13,23 +11,70 @@ contact: <contact.us.at.mylists@gmail.com>
 * Get mail notifications when new articles are published every week
 * ...
 
-# Support Me
+## Support Me
 
 If you like this work, you can buy me a coffee! &nbsp;
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/crossoufire)
 
 ---
 
-# Backend Installation (Python - Flask)
+# Local Deployment
 
 ## Prerequisites
 
-* Python 3.10+
-* UV (recommanded)
+* Docker on WSL2
 
 ## Steps
 
-1. Clone this repo and install the requirements using UV
+1. Clone this repo
+
+```
+git clone https://www.github.com/Crossoufire/ScienceFeed.git
+cd ScienceFeed
+```
+
+2. Update the `.env.example` file in the `backend` folder with your own values.
+
+```
+cd ScienceFeed/backend
+cp .env.example .env
+```
+
+3. Update the `.env.example` file in the `frontend` folder with your own values.
+
+```
+cd ScienceFeed/frontend
+cp .env.example .env
+```
+
+4. Go back to the `ScienceFeed` folder root, and run the command:
+
+```
+sudo docker compose up -d --build
+```
+
+5. The site will be served by default at `localhost:2000`.
+
+6. To stop the container, run the command:
+
+```
+sudo docker compose down
+```
+
+---
+
+# Installation for development
+
+## Backend Installation (Python - Flask)
+
+### Prerequisites
+
+* Python 3.10+
+* uv (recommended)
+
+### Steps
+
+1. Clone this repo and install the requirements using uv
 
 ```
 git clone https://www.github.com/Crossoufire/ScienceFeed.git
@@ -37,28 +82,23 @@ cd ScienceFeed/backend
 uv sync
 ```
 
-3. Set up the `.flaskenv` file
+3. Set up a `.flaskenv` file in the `backend` folder.
 
 ```
 FLASK_APP=server.py
 FLASK_ENV=<development|production>
 ```
 
-4. Create a `.env` file. See the `config.py` file for more details.
+4. Create a `.env` file. See the `config.py` file and the `.env.example` file in the `backend` folder for more details.
+
+5. If using PowerShell (Windows), you need to set up the python path:
 
 ```
-SECRET_KEY=<change-me>
-
-MAIL_SERVER=<your-mail-server>
-MAIL_PORT=<port>
-MAIL_USE_TLS=<True|False>
-MAIL_USE_SSL=<True|False>
-MAIL_USERNAME=<mail@mail.com>
-MAIL_PASSWORD=<password>
+$env:PYTHONPATH = "$env:PYTHONPATH;path\to\ScienceFeed"
 ```
 
-5. Run the command `uv run python server.py` inside the `ScienceFeed/backend` folder.
-   The backend will be served by default at `localhost:5000`.
+5. Run the command `uv run backend\server.py` from the `ScienceFeed` root folder.
+6. The backend will be served by default at `localhost:5000`.
 
 ---
 
@@ -79,13 +119,7 @@ cd ScienceFeed/frontend
 npm install
 ```
 
-2. Create the `.env.development` file for development (`.env.production` for production)
+2. Create a `.env` file. See the `.env.example` file in the `frontend` folder for more details.
 
-```
-VITE_BASE_API_URL=http://localhost:5000
-VITE_REGISTER_CALLBACK=http://localhost:3000/register_token
-VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset_password
-```
-
-3. Run the command `npm run dev` inside the `ScienceFeed/frontend` folder. The frontend will be served by default at `localhost:3000`.
-
+3. Run the command `npm run dev` inside the `ScienceFeed/frontend` folder.
+4. The frontend will be served by default at `localhost:3000`.

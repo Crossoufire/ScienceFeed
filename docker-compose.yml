@@ -5,9 +5,11 @@ services:
             dockerfile: Dockerfile
         ports:
             - "5000:5000"
+        environment:
+            - FLASK_APP=server.py
+            - FLASK_ENV=production
         env_file:
             - backend/.env
-            - backend/.flaskenv
         volumes:
             - ../sf-data/database:/app/backend/instance
             - ../sf-data/logs:/app/backend/logs
@@ -20,7 +22,7 @@ services:
         ports:
             - "2000:80"
         env_file:
-            - frontend/.env.production
+            - frontend/.env
         depends_on:
             - backend
         restart: unless-stopped

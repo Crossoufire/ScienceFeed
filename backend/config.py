@@ -21,7 +21,7 @@ class Config:
 
     # Handlers options
     CREATE_FILE_LOGGER = True
-    CREATE_MAIL_HANDLER = True
+    CREATE_MAIL_HANDLER = False
 
     # Scheduler options
     SCHEDULER_ENABLED = as_bool(os.environ.get("SCHEDULER_ENABLED", "True"))
