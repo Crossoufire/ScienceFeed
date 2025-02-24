@@ -145,7 +145,7 @@ def init_scheduler(app: Flask):
     # Schedule daily tasks to run at midnight
     scheduler.add_job(
         func=run_daily_tasks,
-        trigger=CronTrigger(minute="*"),
+        trigger=CronTrigger(hour=0, minute=0),
         id="daily_tasks",
         name="Run daily scheduled tasks",
         replace_existing=True,

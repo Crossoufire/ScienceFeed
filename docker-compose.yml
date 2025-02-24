@@ -9,8 +9,8 @@ services:
             - backend/.env
             - backend/.flaskenv
         volumes:
-            - ./sf-data/database:/app/backend/instance
-            - ./sf-data/logs:/app/backend/logs
+            - ../sf-data/database:/app/backend/instance
+            - ../sf-data/logs:/app/backend/logs
         restart: unless-stopped
 
     frontend:
