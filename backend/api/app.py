@@ -124,14 +124,28 @@ def init_scheduler(app: Flask):
 
     scheduler = BackgroundScheduler()
 
-    # Get CLI commands
-    daily_task = app.cli.commands["daily_scheduled_tasks"]
-    weekly_task = app.cli.commands["weekly_scheduled_tasks"]
+    def run_daily_tasks():
+        """ Wrapper to run daily tasks with proper context """
+        with app.app_context():
+            ctx = app.test_cli_runner().invoke(app.cli.commands["daily-scheduled-tasks"])
+            if ctx.exit_code != 0:
+                app.logger.error(f"Daily tasks failed: {ctx.output}")
+            else:
+                app.logger.info("Daily tasks completed successfully")
+
+    def run_weekly_tasks():
+        """ Wrapper to run weekly tasks with proper context """
+        with app.app_context():
+            ctx = app.test_cli_runner().invoke(app.cli.commands["weekly-scheduled-tasks"])
+            if ctx.exit_code != 0:
+                app.logger.error(f"Weekly tasks failed: {ctx.output}")
+            else:
+                app.logger.info("Weekly tasks completed successfully")
 
     # Schedule daily tasks to run at midnight
     scheduler.add_job(
-        func=daily_task.callback,
-        trigger=CronTrigger(hour=0, minute=0),
+        func=run_daily_tasks,
+        trigger=CronTrigger(minute="*"),
         id="daily_tasks",
         name="Run daily scheduled tasks",
         replace_existing=True,
@@ -139,7 +153,7 @@ def init_scheduler(app: Flask):
 
     # Schedule weekly tasks to run at midnight on Monday
     scheduler.add_job(
-        func=weekly_task.callback,
+        func=run_weekly_tasks,
         trigger=CronTrigger(day_of_week="mon", hour=0, minute=0),
         id="weekly_tasks",
         name="Run weekly scheduled tasks",
