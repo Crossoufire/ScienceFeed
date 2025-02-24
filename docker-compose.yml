@@ -9,19 +9,18 @@ services:
             - backend/.env
             - backend/.flaskenv
         volumes:
-            - sqlite_data:/app/backend/instance
-    
+            - ./sf-data/database:/app/backend/instance
+            - ./sf-data/logs:/app/backend/logs
+        restart: unless-stopped
+
     frontend:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: frontend/Dockerfile
         ports:
-            - "80:80"
+            - "2000:80"
         env_file:
             - frontend/.env.production
         depends_on:
             - backend
-
-volumes:
-    sqlite_data:
-        driver: local
+        restart: unless-stopped

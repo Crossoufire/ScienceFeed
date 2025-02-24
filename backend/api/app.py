@@ -115,6 +115,49 @@ def setup_app_and_db(app: Flask):
         fetch_and_filter_articles()
 
 
+def init_scheduler(app: Flask):
+    """ Initialize the scheduler if enabled """
+
+    import atexit
+    from apscheduler.triggers.cron import CronTrigger
+    from apscheduler.schedulers.background import BackgroundScheduler
+
+    scheduler = BackgroundScheduler()
+
+    # Get CLI commands
+    daily_task = app.cli.commands["daily_scheduled_tasks"]
+    weekly_task = app.cli.commands["weekly_scheduled_tasks"]
+
+    # Schedule daily tasks to run at midnight
+    scheduler.add_job(
+        func=daily_task.callback,
+        trigger=CronTrigger(hour=0, minute=0),
+        id="daily_tasks",
+        name="Run daily scheduled tasks",
+        replace_existing=True,
+    )
+
+    # Schedule weekly tasks to run at midnight on Monday
+    scheduler.add_job(
+        func=weekly_task.callback,
+        trigger=CronTrigger(day_of_week="mon", hour=0, minute=0),
+        id="weekly_tasks",
+        name="Run weekly scheduled tasks",
+        replace_existing=True,
+    )
+
+    # Start scheduler
+    scheduler.start()
+
+    if app.config["CREATE_FILE_LOGGER"]:
+        app.logger.info("Scheduler started successfully")
+        for job in scheduler.get_jobs():
+            app.logger.info(f"Next run time for {job.name}: {job.next_run_time}")
+
+    # Shut down scheduler when app stops
+    atexit.register(lambda: scheduler.shutdown())
+
+
 def create_app(config_class: Type[Config] = None) -> Flask:
     app = Flask(__name__, static_url_path="/api/static")
 
@@ -139,5 +182,8 @@ def create_app(config_class: Type[Config] = None) -> Flask:
         register_cli_commands()
         setup_app_and_db(app)
         import_blueprints(app)
+
+        if app.config["SCHEDULER_ENABLED"]:
+            init_scheduler(app)
 
         return app

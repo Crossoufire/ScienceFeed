@@ -23,12 +23,15 @@ class Config:
     CREATE_FILE_LOGGER = True
     CREATE_MAIL_HANDLER = True
 
+    # Scheduler options
+    SCHEDULER_ENABLED = as_bool(os.environ.get("SCHEDULER_ENABLED", "True"))
+
     # Database options
     SQLITE_JOURNAL_MODE = "WAL"
     SQLITE_SYNCHRONOUS = "NORMAL"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
-    SQLALCHEMY_DATABASE_URI = (os.environ.get("SCIENCEFEED_DATABASE_URI") or default_db_uri)
+    SQLALCHEMY_DATABASE_URI = (os.environ.get("SCIENCE_FEED_DATABASE_URI") or default_db_uri)
 
     # Security options
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024
@@ -44,7 +47,7 @@ class Config:
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
     MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS") or "True")
     MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL") or "False")
-    SEND_EMAIL_TO_ACTIVATE_USER = os.environ.get("SEND_EMAIL_TO_ACTIVATE_USER", "False")
+    SEND_EMAIL_TO_ACTIVATE_USER = as_bool(os.environ.get("SEND_EMAIL_TO_ACTIVATE_USER", "False"))
 
     # RSS Fetcher Options
     FETCH_ON_START = True
@@ -59,6 +62,9 @@ class DevConfig(Config):
     # Handlers options
     CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
+
+    # Scheduler options
+    SCHEDULER_ENABLED = False
 
     # Database options
     SQLITE_JOURNAL_MODE = "DELETE"
@@ -84,6 +90,9 @@ class TestConfig(Config):
     # Handlers options
     CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
+
+    # Scheduler options
+    SCHEDULER_ENABLED = False
 
     # Email options
     SEND_EMAIL_TO_ACTIVATE_USER = False
