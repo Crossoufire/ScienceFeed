@@ -1,0 +1,600 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "6",
+  "dialect": "sqlite",
+  "tables": {
+    "user": {
+      "name": "user",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "username": {
+          "autoincrement": false,
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "autoincrement": false,
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "registered_on": {
+          "autoincrement": false,
+          "name": "registered_on",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_seen": {
+          "autoincrement": false,
+          "name": "last_seen",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active": {
+          "autoincrement": false,
+          "name": "active",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password_hash": {
+          "autoincrement": false,
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "send_feed_emails": {
+          "autoincrement": false,
+          "name": "send_feed_emails",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_articles_per_email": {
+          "autoincrement": false,
+          "name": "max_articles_per_email",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_rss_update": {
+          "autoincrement": false,
+          "name": "last_rss_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "rss_feed": {
+      "name": "rss_feed",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "publisher": {
+          "autoincrement": false,
+          "name": "publisher",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "journal": {
+          "autoincrement": false,
+          "name": "journal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "autoincrement": false,
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "token": {
+      "name": "token",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "access_token": {
+          "autoincrement": false,
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_expiration": {
+          "autoincrement": false,
+          "name": "access_expiration",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refresh_token": {
+          "autoincrement": false,
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refresh_expiration": {
+          "autoincrement": false,
+          "name": "refresh_expiration",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_token_user_id": {
+          "name": "ix_token_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "ix_token_access_token": {
+          "name": "ix_token_access_token",
+          "columns": [
+            "access_token"
+          ],
+          "isUnique": false
+        },
+        "ix_token_refresh_token": {
+          "name": "ix_token_refresh_token",
+          "columns": [
+            "refresh_token"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "token_user_id_user_id_fk": {
+          "name": "token_user_id_user_id_fk",
+          "tableFrom": "token",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "keyword": {
+      "name": "keyword",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "autoincrement": false,
+          "name": "active",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_keyword_name": {
+          "name": "ix_keyword_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "ix_keyword_active": {
+          "name": "ix_keyword_active",
+          "columns": [
+            "active"
+          ],
+          "isUnique": false
+        },
+        "ix_keyword_user_id": {
+          "name": "ix_keyword_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "keyword_user_id_user_id_fk": {
+          "name": "keyword_user_id_user_id_fk",
+          "tableFrom": "keyword",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "article": {
+      "name": "article",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "rss_feed_id": {
+          "autoincrement": false,
+          "name": "rss_feed_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "autoincrement": false,
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "link": {
+          "autoincrement": false,
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "autoincrement": false,
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "added_date": {
+          "autoincrement": false,
+          "name": "added_date",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_article_rss_feed_id": {
+          "name": "ix_article_rss_feed_id",
+          "columns": [
+            "rss_feed_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "article_rss_feed_id_rss_feed_id_fk": {
+          "name": "article_rss_feed_id_rss_feed_id_fk",
+          "tableFrom": "article",
+          "tableTo": "rss_feed",
+          "columnsFrom": [
+            "rss_feed_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_rss_feed": {
+      "name": "user_rss_feed",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rss_feed_id": {
+          "autoincrement": false,
+          "name": "rss_feed_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_user_rss_feed_user_id": {
+          "name": "ix_user_rss_feed_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "ix_user_rss_feed_rss_feed_id": {
+          "name": "ix_user_rss_feed_rss_feed_id",
+          "columns": [
+            "rss_feed_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_rss_feed_rss_feed_id_rss_feed_id_fk": {
+          "name": "user_rss_feed_rss_feed_id_rss_feed_id_fk",
+          "tableFrom": "user_rss_feed",
+          "tableTo": "rss_feed",
+          "columnsFrom": [
+            "rss_feed_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_rss_feed_user_id_user_id_fk": {
+          "name": "user_rss_feed_user_id_user_id_fk",
+          "tableFrom": "user_rss_feed",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_article": {
+      "name": "user_article",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "article_id": {
+          "autoincrement": false,
+          "name": "article_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_read": {
+          "autoincrement": false,
+          "name": "is_read",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_archived": {
+          "autoincrement": false,
+          "name": "is_archived",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_deleted": {
+          "autoincrement": false,
+          "name": "is_deleted",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_date": {
+          "autoincrement": false,
+          "name": "added_date",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "marked_as_deleted_date": {
+          "autoincrement": false,
+          "name": "marked_as_deleted_date",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "marked_as_read_date": {
+          "autoincrement": false,
+          "name": "marked_as_read_date",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "marked_as_archived_date": {
+          "autoincrement": false,
+          "name": "marked_as_archived_date",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "user_article_article_id_article_id_fk": {
+          "name": "user_article_article_id_article_id_fk",
+          "tableFrom": "user_article",
+          "tableTo": "article",
+          "columnsFrom": [
+            "article_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_article_user_id_user_id_fk": {
+          "name": "user_article_user_id_user_id_fk",
+          "tableFrom": "user_article",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_article_keyword": {
+      "name": "user_article_keyword",
+      "columns": {
+        "user_article_id": {
+          "autoincrement": false,
+          "name": "user_article_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "keyword_id": {
+          "autoincrement": false,
+          "name": "keyword_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "user_article_keyword_keyword_id_keyword_id_fk": {
+          "name": "user_article_keyword_keyword_id_keyword_id_fk",
+          "tableFrom": "user_article_keyword",
+          "tableTo": "keyword",
+          "columnsFrom": [
+            "keyword_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_article_keyword_user_article_id_user_article_id_fk": {
+          "name": "user_article_keyword_user_article_id_user_article_id_fk",
+          "tableFrom": "user_article_keyword",
+          "tableTo": "user_article",
+          "columnsFrom": [
+            "user_article_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
