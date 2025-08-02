@@ -1,13 +1,11 @@
 /// <reference types="vite/client"/>
 import appCss from "@/styles.css?url";
-import React, {Suspense} from "react";
+import React, {lazy, Suspense} from "react";
 import {authOptions} from "@/lib/react-query";
 import {Toaster} from "@/components/ui/sonner";
 import {useNProgress} from "@/hooks/use-nprogress";
 import type {QueryClient} from "@tanstack/react-query";
 import {ThemeProvider} from "@/components/theme-provider";
-import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
-import {TanStackRouterDevtools} from "@tanstack/react-router-devtools";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts,} from "@tanstack/react-router";
 
 
@@ -48,16 +46,26 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
             <HeadContent/>
         </head>
         <body>
+
         <ThemeProvider>
-            {children}
             <Toaster richColors/>
+            {children}
         </ThemeProvider>
 
-        <TanStackRouterDevtools position="bottom-left"/>
-        <ReactQueryDevtools buttonPosition="bottom-right"/>
+        {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-left"/>}
+        {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-right"/>}
 
         <Scripts/>
         </body>
         </html>
     );
 }
+
+
+const TanStackRouterDevtools = lazy(() =>
+    import("@tanstack/react-router-devtools").then((res) => ({ default: res.TanStackRouterDevtools }))
+);
+
+const ReactQueryDevtools = lazy(() =>
+    import("@tanstack/react-query-devtools").then((res) => ({ default: res.ReactQueryDevtools }))
+);
