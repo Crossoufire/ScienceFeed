@@ -20,12 +20,12 @@ function RssManager() {
     return (
         <PageTitle title="RSS Feeds Manager" subtitle="Search and Manage your RSS feeds.">
             <div className="flex flex-wrap items-center justify-between mt-4 gap-3">
-                <SearchRSSFeeds userRssFeeds={userRssFeeds}/>
+                <SearchRSSFeeds/>
                 <CreateNewRSSFeed/>
             </div>
-            <DisplayFeeds userRssFeeds={userRssFeeds}/>
+            <DisplayFeeds
+                userRssFeeds={userRssFeeds}
+            />
         </PageTitle>
     );
 }
-
-

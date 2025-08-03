@@ -14,7 +14,7 @@ export const rssFeed = sqliteTable("rss_feed", {
 
 export const keyword = sqliteTable("keyword", {
     id: integer().primaryKey({ autoIncrement: true }).notNull(),
-    userId: integer("user_id").references(() => user.id, { onDelete: "cascade" }),
+    userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     name: text().notNull(),
     active: integer("active", { mode: "boolean" }).default(true).notNull(),
 }, (table) => [
@@ -38,8 +38,8 @@ export const article = sqliteTable("article", {
 
 export const userRssFeed = sqliteTable("user_rss_feed", {
     id: integer().primaryKey({ autoIncrement: true }).notNull(),
-    userId: integer("user_id").references(() => user.id, { onDelete: "cascade" }),
-    rssFeedId: integer("rss_feed_id").references(() => rssFeed.id, { onDelete: "cascade" }),
+    userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    rssFeedId: integer("rss_feed_id").notNull().references(() => rssFeed.id, { onDelete: "cascade" }),
 }, (table) => [
     index("ix_user_rss_feed_user_id").on(table.userId),
     index("ix_user_rss_feed_rss_feed_id").on(table.rssFeedId),
@@ -48,11 +48,11 @@ export const userRssFeed = sqliteTable("user_rss_feed", {
 
 export const userArticle = sqliteTable("user_article", {
     id: integer().primaryKey({ autoIncrement: true }).notNull(),
-    userId: integer("user_id").references(() => user.id, { onDelete: "cascade" }),
-    articleId: integer("article_id").references(() => article.id, { onDelete: "cascade" }),
-    isRead: integer("is_read", { mode: "boolean" }),
-    isArchived: integer("is_archived", { mode: "boolean" }),
-    isDeleted: integer("is_deleted", { mode: "boolean" }),
+    userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+    articleId: integer("article_id").notNull().references(() => article.id, { onDelete: "cascade" }),
+    isRead: integer("is_read", { mode: "boolean" }).default(false).notNull(),
+    isArchived: integer("is_archived", { mode: "boolean" }).default(false).notNull(),
+    isDeleted: integer("is_deleted", { mode: "boolean" }).default(false).notNull(),
     markedAsReadDate: text("marked_as_read_date"),
     markedAsDeletedDate: text("marked_as_deleted_date"),
     markedAsArchivedDate: text("marked_as_archived_date"),
@@ -61,8 +61,8 @@ export const userArticle = sqliteTable("user_article", {
 
 
 export const userArticleKeyword = sqliteTable("user_article_keyword", {
-    keywordId: integer("keyword_id").references(() => keyword.id, { onDelete: "cascade" }),
-    userArticleId: integer("user_article_id").references(() => userArticle.id, { onDelete: "cascade" }),
+    keywordId: integer("keyword_id").notNull().references(() => keyword.id, { onDelete: "cascade" }),
+    userArticleId: integer("user_article_id").notNull().references(() => userArticle.id, { onDelete: "cascade" }),
 });
 
 

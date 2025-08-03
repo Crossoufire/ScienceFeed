@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_public")({
         }
 
         if (currentUser) {
-            throw redirect({ to: "/dashboard", replace: true });
+            throw redirect({ to: "/dashboard/articles", replace: true });
         }
     },
 });

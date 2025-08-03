@@ -2,11 +2,13 @@ import {toast} from "sonner";
 import {Input} from "@/components/ui/input";
 import React, {useRef, useState} from "react";
 import {useDebounce} from "@/hooks/use-debounce";
-import {UserRssFeed} from "@/server/types/types";
+import {SearchRssFeed} from "@/server/types/types";
 import {Separator} from "@/components/ui/separator";
 import {CheckCircle, Loader2, Search} from "lucide-react";
 import {useOnClickOutside} from "@/hooks/use-clicked-outside";
+import {queryKeys, rssSearchOptions} from "@/lib/react-query";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {useAddRssFeedsToUserMutation} from "@/lib/react-query/mutations";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 
 
@@ -14,19 +16,19 @@ export function SearchRSSFeeds() {
     const queryClient = useQueryClient();
     const commandRef = useRef(null);
     const [search, setSearch] = useState("");
-    const { addRssFeedsMutation } = useSimpleMutations();
     const [isOpen, setIsOpen] = useState(false);
-    const [debouncedSearch] = useDebounce(search, 350);
-    const { data, isLoading, error } = useQuery(rssSearchOptions(debouncedSearch));
+    const debouncedQuery = useDebounce(search, 350);
+    const addRssFeedsMutation = useAddRssFeedsToUserMutation();
+    const { data, isLoading, error } = useQuery(rssSearchOptions(debouncedQuery));
 
-    const handleAddRssFeed = (rssFeed: UserRssFeed) => {
+    const handleAddRssFeed = (rssFeed: SearchRssFeed) => {
         if (rssFeed.isActive) return;
 
-        addRssFeedsMutation.mutate({ data: { rssFeedsIds: [rssFeed.id] } }, {
+        addRssFeedsMutation.mutate({ data: { feedsIds: [rssFeed.id] } }, {
             onError: () => toast.error("Failed to add this RSS Feed"),
             onSuccess: async () => {
                 toast.success("RSS Feed successfully added");
-                await queryClient.invalidateQueries({ queryKey: ["rssManager"] });
+                await queryClient.invalidateQueries({ queryKey: queryKeys.rssManagerKey() });
             },
         });
     };
@@ -54,7 +56,7 @@ export function SearchRSSFeeds() {
                     placeholder="Search RSS feeds..."
                 />
             </div>
-            {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
+            {isOpen && (debouncedQuery.length >= 2 || isLoading) &&
                 <div className="z-50 absolute w-[500px] rounded-lg border shadow-md mt-1">
                     <Command>
                         <CommandList className="max-h-[350px] overflow-y-auto">
@@ -73,7 +75,7 @@ export function SearchRSSFeeds() {
                                 <CommandEmpty>No results found.</CommandEmpty>
                             }
                             {data && data.length > 0 &&
-                                data.map(rssFeed =>
+                                data.map((rssFeed) =>
                                     <SearchComponent
                                         key={rssFeed.id}
                                         rssFeed={rssFeed}
@@ -90,8 +92,8 @@ export function SearchRSSFeeds() {
 
 
 interface SearchComponentProps {
-    rssFeed: UserRssFeed;
-    handleAddRssFeed: (rssFeed: UserRssFeed) => void;
+    rssFeed: SearchRssFeed;
+    handleAddRssFeed: (rssFeed: SearchRssFeed) => void;
 }
 
 
@@ -99,7 +101,7 @@ function SearchComponent({ rssFeed, handleAddRssFeed }: SearchComponentProps) {
     return (
         <div role="button" onClick={() => handleAddRssFeed(rssFeed)}>
             <CommandItem key={rssFeed.id} className="cursor-pointer py-2" disabled={rssFeed.isActive}>
-                <div className="grid grid-cols-[50px,auto,1fr] gap-2 items-center w-full">
+                <div className="grid grid-cols-[50px_auto_1fr] gap-2 items-center w-full">
                     <div className="font-semibold truncate" title={rssFeed.publisher}>
                         {rssFeed.publisher}
                     </div>

@@ -17,7 +17,7 @@ function HomePage() {
     const handleLogin = async () => {
         await authClient.signIn.social({
             provider: "google",
-            callbackURL: "/dashboard"
+            callbackURL: "/dashboard/articles"
         }, {
             onRequest: () => {
                 setIsLoading(true);

@@ -35,7 +35,9 @@ export function PrivateLayout() {
         <SidebarProvider>
             <AppSidebar/>
             <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+                <header
+                    className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear
+                    group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 z-50">
                     <div className="flex items-center gap-2 px-4">
                         <SidebarTrigger className="-ml-1"/>
                         <Separator
@@ -61,7 +63,7 @@ export function PrivateLayout() {
                         </Breadcrumb>
                     </div>
                 </header>
-                <div className="min-w-6xl mx-auto">
+                <div className="w-6xl mx-auto mb-20">
                     <Outlet/>
                 </div>
             </SidebarInset>

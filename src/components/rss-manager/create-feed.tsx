@@ -5,23 +5,18 @@ import {Loader2, Plus} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {queryKeys} from "@/lib/react-query";
 import {Button} from "@/components/ui/button";
+import {CreateRssFeed} from "@/server/types/types";
 import {useQueryClient} from "@tanstack/react-query";
+import {useCreateRssFeedMutation} from "@/lib/react-query/mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 
 
-interface FormValues {
-    url: string;
-    journal: string;
-    publisher: string;
-}
-
-
 export function CreateNewRSSFeed() {
     const queryClient = useQueryClient();
-    const { createRssFeedMutation } = useSimpleMutations();
     const [open, setOpen] = useState(false);
-    const form = useForm<FormValues>({
+    const createRssFeedMutation = useCreateRssFeedMutation();
+    const form = useForm<CreateRssFeed>({
         defaultValues: {
             url: "",
             journal: "",
@@ -29,7 +24,7 @@ export function CreateNewRSSFeed() {
         }
     });
 
-    const onSubmit = (data: FormValues) => {
+    const onSubmit = (data: CreateRssFeed) => {
         createRssFeedMutation.mutate({ data }, {
             onError: (error) => toast.error(error?.message ?? "Failed to add this RSS Feed"),
             onSuccess: async () => {
@@ -45,10 +40,10 @@ export function CreateNewRSSFeed() {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2"/> Add New RSS Feed
+                    <Plus className="w-4 h-4 mr-1"/> Add RSS Feed
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-neutral-950">
+            <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add RSS Feed</DialogTitle>
                     <DialogDescription>Add a new RSS feed to your account.</DialogDescription>

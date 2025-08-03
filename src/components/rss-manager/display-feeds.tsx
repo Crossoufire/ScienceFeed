@@ -7,15 +7,16 @@ import {useIsMobile} from "@/hooks/use-mobile";
 import {UserRssFeed} from "@/server/types/types";
 import {MutedText} from "@/components/muted-text";
 import {useQueryClient} from "@tanstack/react-query";
+import {useRemoveUserRssFeedMutation} from "@/lib/react-query/mutations";
 
 
 export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) {
     const isMobile = useIsMobile();
     const queryClient = useQueryClient();
-    const { removeRssFeedMutation } = useSimpleMutations();
+    const removeUserRssFeedMutation = useRemoveUserRssFeedMutation();
 
     const handleRemoveRssFeed = (rssFeed: UserRssFeed) => {
-        removeRssFeedMutation.mutate({ rssIds: [rssFeed.id] }, {
+        removeUserRssFeedMutation.mutate({ data: { rssIds: [rssFeed.id] } }, {
             onError: () => toast.error("Failed to remove this RSS Feed"),
             onSuccess: async () => {
                 toast.success("RSS Feed successfully removed");

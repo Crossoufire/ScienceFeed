@@ -93,12 +93,12 @@ function KeywordManagerPage() {
             <Table className="mt-6">
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Keyword</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead>Read</TableHead>
-                        <TableHead>Archived</TableHead>
-                        <TableHead>Deleted</TableHead>
-                        <TableHead className="w-[120px]">Actions</TableHead>
+                        <TableHead className="text-center">Keyword</TableHead>
+                        <TableHead className="text-center">Total</TableHead>
+                        <TableHead className="text-center">Read</TableHead>
+                        <TableHead className="text-center">Archived</TableHead>
+                        <TableHead className="text-center">Deleted</TableHead>
+                        <TableHead className="w-[120px] text-center">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -109,10 +109,10 @@ function KeywordManagerPage() {
                                     {keyword.name}
                                 </div>
                             </TableCell>
-                            <TableCell>{keyword.totalArticles}</TableCell>
-                            <TableCell>{keyword.readArticles}</TableCell>
-                            <TableCell>{keyword.archivedArticles}</TableCell>
-                            <TableCell>{keyword.deletedArticles}</TableCell>
+                            <TableCell className="text-center">{keyword.totalArticles}</TableCell>
+                            <TableCell className="text-center">{keyword.readArticles ?? "-"}</TableCell>
+                            <TableCell className="text-center">{keyword.archivedArticles ?? "-"}</TableCell>
+                            <TableCell className="text-center">{keyword.deletedArticles ?? "-"}</TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-3">
                                     <Button

@@ -17,6 +17,7 @@ import { Route as PublicIndexRouteImport } from "./routes/_public/index";
 import { Route as PrivateSettingsRouteImport } from "./routes/_private/settings";
 import { Route as PrivateRssManagerRouteImport } from "./routes/_private/rss-manager";
 import { Route as PrivateKeywordsRouteImport } from "./routes/_private/keywords";
+import { Route as PrivateDashboardArticlesRouteImport } from "./routes/_private/dashboard/articles";
 import { ServerRoute as ApiAuthSplatServerRouteImport } from "./routes/api/auth/$";
 
 const rootServerRouteImport = createServerRootRoute();
@@ -49,6 +50,12 @@ const PrivateKeywordsRoute = PrivateKeywordsRouteImport.update({
   path: "/keywords",
   getParentRoute: () => PrivateRoute,
 } as any);
+const PrivateDashboardArticlesRoute =
+  PrivateDashboardArticlesRouteImport.update({
+    id: "/dashboard/articles",
+    path: "/dashboard/articles",
+    getParentRoute: () => PrivateRoute,
+  } as any);
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
   id: "/api/auth/$",
   path: "/api/auth/$",
@@ -60,12 +67,14 @@ export interface FileRoutesByFullPath {
   "/rss-manager": typeof PrivateRssManagerRoute;
   "/settings": typeof PrivateSettingsRoute;
   "/": typeof PublicIndexRoute;
+  "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
 }
 export interface FileRoutesByTo {
   "/keywords": typeof PrivateKeywordsRoute;
   "/rss-manager": typeof PrivateRssManagerRoute;
   "/settings": typeof PrivateSettingsRoute;
   "/": typeof PublicIndexRoute;
+  "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -75,12 +84,18 @@ export interface FileRoutesById {
   "/_private/rss-manager": typeof PrivateRssManagerRoute;
   "/_private/settings": typeof PrivateSettingsRoute;
   "/_public/": typeof PublicIndexRoute;
+  "/_private/dashboard/articles": typeof PrivateDashboardArticlesRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/keywords" | "/rss-manager" | "/settings" | "/";
+  fullPaths:
+    | "/keywords"
+    | "/rss-manager"
+    | "/settings"
+    | "/"
+    | "/dashboard/articles";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/keywords" | "/rss-manager" | "/settings" | "/";
+  to: "/keywords" | "/rss-manager" | "/settings" | "/" | "/dashboard/articles";
   id:
     | "__root__"
     | "/_private"
@@ -88,7 +103,8 @@ export interface FileRouteTypes {
     | "/_private/keywords"
     | "/_private/rss-manager"
     | "/_private/settings"
-    | "/_public/";
+    | "/_public/"
+    | "/_private/dashboard/articles";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -161,6 +177,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof PrivateKeywordsRouteImport;
       parentRoute: typeof PrivateRoute;
     };
+    "/_private/dashboard/articles": {
+      id: "/_private/dashboard/articles";
+      path: "/dashboard/articles";
+      fullPath: "/dashboard/articles";
+      preLoaderRoute: typeof PrivateDashboardArticlesRouteImport;
+      parentRoute: typeof PrivateRoute;
+    };
   }
 }
 declare module "@tanstack/react-start/server" {
@@ -179,12 +202,14 @@ interface PrivateRouteChildren {
   PrivateKeywordsRoute: typeof PrivateKeywordsRoute;
   PrivateRssManagerRoute: typeof PrivateRssManagerRoute;
   PrivateSettingsRoute: typeof PrivateSettingsRoute;
+  PrivateDashboardArticlesRoute: typeof PrivateDashboardArticlesRoute;
 }
 
 const PrivateRouteChildren: PrivateRouteChildren = {
   PrivateKeywordsRoute: PrivateKeywordsRoute,
   PrivateRssManagerRoute: PrivateRssManagerRoute,
   PrivateSettingsRoute: PrivateSettingsRoute,
+  PrivateDashboardArticlesRoute: PrivateDashboardArticlesRoute,
 };
 
 const PrivateRouteWithChildren =
