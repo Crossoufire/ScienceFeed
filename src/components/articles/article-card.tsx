@@ -53,7 +53,7 @@ export const ArticleCard = ({ article, isEditing, selected, onSelectionClick, on
             </div>
             <div className="mt-auto flex items-center justify-between pb-3 px-3">
                 <div className="flex flex-wrap gap-2">
-                    {/*//@ts-expect-error - Need to add keywords per article */}
+                    {/*//@ts-expect-error - TODO: Need to add keywords per article */}
                     {article?.keywords?.map((keyword: any) => (
                         <Badge key={keyword} variant="outline" className="text-xs bg-background">
                             {keyword}

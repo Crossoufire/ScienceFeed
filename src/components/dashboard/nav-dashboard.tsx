@@ -16,8 +16,8 @@ const items = [
     },
     {
         icon: Trash,
-        name: "Trash",
-        url: "/dashboard/trashed",
+        name: "Trash Bin",
+        url: "/dashboard/trash-bin",
     },
 ];
 

@@ -25,7 +25,7 @@ export function PrivateLayout() {
     const crumbs: Record<string, string> = {
         "/dashboard/articles": "Articles",
         "/dashboard/archived": "Archived",
-        "/dashboard/trashed": "Trash",
+        "/dashboard/trash-bin": "Trash Bin",
         "/rss-manager": "RSS Feeds",
         "/keywords": "Keywords",
         "/settings": "Settings",

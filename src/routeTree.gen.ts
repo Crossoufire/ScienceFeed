@@ -17,7 +17,9 @@ import { Route as PublicIndexRouteImport } from "./routes/_public/index";
 import { Route as PrivateSettingsRouteImport } from "./routes/_private/settings";
 import { Route as PrivateRssManagerRouteImport } from "./routes/_private/rss-manager";
 import { Route as PrivateKeywordsRouteImport } from "./routes/_private/keywords";
+import { Route as PrivateDashboardTrashBinRouteImport } from "./routes/_private/dashboard/trash-bin";
 import { Route as PrivateDashboardArticlesRouteImport } from "./routes/_private/dashboard/articles";
+import { Route as PrivateDashboardArchivedRouteImport } from "./routes/_private/dashboard/archived";
 import { ServerRoute as ApiAuthSplatServerRouteImport } from "./routes/api/auth/$";
 
 const rootServerRouteImport = createServerRootRoute();
@@ -50,10 +52,22 @@ const PrivateKeywordsRoute = PrivateKeywordsRouteImport.update({
   path: "/keywords",
   getParentRoute: () => PrivateRoute,
 } as any);
+const PrivateDashboardTrashBinRoute =
+  PrivateDashboardTrashBinRouteImport.update({
+    id: "/dashboard/trash-bin",
+    path: "/dashboard/trash-bin",
+    getParentRoute: () => PrivateRoute,
+  } as any);
 const PrivateDashboardArticlesRoute =
   PrivateDashboardArticlesRouteImport.update({
     id: "/dashboard/articles",
     path: "/dashboard/articles",
+    getParentRoute: () => PrivateRoute,
+  } as any);
+const PrivateDashboardArchivedRoute =
+  PrivateDashboardArchivedRouteImport.update({
+    id: "/dashboard/archived",
+    path: "/dashboard/archived",
     getParentRoute: () => PrivateRoute,
   } as any);
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
@@ -67,14 +81,18 @@ export interface FileRoutesByFullPath {
   "/rss-manager": typeof PrivateRssManagerRoute;
   "/settings": typeof PrivateSettingsRoute;
   "/": typeof PublicIndexRoute;
+  "/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
+  "/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
 }
 export interface FileRoutesByTo {
   "/keywords": typeof PrivateKeywordsRoute;
   "/rss-manager": typeof PrivateRssManagerRoute;
   "/settings": typeof PrivateSettingsRoute;
   "/": typeof PublicIndexRoute;
+  "/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
+  "/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -84,7 +102,9 @@ export interface FileRoutesById {
   "/_private/rss-manager": typeof PrivateRssManagerRoute;
   "/_private/settings": typeof PrivateSettingsRoute;
   "/_public/": typeof PublicIndexRoute;
+  "/_private/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/_private/dashboard/articles": typeof PrivateDashboardArticlesRoute;
+  "/_private/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -93,9 +113,18 @@ export interface FileRouteTypes {
     | "/rss-manager"
     | "/settings"
     | "/"
-    | "/dashboard/articles";
+    | "/dashboard/archived"
+    | "/dashboard/articles"
+    | "/dashboard/trash-bin";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/keywords" | "/rss-manager" | "/settings" | "/" | "/dashboard/articles";
+  to:
+    | "/keywords"
+    | "/rss-manager"
+    | "/settings"
+    | "/"
+    | "/dashboard/archived"
+    | "/dashboard/articles"
+    | "/dashboard/trash-bin";
   id:
     | "__root__"
     | "/_private"
@@ -104,7 +133,9 @@ export interface FileRouteTypes {
     | "/_private/rss-manager"
     | "/_private/settings"
     | "/_public/"
-    | "/_private/dashboard/articles";
+    | "/_private/dashboard/archived"
+    | "/_private/dashboard/articles"
+    | "/_private/dashboard/trash-bin";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -177,11 +208,25 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof PrivateKeywordsRouteImport;
       parentRoute: typeof PrivateRoute;
     };
+    "/_private/dashboard/trash-bin": {
+      id: "/_private/dashboard/trash-bin";
+      path: "/dashboard/trash-bin";
+      fullPath: "/dashboard/trash-bin";
+      preLoaderRoute: typeof PrivateDashboardTrashBinRouteImport;
+      parentRoute: typeof PrivateRoute;
+    };
     "/_private/dashboard/articles": {
       id: "/_private/dashboard/articles";
       path: "/dashboard/articles";
       fullPath: "/dashboard/articles";
       preLoaderRoute: typeof PrivateDashboardArticlesRouteImport;
+      parentRoute: typeof PrivateRoute;
+    };
+    "/_private/dashboard/archived": {
+      id: "/_private/dashboard/archived";
+      path: "/dashboard/archived";
+      fullPath: "/dashboard/archived";
+      preLoaderRoute: typeof PrivateDashboardArchivedRouteImport;
       parentRoute: typeof PrivateRoute;
     };
   }
@@ -202,14 +247,18 @@ interface PrivateRouteChildren {
   PrivateKeywordsRoute: typeof PrivateKeywordsRoute;
   PrivateRssManagerRoute: typeof PrivateRssManagerRoute;
   PrivateSettingsRoute: typeof PrivateSettingsRoute;
+  PrivateDashboardArchivedRoute: typeof PrivateDashboardArchivedRoute;
   PrivateDashboardArticlesRoute: typeof PrivateDashboardArticlesRoute;
+  PrivateDashboardTrashBinRoute: typeof PrivateDashboardTrashBinRoute;
 }
 
 const PrivateRouteChildren: PrivateRouteChildren = {
   PrivateKeywordsRoute: PrivateKeywordsRoute,
   PrivateRssManagerRoute: PrivateRssManagerRoute,
   PrivateSettingsRoute: PrivateSettingsRoute,
+  PrivateDashboardArchivedRoute: PrivateDashboardArchivedRoute,
   PrivateDashboardArticlesRoute: PrivateDashboardArticlesRoute,
+  PrivateDashboardTrashBinRoute: PrivateDashboardTrashBinRoute,
 };
 
 const PrivateRouteWithChildren =
