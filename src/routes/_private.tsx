@@ -1,16 +1,15 @@
 import {Slash} from "lucide-react";
-import {queryKeys} from "@/lib/react-query";
-import {CurrentUser} from "@/server/types/types";
-import {Separator} from "@/components/ui/separator";
-import {AppSidebar} from "@/components/dashboard/app-sidebar";
+import {authOptions} from "@/lib/client/react-query";
+import {Separator} from "@/lib/client/components/ui/separator";
+import {AppSidebar} from "@/lib/client/components/dashboard/app-sidebar";
 import {createFileRoute, Outlet, redirect, useLocation} from "@tanstack/react-router";
-import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar";
-import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from "@/components/ui/breadcrumb";
+import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/lib/client/components/ui/sidebar";
+import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator} from "@/lib/client/components/ui/breadcrumb";
 
 
 export const Route = createFileRoute("/_private")({
     beforeLoad: ({ context: { queryClient } }) => {
-        const currentUser: CurrentUser = queryClient.getQueryData(queryKeys.authKey());
+        const currentUser = queryClient.getQueryData(authOptions.queryKey);
         if (!currentUser) {
             throw redirect({ to: "/" });
         }

@@ -1,8 +1,4 @@
 {
-    "include": [
-        "**/*.ts",
-        "**/*.tsx"
-    ],
     "compilerOptions": {
         "strict": true,
         "esModuleInterop": true,
@@ -14,6 +10,9 @@
             "DOM.Iterable",
             "ES2022"
         ],
+        "types": [
+            "bun-types"
+        ],
         "isolatedModules": true,
         "resolveJsonModule": true,
         "skipLibCheck": true,
@@ -21,12 +20,22 @@
         "allowJs": true,
         "forceConsistentCasingInFileNames": true,
         "baseUrl": ".",
+        "noEmit": true,
+        "strictNullChecks": true,
         "paths": {
             "@/*": [
                 "./src/*"
             ]
-        },
-        "noEmit": true,
-        "strictNullChecks": true
-    }
+        }
+    },
+    "include": [
+        "**/*.ts",
+        "**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "build",
+        "coverage"
+    ]
 }

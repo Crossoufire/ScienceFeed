@@ -1,6 +1,6 @@
-import {PageTitle} from "@/components/page-title";
 import {createFileRoute} from "@tanstack/react-router";
-import {GeneralForm} from "@/components/settings/general-form";
+import {PageTitle} from "@/lib/client/components/page-title";
+import {GeneralForm} from "@/lib/client/components/settings/general-form";
 
 
 export const Route = createFileRoute("/_private/settings")({

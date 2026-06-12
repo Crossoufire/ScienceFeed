@@ -1,13 +1,13 @@
 import {toast} from "sonner";
 import {routeTree} from "./routeTree.gen";
-import {DefaultNotFound} from "@/components/default-not-found";
-import {routerWithQueryClient} from "@tanstack/react-router-with-query";
-import {DefaultCatchBoundary} from "@/components/default-catch-boundary";
-import {createRouter as createTanStackRouter} from "@tanstack/react-router";
+import {createRouter} from "@tanstack/react-router";
+import {DefaultNotFound} from "@/lib/client/components/default-not-found";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
+import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
+import {DefaultCatchBoundary} from "@/lib/client/components/default-catch-boundary";
 
 
-export function createRouter() {
+export function getRouter() {
     const queryClient = new QueryClient({
         queryCache: new QueryCache({
             onError: (error, query) => {
@@ -33,25 +33,25 @@ export function createRouter() {
         },
     });
 
-    return routerWithQueryClient(
-        createTanStackRouter({
-            routeTree,
-            context: { queryClient },
-            defaultSsr: false,
-            defaultPreload: false,
-            scrollRestoration: true,
-            defaultPreloadStaleTime: 0,
-            defaultStructuralSharing: true,
-            defaultNotFoundComponent: DefaultNotFound,
-            defaultErrorComponent: DefaultCatchBoundary,
-        }),
+    const router = createRouter({
+        routeTree,
+        context: { queryClient },
+        defaultPreload: false,
+        defaultPreloadStaleTime: 0,
+        defaultErrorComponent: DefaultCatchBoundary,
+        defaultNotFoundComponent: DefaultNotFound,
+        defaultPendingMs: 1000,
+        defaultPendingMinMs: 500,
+        scrollRestoration: true,
+        defaultStructuralSharing: true,
+    });
+
+    setupRouterSsrQueryIntegration({
+        router,
         queryClient,
-    );
-}
+        handleRedirects: true,
+        wrapQueryClient: true,
+    });
 
-
-declare module "@tanstack/react-router" {
-    interface Register {
-        router: ReturnType<typeof createRouter>;
-    }
+    return router;
 }

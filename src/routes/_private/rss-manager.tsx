@@ -1,11 +1,11 @@
 import React from "react";
-import {PageTitle} from "@/components/page-title";
-import {rssManagerOptions} from "@/lib/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {DisplayFeeds} from "@/components/rss-manager/display-feeds";
-import {SearchRSSFeeds} from "@/components/rss-manager/search-feeds";
-import {CreateNewRSSFeed} from "@/components/rss-manager/create-feed";
+import {rssManagerOptions} from "@/lib/client/react-query";
+import {PageTitle} from "@/lib/client/components/page-title";
+import {DisplayFeeds} from "@/lib/client/components/rss-manager/display-feeds";
+import {SearchRSSFeeds} from "@/lib/client/components/rss-manager/search-feeds";
+import {CreateNewRSSFeed} from "@/lib/client/components/rss-manager/create-feed";
 
 
 export const Route = createFileRoute("/_private/rss-manager")({

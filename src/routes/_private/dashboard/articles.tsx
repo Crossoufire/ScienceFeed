@@ -1,19 +1,19 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {cn} from "@/lib/utils";
-import {PageTitle} from "@/components/page-title";
-import {Pagination} from "@/components/pagination";
+import {cn} from "@/lib/utils/utils";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {useDebounceCallback} from "@/hooks/use-debounce";
-import {OptionsMenu} from "@/components/articles/options-menu";
-import {InputSearch} from "@/components/articles/input-search";
-import {ArticleCard} from "@/components/articles/article-card";
-import {queryKeys, userArticlesOptions} from "@/lib/react-query";
-import {KeywordsBadge} from "@/components/articles/keywords-badge";
-import {EditionButtons} from "@/components/articles/edition-buttons";
-import {ArticleBulkActions, UserArticlesSearch} from "@/server/types/types";
-import {useArchiveArticles, useDeleteArticles, useRssFetcher} from "@/lib/react-query/mutations";
+import {PageTitle} from "@/lib/client/components/page-title";
+import {Pagination} from "@/lib/client/components/pagination";
+import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {queryKeys, userArticlesOptions} from "@/lib/client/react-query";
+import {ArticleBulkActions, UserArticlesSearch} from "@/lib/types/types";
+import {OptionsMenu} from "@/lib/client/components/articles/options-menu";
+import {InputSearch} from "@/lib/client/components/articles/input-search";
+import {ArticleCard} from "@/lib/client/components/articles/article-card";
+import {KeywordsBadge} from "@/lib/client/components/articles/keywords-badge";
+import {EditionButtons} from "@/lib/client/components/articles/edition-buttons";
+import {useArchiveArticles, useDeleteArticles, useRssFetcher} from "@/lib/client/react-query/mutations";
 
 
 export const Route = createFileRoute("/_private/dashboard/articles")({

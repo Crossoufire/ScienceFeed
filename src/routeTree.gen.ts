@@ -8,8 +8,6 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createServerRootRoute } from "@tanstack/react-start/server";
-
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as PublicRouteImport } from "./routes/_public";
 import { Route as PrivateRouteImport } from "./routes/_private";
@@ -17,12 +15,10 @@ import { Route as PublicIndexRouteImport } from "./routes/_public/index";
 import { Route as PrivateSettingsRouteImport } from "./routes/_private/settings";
 import { Route as PrivateRssManagerRouteImport } from "./routes/_private/rss-manager";
 import { Route as PrivateKeywordsRouteImport } from "./routes/_private/keywords";
+import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$";
 import { Route as PrivateDashboardTrashBinRouteImport } from "./routes/_private/dashboard/trash-bin";
 import { Route as PrivateDashboardArticlesRouteImport } from "./routes/_private/dashboard/articles";
 import { Route as PrivateDashboardArchivedRouteImport } from "./routes/_private/dashboard/archived";
-import { ServerRoute as ApiAuthSplatServerRouteImport } from "./routes/api/auth/$";
-
-const rootServerRouteImport = createServerRootRoute();
 
 const PublicRoute = PublicRouteImport.update({
   id: "/_public",
@@ -52,6 +48,11 @@ const PrivateKeywordsRoute = PrivateKeywordsRouteImport.update({
   path: "/keywords",
   getParentRoute: () => PrivateRoute,
 } as any);
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: "/api/auth/$",
+  path: "/api/auth/$",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const PrivateDashboardTrashBinRoute =
   PrivateDashboardTrashBinRouteImport.update({
     id: "/dashboard/trash-bin",
@@ -70,11 +71,6 @@ const PrivateDashboardArchivedRoute =
     path: "/dashboard/archived",
     getParentRoute: () => PrivateRoute,
   } as any);
-const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
-  id: "/api/auth/$",
-  path: "/api/auth/$",
-  getParentRoute: () => rootServerRouteImport,
-} as any);
 
 export interface FileRoutesByFullPath {
   "/keywords": typeof PrivateKeywordsRoute;
@@ -84,6 +80,7 @@ export interface FileRoutesByFullPath {
   "/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
   "/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
 }
 export interface FileRoutesByTo {
   "/keywords": typeof PrivateKeywordsRoute;
@@ -93,6 +90,7 @@ export interface FileRoutesByTo {
   "/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
   "/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -105,6 +103,7 @@ export interface FileRoutesById {
   "/_private/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/_private/dashboard/articles": typeof PrivateDashboardArticlesRoute;
   "/_private/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -115,7 +114,8 @@ export interface FileRouteTypes {
     | "/"
     | "/dashboard/archived"
     | "/dashboard/articles"
-    | "/dashboard/trash-bin";
+    | "/dashboard/trash-bin"
+    | "/api/auth/$";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/keywords"
@@ -124,7 +124,8 @@ export interface FileRouteTypes {
     | "/"
     | "/dashboard/archived"
     | "/dashboard/articles"
-    | "/dashboard/trash-bin";
+    | "/dashboard/trash-bin"
+    | "/api/auth/$";
   id:
     | "__root__"
     | "/_private"
@@ -135,33 +136,14 @@ export interface FileRouteTypes {
     | "/_public/"
     | "/_private/dashboard/archived"
     | "/_private/dashboard/articles"
-    | "/_private/dashboard/trash-bin";
+    | "/_private/dashboard/trash-bin"
+    | "/api/auth/$";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   PrivateRoute: typeof PrivateRouteWithChildren;
   PublicRoute: typeof PublicRouteWithChildren;
-}
-export interface FileServerRoutesByFullPath {
-  "/api/auth/$": typeof ApiAuthSplatServerRoute;
-}
-export interface FileServerRoutesByTo {
-  "/api/auth/$": typeof ApiAuthSplatServerRoute;
-}
-export interface FileServerRoutesById {
-  __root__: typeof rootServerRouteImport;
-  "/api/auth/$": typeof ApiAuthSplatServerRoute;
-}
-export interface FileServerRouteTypes {
-  fileServerRoutesByFullPath: FileServerRoutesByFullPath;
-  fullPaths: "/api/auth/$";
-  fileServerRoutesByTo: FileServerRoutesByTo;
-  to: "/api/auth/$";
-  id: "__root__" | "/api/auth/$";
-  fileServerRoutesById: FileServerRoutesById;
-}
-export interface RootServerRouteChildren {
-  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute;
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -208,6 +190,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof PrivateKeywordsRouteImport;
       parentRoute: typeof PrivateRoute;
     };
+    "/api/auth/$": {
+      id: "/api/auth/$";
+      path: "/api/auth/$";
+      fullPath: "/api/auth/$";
+      preLoaderRoute: typeof ApiAuthSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/_private/dashboard/trash-bin": {
       id: "/_private/dashboard/trash-bin";
       path: "/dashboard/trash-bin";
@@ -228,17 +217,6 @@ declare module "@tanstack/react-router" {
       fullPath: "/dashboard/archived";
       preLoaderRoute: typeof PrivateDashboardArchivedRouteImport;
       parentRoute: typeof PrivateRoute;
-    };
-  }
-}
-declare module "@tanstack/react-start/server" {
-  interface ServerFileRoutesByPath {
-    "/api/auth/$": {
-      id: "/api/auth/$";
-      path: "/api/auth/$";
-      fullPath: "/api/auth/$";
-      preLoaderRoute: typeof ApiAuthSplatServerRouteImport;
-      parentRoute: typeof rootServerRouteImport;
     };
   }
 }
@@ -278,13 +256,17 @@ const PublicRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   PrivateRoute: PrivateRouteWithChildren,
   PublicRoute: PublicRouteWithChildren,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>();
-const rootServerRouteChildren: RootServerRouteChildren = {
-  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
-};
-export const serverRouteTree = rootServerRouteImport
-  ._addFileChildren(rootServerRouteChildren)
-  ._addFileTypes<FileServerRouteTypes>();
+
+import type { getRouter } from "./router.tsx";
+import type { createStart } from "@tanstack/react-start";
+declare module "@tanstack/react-start" {
+  interface Register {
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
+  }
+}

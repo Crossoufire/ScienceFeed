@@ -1,9 +1,9 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {Button} from "@/components/ui/button";
-import authClient from "@/lib/auth/auth-client";
+import authClient from "@/lib/utils/auth-client";
 import {createFileRoute} from "@tanstack/react-router";
-import {Features} from "@/components/homepage/features";
+import {Button} from "@/lib/client/components/ui/button";
+import {Features} from "@/lib/client/components/homepage/features";
 
 
 export const Route = createFileRoute("/_public/")({

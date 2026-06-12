@@ -1,18 +1,16 @@
 /// <reference types="vite/client"/>
 import appCss from "@/styles.css?url";
 import React, {lazy, Suspense} from "react";
-import {authOptions} from "@/lib/react-query";
-import {Toaster} from "@/components/ui/sonner";
-import {useNProgress} from "@/hooks/use-nprogress";
+import {authOptions} from "@/lib/client/react-query";
 import type {QueryClient} from "@tanstack/react-query";
-import {ThemeProvider} from "@/components/theme-provider";
-import {createRootRouteWithContext, HeadContent, Outlet, Scripts,} from "@tanstack/react-router";
+import {Toaster} from "@/lib/client/components/ui/sonner";
+import {useNProgress} from "@/lib/client/hooks/use-nprogress";
+import {ThemeProvider} from "@/lib/client/components/theme-provider";
+import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-    beforeLoad: async ({ context: { queryClient } }) => {
-        return queryClient.fetchQuery(authOptions());
-    },
+    beforeLoad: async ({ context: { queryClient } }) => queryClient.prefetchQuery(authOptions),
     head: () => ({
         meta: [
             { charSet: "utf-8" },

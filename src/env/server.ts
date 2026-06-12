@@ -2,17 +2,21 @@ import * as z from "zod";
 import {createEnv} from "@t3-oss/env-core";
 
 
-export const env = createEnv({
+export const serverEnv = createEnv({
     server: {
-        DATABASE_URL: z.url(),
-        VITE_BASE_URL: z.url().default("http://localhost:3000"),
+        // Database
+        DATABASE_URL: z.url().default("file:./instance/site.db"),
 
-        BETTER_AUTH_SECRET: z.string().min(1),
-        GOOGLE_CLIENT_ID: z.string().optional(),
-        GOOGLE_CLIENT_SECRET: z.string().optional(),
+        // Better-Auth
+        BETTER_AUTH_SECRET: z.string().min(20),
 
-        MAIL_USERNAME: z.email(),
-        MAIL_PASSWORD: z.string().min(1),
+        // OAuth2 Providers
+        GOOGLE_CLIENT_ID: z.string(),
+        GOOGLE_CLIENT_SECRET: z.string(),
+
+        // Admin Secrets
+        ADMIN_MAIL_USERNAME: z.email(),
+        ADMIN_MAIL_PASSWORD: z.string().min(8),
     },
     runtimeEnv: process.env,
 });

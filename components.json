@@ -13,9 +13,9 @@
     },
     "aliases": {
         "lib": "@/lib",
-        "hooks": "@/hooks",
-        "utils": "@/lib/utils",
-        "ui": "@/components/ui",
-        "components": "@/components"
+        "utils": "@/lib/utils/utils",
+        "hooks": "@/lib/client/hooks",
+        "ui": "@/lib/client/components/ui",
+        "components": "@/lib/client/components"
     }
 }

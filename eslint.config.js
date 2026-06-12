@@ -16,6 +16,7 @@ export default [
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
+            "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
         },
     },
     reactPlugin.configs.recommended,

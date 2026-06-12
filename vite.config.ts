@@ -8,14 +8,11 @@ import {tanstackStart} from "@tanstack/react-start/plugin/vite";
 export default defineConfig({
     plugins: [
         tsConfigPaths({ projects: ["./tsconfig.json"] }),
-        tailwindcss(),
         tanstackStart({
-            target: "node-server",
-            customViteReactPlugin: true,
             spa: {
                 enabled: true,
             },
-            tsr: {
+            router: {
                 semicolons: true,
                 quoteStyle: "double",
             },
@@ -25,5 +22,6 @@ export default defineConfig({
                 plugins: [["babel-plugin-react-compiler", { target: "19" }]],
             },
         }),
+        tailwindcss(),
     ],
 });

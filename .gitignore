@@ -14,6 +14,6 @@ dist
 /api/
 /server/build
 /public/build
-/instance
+/instance/*
 
 .tanstack

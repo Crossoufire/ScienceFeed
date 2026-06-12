@@ -1,17 +1,17 @@
 import {toast} from "sonner";
 import * as React from "react";
 import {useState} from "react";
-import {cn} from "@/lib/utils";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {UserKeyword} from "@/server/types/types";
-import {PageTitle} from "@/components/page-title";
+import {cn} from "@/lib/utils/utils";
+import {UserKeyword} from "@/lib/types/types";
 import {createFileRoute} from "@tanstack/react-router";
-import {queryKeys, userKeywordsOptions} from "@/lib/react-query";
+import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
+import {PageTitle} from "@/lib/client/components/page-title";
 import {PauseCircle, PlayCircle, Plus, Trash2} from "lucide-react";
 import {useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {useAddKeywordMutation, useDeleteKeywordMutation, useToggleKeywordMutation} from "@/lib/react-query/mutations";
+import {queryKeys, userKeywordsOptions} from "@/lib/client/react-query";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
+import {useAddKeywordMutation, useDeleteKeywordMutation, useToggleKeywordMutation} from "@/lib/client/react-query/mutations";
 
 
 export const Route = createFileRoute("/_private/keywords")({
