@@ -13,7 +13,9 @@ export const useGeneralMutation = () => {
 
     return useMutation({
         mutationFn: postGeneralSettings,
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: authOptions.queryKey }),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: authOptions.queryKey });
+        },
     });
 };
 
@@ -45,11 +47,13 @@ export const useCreateRssFeedMutation = () => {
     })
 }
 
+
 export const useRemoveUserRssFeedMutation = () => {
     return useMutation({
         mutationFn: removeRssFeedsFromUser,
     })
 }
+
 
 export const useAddRssFeedsToUserMutation = () => {
     return useMutation({
@@ -60,55 +64,24 @@ export const useAddRssFeedsToUserMutation = () => {
 
 export const useArchiveArticles = (filters: UserArticlesSearch) => {
     const queryClient = useQueryClient();
-    const queryKey = userArticlesOptions(filters).queryKey;
 
     return useMutation({
         mutationFn: archiveArticles,
-        onMutate: async (variables) => {
-            await queryClient.cancelQueries({ queryKey });
-            const previousData = queryClient.getQueryData(queryKey);
-            queryClient.setQueryData(queryKey, (oldData) => {
-                if (!oldData) return;
-                return {
-                    ...oldData,
-                    total: oldData.total - variables.data.articleIds.length,
-                    articles: oldData.articles.filter((article) => !variables.data.articleIds.includes(article.id)),
-                }
-            });
-            return { previousData };
-        },
-        onError: (_error, _variables, previousData) => {
-            if (!previousData) return;
-            queryClient.setQueryData(queryKey, previousData.previousData);
-        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: userArticlesOptions(filters).queryKey });
+        }
     });
 }
 
 
 export const useDeleteArticles = (filters: UserArticlesSearch) => {
     const queryClient = useQueryClient();
-    const queryKey = userArticlesOptions(filters).queryKey;
 
     return useMutation({
         mutationFn: deleteArticles,
-        onMutate: async (variables) => {
-            await queryClient.cancelQueries({ queryKey });
-            const previousData = queryClient.getQueryData(queryKey);
-            queryClient.setQueryData(queryKey, (oldData) => {
-                if (!oldData || !variables) return;
-                return {
-                    ...oldData,
-                    total: oldData.total - variables.data.articleIds.length,
-                    articles: oldData.articles.filter((article) => !variables.data.articleIds.includes(article.id)),
-                }
-            });
-
-            return { previousData };
-        },
-        onError: (_error, _variables, previousData) => {
-            if (!previousData) return;
-            queryClient.setQueryData(queryKey, previousData.previousData);
-        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: userArticlesOptions(filters).queryKey });
+        }
     });
 }
 
@@ -121,9 +94,8 @@ export const useRssFetcher = (filters: UserArticlesSearch) => {
         onError: () => toast.error("An error occurred while running the RSS Fetcher"),
         onSuccess: async (data) => {
             await queryClient.invalidateQueries({ queryKey: userArticlesOptions(filters).queryKey });
-            if (data) {
-                return toast.warning(data?.warn);
-            }
+
+            if (data) return toast.warning(data?.warn);
             toast.success("RSS Fetcher successfully finished");
         },
     });

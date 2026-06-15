@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_private/dashboard/articles")({
 });
 
 
-const DEFAULT = { search: "", page: 1, keywordsIds: [] };
+const DEFAULT = { search: "", page: 1, keywordsIds: [] } satisfies ReturnType<typeof userArticlesSearchSchema.parse>;
 
 
 function ArticlesPage() {
@@ -111,7 +111,7 @@ function ArticlesPage() {
     });
 
     return (
-        <PageTitle title={`Articles (${apiData.total})`} subtitle="Your Recent RSS feed articles">
+        <PageTitle title={`Articles (${apiData.pagination.total})`} subtitle="Your Recent RSS feed articles">
             <div className={cn(rssFetcherMutation.isPending && "opacity-50 pointer-events-none")}>
                 <div className="flex flex-wrap items-baseline justify-between gap-4 mt-3">
                     <InputSearch
@@ -145,8 +145,8 @@ function ArticlesPage() {
                 <div className="mb-6 -mt-2">
                     <Pagination
                         isDisabled={isEditing}
-                        totalPages={apiData.pages}
                         onChangePage={onPageChange}
+                        totalPages={apiData.pagination.pages}
                         currentPage={filters?.page ?? DEFAULT.page}
                     />
                 </div>
@@ -166,8 +166,8 @@ function ArticlesPage() {
                 <div className="mt-3">
                     <Pagination
                         isDisabled={isEditing}
-                        totalPages={apiData.pages}
                         onChangePage={onPageChange}
+                        totalPages={apiData.pagination.pages}
                         currentPage={filters?.page ?? DEFAULT.page}
                     />
                 </div>

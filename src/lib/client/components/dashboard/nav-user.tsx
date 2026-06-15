@@ -28,45 +28,43 @@ export function NavUser() {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu>
-                    <DropdownMenuTrigger>
+                    <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
-                            <>
-                                <Avatar className="h-8 w-8 rounded-lg">
-                                    <AvatarImage src="#" alt={currentUser?.name}/>
-                                    <AvatarFallback className="rounded-lg">
-                                        {currentUser?.name.slice(0, 1)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="grid flex-1 text-left text-sm leading-tight">
+                            <Avatar className="h-8 w-8 rounded-lg">
+                                <AvatarImage src="#" alt={currentUser?.name}/>
+                                <AvatarFallback className="rounded-lg">
+                                    {currentUser?.name.slice(0, 1)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">
                                     {currentUser?.name}
                                 </span>
-                                    <span className="truncate text-xs">
+                                <span className="truncate text-xs">
                                     {currentUser?.email}
                                 </span>
-                                </div>
-                                <ChevronsUpDown className="ml-auto size-4"/>
-                            </>
+                            </div>
+                            <ChevronsUpDown className="ml-auto size-4"/>
                         </SidebarMenuButton>
-                        <DropdownMenuContent
-                            align="end"
-                            sideOffset={4}
-                            side={isMobile ? "bottom" : "right"}
-                            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                        >
-                            <DropdownMenuItem asChild>
-                                <Link to="/settings">
-                                    <Settings/> Settings
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => logoutUser()}>
-                                <LogOut className="w-5 h-5"/> Logout
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
                     </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        align="end"
+                        sideOffset={4}
+                        side={isMobile ? "bottom" : "right"}
+                        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                    >
+                        <DropdownMenuItem asChild>
+                            <Link to="/settings">
+                                <Settings/> Settings
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => logoutUser()}>
+                            <LogOut className="w-5 h-5"/> Logout
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>
         </SidebarMenu>

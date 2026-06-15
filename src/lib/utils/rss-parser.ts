@@ -1,6 +1,9 @@
 import {XMLParser} from "fast-xml-parser";
 
 
+const FEEDPARSER_USER_AGENT = "feedparser/6.0.11 +https://github.com/kurtmckee/feedparser/";
+
+
 export type RssItem = {
     link: string | null;
     title: string | null;
@@ -13,7 +16,7 @@ export async function parseRssFeed(url: string): Promise<RssItem[]> {
         headers: {
             "Cache-Control": "no-cache",
             "Accept-Language": "en-US,en;q=0.9",
-            "User-Agent": "ScienceFeed/1.0 (+https://science-feed.mylists.info)",
+            "User-Agent": FEEDPARSER_USER_AGENT,
             "Accept": "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5",
         },
     });

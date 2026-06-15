@@ -1,29 +1,13 @@
-import {toast} from "sonner";
 import {routeTree} from "./routeTree.gen";
+import {QueryClient} from "@tanstack/react-query";
 import {createRouter} from "@tanstack/react-router";
 import {DefaultNotFound} from "@/lib/client/components/default-not-found";
-import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
 import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
 import {DefaultCatchBoundary} from "@/lib/client/components/default-catch-boundary";
 
 
 export function getRouter() {
     const queryClient = new QueryClient({
-        queryCache: new QueryCache({
-            onError: (error, query) => {
-                if (query?.meta?.displayErrorMsg) {
-                    toast.error(error.message);
-                }
-                if (query?.meta?.errorMessage) {
-                    toast.error(query.meta.errorMessage.toString());
-                }
-            },
-        }),
-        mutationCache: new MutationCache({
-            onError: (error) => {
-                toast.error(error.message);
-            },
-        }),
         defaultOptions: {
             queries: {
                 retry: false,
