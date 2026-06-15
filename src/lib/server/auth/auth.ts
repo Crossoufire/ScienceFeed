@@ -25,7 +25,16 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
     session: {
         cookieCache: {
             enabled: true,
-            maxAge: 5 * 60,
+            strategy: "jwe",
+            maxAge: 7 * 24 * 60 * 60,
+        },
+    },
+    account: {
+        storeAccountCookie: true,
+        storeStateStrategy: "cookie",
+        accountLinking: {
+            enabled: true,
+            trustedProviders: ["google"],
         },
     },
     socialProviders: {

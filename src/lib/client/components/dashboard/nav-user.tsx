@@ -4,7 +4,7 @@ import {authOptions} from "@/lib/client/react-query";
 import {useQueryClient} from "@tanstack/react-query";
 import {ChevronsUpDown, LogOut, Settings} from "lucide-react";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
-import {Avatar, AvatarFallback, AvatarImage} from "@radix-ui/react-avatar";
+import {Avatar, AvatarFallback, AvatarImage} from "@/lib/client/components/ui/avatar";
 import {SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar} from "@/lib/client/components/ui/sidebar";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
 
@@ -33,10 +33,10 @@ export function NavUser() {
                             size="lg"
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
-                            <Avatar className="h-8 w-8 rounded-lg">
+                            <Avatar className="size-9 rounded-lg">
                                 <AvatarImage src="#" alt={currentUser?.name}/>
                                 <AvatarFallback className="rounded-lg">
-                                    {currentUser?.name.slice(0, 1)}
+                                    {currentUser?.name.slice(0, 2)}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">

@@ -12,6 +12,7 @@
         "ui": "bunx shadcn@latest",
         "build": "bun --bun vite build",
         "dev": "bun --bun vite dev --port 3000",
+        "migrate:auth": "bun --bun scripts/migrate-script.ts",
         "cleanup:deleted-articles": "bun --bun scripts/cleanup-deleted-articles.ts",
         "auth:generate": "npx @better-auth/cli@latest generate -y --output src/lib/server/database/schema/auth.schema.ts --config src/lib/server/auth/"
     },
@@ -40,6 +41,7 @@
         "lucide-react": "^1.17.0",
         "nprogress": "^0.2.0",
         "p-limit": "^7.3.0",
+        "radix-ui": "^1.5.0",
         "react": "19.2.6",
         "react-dom": "19.2.6",
         "react-hook-form": "^7.76.1",
