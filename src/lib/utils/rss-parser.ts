@@ -11,12 +11,15 @@ export type RssItem = {
 export async function parseRssFeed(url: string): Promise<RssItem[]> {
     const res = await fetch(url, {
         headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+            "Cache-Control": "no-cache",
+            "Accept-Language": "en-US,en;q=0.9",
+            "User-Agent": "ScienceFeed/1.0 (+https://science-feed.mylists.info)",
+            "Accept": "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5",
         },
     });
 
     if (!res.ok) {
-        throw new Error(`Failed to fetch RSS feed. HTTP ${res.status} ${res.statusText}`);
+        throw new Error(`Failed to fetch RSS feed ${url}. HTTP ${res.status} ${res.statusText}`);
     }
 
     const parser = new XMLParser({

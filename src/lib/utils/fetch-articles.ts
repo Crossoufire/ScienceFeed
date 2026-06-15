@@ -12,8 +12,19 @@ type Feed = {
     publisher: string;
 }
 
+export type FetchArticlesResult = {
+    processedFeeds: number;
+    failedFeeds: {
+        url: string;
+        error: string;
+        feedId: number;
+        journal: string;
+        publisher: string;
+    }[];
+}
 
-export async function fetchAndFilterArticles(targetUserId?: number) {
+
+export async function fetchAndFilterArticles(targetUserId?: number): Promise<FetchArticlesResult> {
     const userFilter = targetUserId ? eq(user.id, targetUserId) : undefined;
 
     const selectedUsers = await db
@@ -21,7 +32,12 @@ export async function fetchAndFilterArticles(targetUserId?: number) {
         .from(user)
         .where(userFilter);
 
-    if (selectedUsers.length === 0) return;
+    const result: FetchArticlesResult = {
+        processedFeeds: 0,
+        failedFeeds: [],
+    };
+
+    if (selectedUsers.length === 0) return result;
     const userIds = selectedUsers.map((u) => u.id);
 
     const userRssRows = await db
@@ -49,7 +65,7 @@ export async function fetchAndFilterArticles(targetUserId?: number) {
     }
 
     const allRssFeedIds = Array.from(new Set(userRssRows.map((r) => r.rssFeedId)));
-    if (allRssFeedIds.length === 0) return;
+    if (allRssFeedIds.length === 0) return result;
 
     const feeds = await db
         .select()
@@ -60,8 +76,20 @@ export async function fetchAndFilterArticles(targetUserId?: number) {
     const parsedById = new Map<number, { feed: Feed; parsed: RssItem[] }>();
     await Promise.all(feeds.map((f) =>
         limit(async () => {
-            const parsed = await parseRssFeed(f.url);
-            parsedById.set(f.id, { feed: f, parsed });
+            try {
+                const parsed = await parseRssFeed(f.url);
+                parsedById.set(f.id, { feed: f, parsed });
+                result.processedFeeds++;
+            }
+            catch (error) {
+                result.failedFeeds.push({
+                    url: f.url,
+                    feedId: f.id,
+                    journal: f.journal,
+                    publisher: f.publisher,
+                    error: error instanceof Error ? error.message : "Unknown RSS fetch error",
+                });
+            }
         }),
     ));
 
@@ -246,4 +274,6 @@ export async function fetchAndFilterArticles(targetUserId?: number) {
 
         userToArticleSet.set(user.id, userArticleSet);
     }
+
+    return result;
 }

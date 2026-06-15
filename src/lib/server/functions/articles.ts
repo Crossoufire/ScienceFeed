@@ -1,7 +1,7 @@
 import {db} from "@/lib/server/database/db";
 import {createServerFn} from "@tanstack/react-start";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
-import {and, count, desc, eq, getTableColumns, inArray, like, or, SQL} from "drizzle-orm";
+import {and, countDistinct, desc, eq, getTableColumns, inArray, like, or, sql, SQL} from "drizzle-orm";
 import {article, keyword, rssFeed, userArticle, userArticleKeyword} from "@/lib/server/database/schema";
 import {archiveArticlesSchema, deleteArticlesSchema, userArticlesSearchSchema} from "@/lib/schemas/schemas";
 
@@ -44,7 +44,7 @@ export const getUserArticles = createServerFn({ method: "GET" })
         }
 
         const totalArticles = db
-            .select({ count: count() })
+            .select({ count: countDistinct(userArticle.id) })
             .from(userArticle)
             .innerJoin(article, eq(userArticle.articleId, article.id))
             .innerJoin(userArticleKeyword, eq(userArticle.id, userArticleKeyword.userArticleId))
@@ -52,7 +52,7 @@ export const getUserArticles = createServerFn({ method: "GET" })
             .where(and(...whereConditions, searchConditions, ...keywordConditions))
             .get()
 
-        const articleResults = await db
+        const articleRows = await db
             .select({
                 ...getTableColumns(userArticle),
                 link: article.link,
@@ -60,6 +60,7 @@ export const getUserArticles = createServerFn({ method: "GET" })
                 summary: article.summary,
                 journal: rssFeed.journal,
                 publisher: rssFeed.publisher,
+                keywords: sql<string>`group_concat(distinct ${keyword.name})`,
             })
             .from(userArticle)
             .innerJoin(article, eq(userArticle.articleId, article.id))
@@ -71,6 +72,11 @@ export const getUserArticles = createServerFn({ method: "GET" })
             .limit(perPage)
             .offset(offset)
             .groupBy(userArticle.id)
+
+        const articleResults = articleRows.map((row) => ({
+            ...row,
+            keywords: row.keywords ? row.keywords.split(",") : [],
+        }));
 
         // Get user's active keywords that appear in articles
         const userKeywords = await db
@@ -84,15 +90,6 @@ export const getUserArticles = createServerFn({ method: "GET" })
             .innerJoin(userArticle, eq(userArticleKeyword.userArticleId, userArticle.id))
             .where(and(eq(keyword.active, true), eq(keyword.userId, currentUser.id), eq(userArticle.userId, currentUser.id)))
             .groupBy(keyword.id)
-
-        console.dir({
-            perPage,
-            page: pageNum,
-            keywords: userKeywords,
-            articles: articleResults,
-            total: totalArticles?.count ?? 0,
-            pages: Math.ceil((totalArticles?.count ?? 0) / perPage),
-        }, { depth: null });
 
         return {
             perPage,

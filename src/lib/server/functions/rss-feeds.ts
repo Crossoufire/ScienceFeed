@@ -12,16 +12,17 @@ export const getUserRssFeeds = createServerFn({ method: "GET" })
     .handler(async ({ context: { currentUser } }) => {
         const userRssFeeds = await db
             .select({
-                id: userRssFeed.id,
-                userId: userRssFeed.userId,
-                rssFeedId: userRssFeed.rssFeedId,
+                id: rssFeed.id,
                 url: rssFeed.url,
                 journal: rssFeed.journal,
+                userId: userRssFeed.userId,
                 publisher: rssFeed.publisher,
+                userRssFeedId: userRssFeed.id,
+                rssFeedId: userRssFeed.rssFeedId,
             })
             .from(userRssFeed)
             .innerJoin(rssFeed, eq(userRssFeed.rssFeedId, rssFeed.id))
-            .where(eq(userRssFeed.userId, currentUser.id))
+            .where(eq(userRssFeed.userId, currentUser.id));
 
         return userRssFeeds;
     })
@@ -137,11 +138,6 @@ export const fetchUserRssFeeds = createServerFn({ method: "GET" })
             }
         }
 
-        await db
-            .update(user)
-            .set({ lastRssUpdate: sql`(CURRENT_TIMESTAMP)` })
-            .where(eq(user.id, currentUser.id))
-
         const activeKeywords = await db
             .select({ name: keyword.name })
             .from(keyword)
@@ -151,5 +147,24 @@ export const fetchUserRssFeeds = createServerFn({ method: "GET" })
             return { warn: "At least one active keyword is required to fetch articles" }
         }
 
-        await fetchAndFilterArticles(currentUser.id)
+        const result = await fetchAndFilterArticles(currentUser.id)
+
+        if (result.processedFeeds > 0) {
+            await db
+                .update(user)
+                .set({ lastRssUpdate: sql`(CURRENT_TIMESTAMP)` })
+                .where(eq(user.id, currentUser.id))
+        }
+
+        if (result.failedFeeds.length > 0) {
+            const failedLabels = result.failedFeeds
+                .slice(0, 3)
+                .map((feed) => `${feed.publisher} - ${feed.journal}`)
+                .join(", ");
+
+            return {
+                warn: `${result.failedFeeds.length} feed(s) could not be fetched: ${failedLabels}`,
+                failedFeeds: result.failedFeeds,
+            }
+        }
     })

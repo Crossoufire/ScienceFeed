@@ -30,10 +30,9 @@ async function migrateUsers() {
 
             await db
                 .insert(account)
-                // @ts-expect-error - Create account entry for user credentials
                 .values({
                     accountId: String(newUser.id),
-                    providerId: null,
+                    providerId: "credential",
                     userId: newUser.id,
                     accessToken: null,
                     refreshToken: null,

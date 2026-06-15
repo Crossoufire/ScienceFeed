@@ -19,16 +19,16 @@ export const deleteArticlesSchema = z.object({
 
 
 export const generalSettingsSchema = z.object({
-    name: z.string(),
     sendFeedEmails: z.boolean(),
-    maxArticlesPerEmail: z.number(),
+    name: z.string().trim().min(3).max(15),
+    maxArticlesPerEmail: z.coerce.number().int().min(1).max(50),
 });
 
 
 export const createRssFeedSchema = z.object({
-    url: z.string(),
-    journal: z.string(),
-    publisher: z.string(),
+    url: z.url().trim(),
+    journal: z.string().trim().min(1),
+    publisher: z.string().trim().min(1),
 });
 
 
