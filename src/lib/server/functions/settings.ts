@@ -15,8 +15,6 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
             .set({
                 name: data.name,
                 updatedAt: new Date(),
-                sendFeedEmails: data.sendFeedEmails,
-                maxArticlesPerEmail: data.maxArticlesPerEmail,
             })
             .where(eq(user.id, currentUser.id))
     })

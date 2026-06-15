@@ -13,10 +13,6 @@ export const serverEnv = createEnv({
         // OAuth2 Providers
         GOOGLE_CLIENT_ID: z.string(),
         GOOGLE_CLIENT_SECRET: z.string(),
-
-        // Admin Secrets
-        ADMIN_MAIL_USERNAME: z.email(),
-        ADMIN_MAIL_PASSWORD: z.string().min(8),
     },
     runtimeEnv: process.env,
 });

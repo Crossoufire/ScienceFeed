@@ -6,16 +6,19 @@ import {useAuth} from "@/lib/client/hooks/use-auth";
 import {GeneralSettings} from "@/lib/schemas/schemas";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
-import {Switch} from "@/lib/client/components/ui/switch";
 import {useGeneralMutation} from "@/lib/client/react-query/mutations";
-import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 
 
 export const GeneralForm = () => {
     const { currentUser } = useAuth();
-    const form = useForm<GeneralSettings>();
     const generalFormMutation = useGeneralMutation();
     const [errorMessage, setErrorMessage] = useState("");
+    const form = useForm<GeneralSettings>({
+        defaultValues: {
+            name: currentUser?.name ?? "",
+        },
+    });
 
     const onSubmit = (data: GeneralSettings) => {
         setErrorMessage("");
@@ -46,57 +49,11 @@ export const GeneralForm = () => {
                             <FormItem>
                                 <FormLabel>Username</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                        defaultValue={currentUser?.name}
-                                    />
+                                    <Input {...field}/>
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>
                         )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="sendFeedEmails"
-                        render={({ field }) =>
-                            <FormItem>
-                                <FormLabel>Send Mails (once a week)</FormLabel>
-                                <FormDescription>Most recent non-read articles</FormDescription>
-                                <div className="flex items-center gap-2">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            defaultChecked={currentUser?.sendFeedEmails ?? true}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none text-sm">
-                                        <span>&nbsp; Send</span>
-                                    </div>
-                                </div>
-                            </FormItem>
-                        }
-                    />
-                    <FormField
-                        control={form.control}
-                        name="maxArticlesPerEmail"
-                        render={({ field }) =>
-                            <FormItem>
-                                <FormLabel>Articles Send / Email</FormLabel>
-                                <FormDescription>Between 1 and 50</FormDescription>
-                                <FormControl>
-                                    <Input
-                                        {...field}
-                                        min={1}
-                                        max={50}
-                                        type="number"
-                                        className="w-20"
-                                        defaultValue={currentUser?.maxArticlesPerEmail}
-                                    />
-                                </FormControl>
-                                <FormMessage/>
-                            </FormItem>
-                        }
                     />
                 </div>
                 <Button className="mt-6" disabled={generalFormMutation.isPending}>

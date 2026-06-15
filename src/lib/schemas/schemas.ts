@@ -20,9 +20,7 @@ export const deleteArticlesSchema = z.object({
 
 
 export const generalSettingsSchema = z.object({
-    sendFeedEmails: z.boolean(),
     name: z.string().trim().min(3).max(15),
-    maxArticlesPerEmail: z.coerce.number().int().min(1).max(50),
 });
 
 

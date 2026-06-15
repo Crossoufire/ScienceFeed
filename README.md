@@ -8,7 +8,6 @@ and get updates based on keywords.
 * Add personalized keywords
 * Add RSS feeds from scientific journals
 * Mark articles as read or unread, archived or deleted
-* Get mail notifications when new articles are published every week
 * ...
 
 ## Support Me

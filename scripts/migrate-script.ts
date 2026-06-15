@@ -19,8 +19,6 @@ async function migrateUsers() {
                     name: oldUser.username,
                     emailVerified: oldUser.active,
                     lastRssUpdate: oldUser.last_rss_update,
-                    sendFeedEmails: oldUser.send_feed_emails,
-                    maxArticlesPerEmail: oldUser.max_articles_per_email,
                 }).returning();
 
             console.log(`Migrated user: ${oldUser.username}`);

@@ -1,7 +1,7 @@
 import {sql} from "drizzle-orm";
 import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
-import {index, integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {index, integer, sqliteTable, text, uniqueIndex} from "drizzle-orm/sqlite-core";
 
 
 export const rssFeed = sqliteTable("rss_feed", {
@@ -18,6 +18,7 @@ export const keyword = sqliteTable("keyword", {
     name: text().notNull(),
     active: integer("active", { mode: "boolean" }).default(true).notNull(),
 }, (table) => [
+    uniqueIndex("ux_keyword_user_name").on(table.userId, table.name),
     index("ix_keyword_name").on(table.name),
     index("ix_keyword_active").on(table.active),
     index("ix_keyword_user_id").on(table.userId),
@@ -32,6 +33,7 @@ export const article = sqliteTable("article", {
     summary: text().notNull(),
     addedDate: text("added_date").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 }, (table) => [
+    uniqueIndex("ux_article_link").on(table.link),
     index("ix_article_rss_feed_id").on(table.rssFeedId),
 ]);
 
@@ -41,6 +43,7 @@ export const userRssFeed = sqliteTable("user_rss_feed", {
     userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     rssFeedId: integer("rss_feed_id").notNull().references(() => rssFeed.id, { onDelete: "cascade" }),
 }, (table) => [
+    uniqueIndex("ux_user_rss_feed_user_feed").on(table.userId, table.rssFeedId),
     index("ix_user_rss_feed_user_id").on(table.userId),
     index("ix_user_rss_feed_rss_feed_id").on(table.rssFeedId),
 ]);
@@ -57,13 +60,17 @@ export const userArticle = sqliteTable("user_article", {
     markedAsDeletedDate: text("marked_as_deleted_date"),
     markedAsArchivedDate: text("marked_as_archived_date"),
     addedDate: text("added_date").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-});
+}, (table) => [
+    uniqueIndex("ux_user_article_user_article").on(table.userId, table.articleId),
+]);
 
 
 export const userArticleKeyword = sqliteTable("user_article_keyword", {
     keywordId: integer("keyword_id").notNull().references(() => keyword.id, { onDelete: "cascade" }),
     userArticleId: integer("user_article_id").notNull().references(() => userArticle.id, { onDelete: "cascade" }),
-});
+}, (table) => [
+    uniqueIndex("ux_user_article_keyword_article_keyword").on(table.userArticleId, table.keywordId),
+]);
 
 
 export const userRelations = relations(user, ({ many }) => ({

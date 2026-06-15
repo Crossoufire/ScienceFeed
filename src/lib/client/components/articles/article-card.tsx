@@ -37,7 +37,10 @@ export const ArticleCard = (props: ArticleCardProps) => {
         showDeleteAction = true,
         showArchiveAction = true,
     } = props;
+
     const ArchiveIcon = archiveIcon === "restore" ? RotateCcw : Archive;
+    const stateLabel = article.isDeleted ? "Deleted" : article.isArchived ? "Archived" : null;
+    const stateDate = article.isDeleted ? article.markedAsDeletedDate : article.markedAsArchivedDate;
 
     const onCardClick = () => {
         if (isEditing) {
@@ -82,7 +85,12 @@ export const ArticleCard = (props: ArticleCardProps) => {
                         </Badge>
                     )}
                 </div>
-                <div className="text-sm flex items-center flex-wrap gap-2">
+                <div className="text-sm flex items-center flex-wrap justify-end gap-2">
+                    {stateLabel && stateDate &&
+                        <span className="text-xs text-muted-foreground">
+                            {stateLabel}: {formatDateTime(stateDate, { includeTime: true, useLocalTz: true })}
+                        </span>
+                    }
                     {showArchiveAction &&
                         <Button
                             size="sm"
@@ -115,8 +123,14 @@ export const ArticleCard = (props: ArticleCardProps) => {
                         <TooltipTrigger>
                             <Info className="w-4 h-4"/>
                         </TooltipTrigger>
-                        <TooltipContent side="left" className="font-semibold">
-                            Added: {formatDateTime(article.addedDate, { includeTime: true, useLocalTz: true })}
+                        <TooltipContent side="left" className="font-semibold space-y-1">
+                            <div>Added: {formatDateTime(article.addedDate, { includeTime: true, useLocalTz: true })}</div>
+                            {article.markedAsArchivedDate &&
+                                <div>Archived: {formatDateTime(article.markedAsArchivedDate, { includeTime: true, useLocalTz: true })}</div>
+                            }
+                            {article.markedAsDeletedDate &&
+                                <div>Deleted: {formatDateTime(article.markedAsDeletedDate, { includeTime: true, useLocalTz: true })}</div>
+                            }
                         </TooltipContent>
                     </Tooltip>
                 </div>

@@ -12,6 +12,7 @@
         "ui": "bunx shadcn@latest",
         "build": "bun --bun vite build",
         "dev": "bun --bun vite dev --port 3000",
+        "cleanup:deleted-articles": "bun --bun scripts/cleanup-deleted-articles.ts",
         "auth:generate": "npx @better-auth/cli@latest generate -y --output src/lib/server/database/schema/auth.schema.ts --config src/lib/server/auth/"
     },
     "dependencies": {

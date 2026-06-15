@@ -7,8 +7,6 @@ export const user = sqliteTable("user", {
     image: text("image"),
     email: text("email").notNull().unique(),
     lastRssUpdate: text("last_rss_update"),
-    maxArticlesPerEmail: integer("max_articles_per_email").default(20).notNull(),
-    sendFeedEmails: integer("send_feed_emails", { mode: "boolean" }).default(true).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
     emailVerified: integer("email_verified", { mode: "boolean" }).$defaultFn(() => false).notNull(),

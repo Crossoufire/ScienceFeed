@@ -7,7 +7,7 @@ import {isNotFound, isRedirect} from "@tanstack/react-router";
  * Error Types and Logic
  * redirect: thrown in code but returned and handled frontend side by tanstack router.
  * notFound: thrown in code but returned and handled frontend side by tanstack router.
- * Error: Unexpected Error anywhere, send admin email, return a generic error message.
+ * Error: unexpected error anywhere, return a generic error message.
  **/
 export const funcErrorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
     try {

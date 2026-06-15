@@ -14,18 +14,6 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
     }),
     user: {
         additionalFields: {
-            sendFeedEmails: {
-                type: "boolean",
-                defaultValue: true,
-                returned: true,
-                input: false,
-            },
-            maxArticlesPerEmail: {
-                type: "number",
-                defaultValue: 20,
-                returned: true,
-                input: false,
-            },
             lastRssUpdate: {
                 type: "string",
                 defaultValue: null,
