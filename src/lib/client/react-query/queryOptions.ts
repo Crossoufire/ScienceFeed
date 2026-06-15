@@ -1,8 +1,8 @@
 import {queryOptions} from "@tanstack/react-query";
-import {UserArticlesSearch} from "@/lib/schemas/schemas";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getUserKeywords} from "@/lib/server/functions/keywords";
 import {getUserArticles} from "@/lib/server/functions/articles";
+import {UserArticlesSearch, UserArticleStatus} from "@/lib/schemas/schemas";
 import {getUserRssFeeds, rssFeedSearch} from "@/lib/server/functions/rss-feeds";
 
 
@@ -13,22 +13,25 @@ export const authOptions = queryOptions({
 });
 
 
-export const userArticlesOptions = (search: UserArticlesSearch) => queryOptions({
-    queryKey: ["userArticles", search] as const,
-    queryFn: () => getUserArticles({ data: search }),
+export const userArticleListOptions = (status: UserArticleStatus, search: UserArticlesSearch) => queryOptions({
+    queryKey: ["userArticles", status, search] as const,
+    queryFn: () => getUserArticles({ data: { ...search, status } }),
 });
 
 
-export const userArchivedOptions = (search: UserArticlesSearch) => queryOptions({
-    queryKey: ["userArchived", search] as const,
-    queryFn: () => ({}),
-});
+export const userArticlesOptions = (search: UserArticlesSearch) => {
+    return userArticleListOptions("active", search);
+}
 
 
-export const userDeletedOptions = (search: UserArticlesSearch) => queryOptions({
-    queryKey: ["userDeleted", search] as const,
-    queryFn: () => ({}),
-});
+export const userArchivedOptions = (search: UserArticlesSearch) => {
+    return userArticleListOptions("archived", search);
+}
+
+
+export const userDeletedOptions = (search: UserArticlesSearch) => {
+    return userArticleListOptions("deleted", search);
+}
 
 
 export const userKeywordsOptions = queryOptions({

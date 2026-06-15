@@ -1,12 +1,30 @@
 import {createFileRoute} from "@tanstack/react-router";
+import {userArchivedOptions} from "@/lib/client/react-query";
+import {userArticlesSearchSchema} from "@/lib/schemas/schemas";
+import {ArticleDashboard} from "@/lib/client/components/articles/article-dashboard";
 
 
 export const Route = createFileRoute("/_private/dashboard/archived")({
-    component: RouteComponent,
+    validateSearch: userArticlesSearchSchema,
+    loaderDeps: ({ search }) => ({ search }),
+    loader: ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(userArchivedOptions(search));
+    },
+    component: ArchivedPage,
 });
 
-function RouteComponent() {
+
+function ArchivedPage() {
+    const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
+
     return (
-        <div> Welcome to the Archived Page!</div>
+        <ArticleDashboard
+            mode="archived"
+            title="Archived"
+            filters={filters}
+            subtitle="Articles you have archived"
+            onSearchChange={(search) => navigate({ search })}
+        />
     );
 }

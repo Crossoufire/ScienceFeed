@@ -1,9 +1,8 @@
 import {toast} from "sonner";
-import {UserArticlesSearch} from "@/lib/schemas/schemas";
+import {authOptions} from "@/lib/client/react-query/queryOptions";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {postGeneralSettings} from "@/lib/server/functions/settings";
 import {archiveArticles, deleteArticles} from "@/lib/server/functions/articles";
-import {authOptions, userArticlesOptions} from "@/lib/client/react-query/queryOptions";
 import {addUserKeyword, deleteUserKeyword, toggleUserKeyword} from "@/lib/server/functions/keywords";
 import {addRssFeedsToUser, createRssFeed, fetchUserRssFeeds, removeRssFeedsFromUser} from "@/lib/server/functions/rss-feeds";
 
@@ -62,38 +61,43 @@ export const useAddRssFeedsToUserMutation = () => {
 }
 
 
-export const useArchiveArticles = (filters: UserArticlesSearch) => {
+const invalidateArticleLists = async (queryClient: ReturnType<typeof useQueryClient>) => {
+    await queryClient.invalidateQueries({ queryKey: ["userArticles"] });
+};
+
+
+export const useArchiveArticles = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: archiveArticles,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: userArticlesOptions(filters).queryKey });
+            await invalidateArticleLists(queryClient);
         }
     });
 }
 
 
-export const useDeleteArticles = (filters: UserArticlesSearch) => {
+export const useDeleteArticles = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: deleteArticles,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: userArticlesOptions(filters).queryKey });
+            await invalidateArticleLists(queryClient);
         }
     });
 }
 
 
-export const useRssFetcher = (filters: UserArticlesSearch) => {
+export const useRssFetcher = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: fetchUserRssFeeds,
         onError: () => toast.error("An error occurred while running the RSS Fetcher"),
         onSuccess: async (data) => {
-            await queryClient.invalidateQueries({ queryKey: userArticlesOptions(filters).queryKey });
+            await invalidateArticleLists(queryClient);
 
             if (data) return toast.warning(data?.warn);
             toast.success("RSS Fetcher successfully finished");

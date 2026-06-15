@@ -5,7 +5,6 @@ import {authOptions} from "@/lib/client/react-query";
 import type {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/client/components/ui/sonner";
 import {useNProgress} from "@/lib/client/hooks/use-nprogress";
-import {ThemeProvider} from "@/lib/client/components/theme-provider";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
@@ -32,16 +31,14 @@ function RootComponent() {
     useNProgress();
 
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" className="dark" suppressHydrationWarning>
         <head>
             <HeadContent/>
         </head>
         <body>
 
-        <ThemeProvider>
-            <Toaster richColors/>
-            <Outlet/>
-        </ThemeProvider>
+        <Toaster richColors/>
+        <Outlet/>
 
         {import.meta.env.DEV &&
             <ReactQueryDevtools buttonPosition="bottom-right"/>

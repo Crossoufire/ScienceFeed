@@ -1,11 +1,30 @@
 import {createFileRoute} from "@tanstack/react-router";
+import {userDeletedOptions} from "@/lib/client/react-query";
+import {userArticlesSearchSchema} from "@/lib/schemas/schemas";
+import {ArticleDashboard} from "@/lib/client/components/articles/article-dashboard";
 
 
 export const Route = createFileRoute("/_private/dashboard/trash-bin")({
-    component: RouteComponent,
+    validateSearch: userArticlesSearchSchema,
+    loaderDeps: ({ search }) => ({ search }),
+    loader: ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(userDeletedOptions(search));
+    },
+    component: TrashBinPage,
 });
 
 
-function RouteComponent() {
-    return <div>Hello "/_private/dashboard/trash-bin"!</div>;
+function TrashBinPage() {
+    const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
+
+    return (
+        <ArticleDashboard
+            mode="deleted"
+            title="Trash Bin"
+            filters={filters}
+            subtitle="Articles you have removed"
+            onSearchChange={(search) => navigate({ search })}
+        />
+    );
 }

@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_private")({
 });
 
 
-export function PrivateLayout() {
+function PrivateLayout() {
     const location = useLocation();
 
     const crumbs: Record<string, string> = {

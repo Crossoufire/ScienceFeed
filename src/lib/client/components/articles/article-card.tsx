@@ -1,29 +1,52 @@
+import {UserArticle} from "@/lib/types/types";
+import {cn, formatDateTime} from "@/lib/utils/utils";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
-import {cn, formatDateTime} from "@/lib/utils/utils";
-import {UserArticle} from "@/lib/types/types";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
-import {Archive, Info, Trash2} from "lucide-react";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {Archive, Info, RotateCcw, Trash2} from "lucide-react";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
 interface ArticleCardProps {
     isEditing: boolean,
     selected: number[],
     article: UserArticle,
+    deleteTitle?: string,
+    archiveTitle?: string,
+    showDeleteAction?: boolean,
+    showArchiveAction?: boolean,
+    archiveIcon?: "archive" | "restore",
     onSelectionClick: (articleId: number) => void,
     onDeleteClick: (articleIds: number[]) => void,
     onArchiveClick: (articleIds: number[]) => void,
 }
 
 
-export const ArticleCard = ({ article, isEditing, selected, onSelectionClick, onArchiveClick, onDeleteClick }: ArticleCardProps) => {
+export const ArticleCard = (props: ArticleCardProps) => {
+    const {
+        article,
+        selected,
+        isEditing,
+        onDeleteClick,
+        onArchiveClick,
+        onSelectionClick,
+        deleteTitle = "Delete",
+        archiveIcon = "archive",
+        archiveTitle = "Archive",
+        showDeleteAction = true,
+        showArchiveAction = true,
+    } = props;
+    const ArchiveIcon = archiveIcon === "restore" ? RotateCcw : Archive;
+
+    const onCardClick = () => {
+        if (isEditing) {
+            onSelectionClick(article.id);
+        }
+    };
+
     return (
-        <Card
-            onClick={() => onSelectionClick(article.id)}
-            className={cn("relative pb-0 bg-cyan-950 max-sm:w-full flex flex-col", isEditing && "cursor-pointer")}
-        >
+        <Card onClick={onCardClick} className={cn("relative pb-0 bg-cyan-950 max-sm:w-full flex flex-col", isEditing && "cursor-pointer")}>
             <div className="flex items-center gap-2">
                 {isEditing &&
                     <div className="ml-3">
@@ -60,12 +83,34 @@ export const ArticleCard = ({ article, isEditing, selected, onSelectionClick, on
                     )}
                 </div>
                 <div className="text-sm flex items-center flex-wrap gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onArchiveClick([article.id])} disabled={isEditing} title="Archive">
-                        <Archive className="h-4 w-4"/>
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => onDeleteClick([article.id])} disabled={isEditing} title="Delete">
-                        <Trash2 className="h-4 w-4"/>
-                    </Button>
+                    {showArchiveAction &&
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            title={archiveTitle}
+                            disabled={isEditing}
+                            onClick={(ev) => {
+                                ev.stopPropagation();
+                                onArchiveClick([article.id]);
+                            }}
+                        >
+                            <ArchiveIcon className="h-4 w-4"/>
+                        </Button>
+                    }
+                    {showDeleteAction &&
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            title={deleteTitle}
+                            disabled={isEditing}
+                            onClick={(ev) => {
+                                ev.stopPropagation();
+                                onDeleteClick([article.id]);
+                            }}
+                        >
+                            <Trash2 className="h-4 w-4"/>
+                        </Button>
+                    }
                     <Tooltip>
                         <TooltipTrigger>
                             <Info className="w-4 h-4"/>

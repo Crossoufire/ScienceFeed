@@ -27,5 +27,13 @@
         ]
     },
     "ignoreIssues": {
+        "src/lib/utils/seed-database.ts": [
+            "exports",
+            "files"
+        ],
+        "src/lib/client/components/ui/**": [
+            "exports",
+            "files"
+        ]
     }
 }

@@ -25,8 +25,8 @@ export const KeywordsBadge = ({ isDisabled, keywords, activeKeywordsIds, onKeywo
             {keywords.map((keyword) =>
                 <Badge
                     key={keyword.name}
-                    onClick={() => checkIfCanClick(keyword.id)}
                     className={cn(isDisabled && "cursor-auto")}
+                    onClick={() => checkIfCanClick(keyword.id)}
                     variant={activeKeywordsIds.includes(keyword.id) ? "label" : "secondary"}
                 >
                     {keyword.name}

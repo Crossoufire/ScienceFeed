@@ -1,24 +1,26 @@
-import {useState} from "react";
-import {Button} from "@/lib/client/components/ui/button";
+import {type ComponentProps, useState} from "react";
 import {ArticleBulkActions} from "@/lib/types/types";
+import {Button} from "@/lib/client/components/ui/button";
 
 
 interface EditionButtonsProps {
     selected: number[];
     onBulkActionClick: (action: ArticleBulkActions) => void;
+    actions?: {
+        label: string;
+        action: ArticleBulkActions;
+        variant?: ComponentProps<typeof Button>["variant"];
+    }[];
 }
 
 
-export const EditionButtons = ({ selected, onBulkActionClick }: EditionButtonsProps) => {
+export const EditionButtons = ({ selected, actions = defaultActions, onBulkActionClick }: EditionButtonsProps) => {
     const [selectAll, setSelectAll] = useState(true);
 
     const handleSelectAction = () => {
-        if (selectAll) {
-            onBulkActionClick("select")
-        }
-        else {
-            onBulkActionClick("deselect")
-        }
+        if (selectAll) onBulkActionClick("select")
+        else onBulkActionClick("deselect")
+
         setSelectAll(!selectAll);
     };
 
@@ -27,12 +29,31 @@ export const EditionButtons = ({ selected, onBulkActionClick }: EditionButtonsPr
             <Button size="sm" onClick={handleSelectAction}>
                 {selectAll ? "Select All" : "Deselect All"}
             </Button>
-            <Button size="sm" variant="warning" onClick={() => onBulkActionClick("archive")} disabled={selected.length === 0}>
-                Archive Selected
-            </Button>
-            <Button size="sm" variant="destructive" onClick={() => onBulkActionClick("delete")} disabled={selected.length === 0}>
-                Delete Selected
-            </Button>
+            {actions.map((action) =>
+                <Button
+                    size="sm"
+                    key={action.action}
+                    variant={action.variant}
+                    disabled={selected.length === 0}
+                    onClick={() => onBulkActionClick(action.action)}
+                >
+                    {action.label}
+                </Button>
+            )}
         </div>
     );
 };
+
+
+const defaultActions: NonNullable<EditionButtonsProps["actions"]> = [
+    {
+        action: "archive",
+        variant: "warning",
+        label: "Archive Selected"
+    },
+    {
+        action: "delete",
+        variant: "destructive",
+        label: "Delete Selected"
+    },
+];

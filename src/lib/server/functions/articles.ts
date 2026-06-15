@@ -3,13 +3,26 @@ import {createServerFn} from "@tanstack/react-start";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {and, countDistinct, desc, eq, getTableColumns, inArray, like, or, sql} from "drizzle-orm";
 import {article, keyword, rssFeed, userArticle, userArticleKeyword} from "@/lib/server/database/schema";
-import {archiveArticlesSchema, deleteArticlesSchema, userArticlesSearchSchema} from "@/lib/schemas/schemas";
+import {archiveArticlesSchema, deleteArticlesSchema, userArticlesQuerySchema, UserArticleStatus} from "@/lib/schemas/schemas";
+
+
+const getStatusConditions = (status: UserArticleStatus = "active") => {
+    if (status === "archived") {
+        return [eq(userArticle.isArchived, true), eq(userArticle.isDeleted, false)];
+    }
+
+    if (status === "deleted") {
+        return [eq(userArticle.isDeleted, true)];
+    }
+
+    return [eq(userArticle.isArchived, false), eq(userArticle.isDeleted, false)];
+};
 
 
 export const getUserArticles = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator(userArticlesSearchSchema)
-    .handler(async ({ data: { page, search, keywordsIds }, context: { currentUser } }) => {
+    .validator(userArticlesQuerySchema)
+    .handler(async ({ data: { page, search, keywordsIds, status = "active" }, context: { currentUser } }) => {
         const perPage = 20;
         const pageNum = page ?? 1;
         const offset = (pageNum - 1) * perPage;
@@ -17,8 +30,7 @@ export const getUserArticles = createServerFn({ method: "GET" })
         // Base filtering
         const whereConditions = [
             eq(userArticle.userId, currentUser.id),
-            eq(userArticle.isArchived, false),
-            eq(userArticle.isDeleted, false),
+            ...getStatusConditions(status),
         ];
 
         // Add search filtering
@@ -83,7 +95,12 @@ export const getUserArticles = createServerFn({ method: "GET" })
             .from(keyword)
             .innerJoin(userArticleKeyword, eq(keyword.id, userArticleKeyword.keywordId))
             .innerJoin(userArticle, eq(userArticleKeyword.userArticleId, userArticle.id))
-            .where(and(eq(keyword.active, true), eq(keyword.userId, currentUser.id), eq(userArticle.userId, currentUser.id)))
+            .where(and(
+                eq(keyword.active, true),
+                eq(keyword.userId, currentUser.id),
+                eq(userArticle.userId, currentUser.id),
+                ...getStatusConditions(status),
+            ))
             .groupBy(keyword.id);
 
         return {
@@ -96,7 +113,7 @@ export const getUserArticles = createServerFn({ method: "GET" })
                 pages: Math.ceil((totalArticles?.count ?? 0) / perPage),
             },
         }
-    })
+    });
 
 
 export const archiveArticles = createServerFn({ method: "POST" })
@@ -105,9 +122,12 @@ export const archiveArticles = createServerFn({ method: "POST" })
     .handler(async ({ data: { articleIds, archive }, context: { currentUser } }) => {
         await db
             .update(userArticle)
-            .set({ isArchived: archive })
+            .set({
+                isArchived: archive,
+                markedAsArchivedDate: archive ? sql`(CURRENT_TIMESTAMP)` : null,
+            })
             .where(and(eq(userArticle.userId, currentUser.id), inArray(userArticle.id, articleIds)))
-    })
+    });
 
 
 export const deleteArticles = createServerFn({ method: "POST" })
@@ -116,6 +136,9 @@ export const deleteArticles = createServerFn({ method: "POST" })
     .handler(async ({ data: { isDeleted, articleIds }, context: { currentUser } }) => {
         await db
             .update(userArticle)
-            .set({ isDeleted })
+            .set({
+                isDeleted,
+                markedAsDeletedDate: isDeleted ? sql`(CURRENT_TIMESTAMP)` : null,
+            })
             .where(and(eq(userArticle.userId, currentUser.id), inArray(userArticle.id, articleIds)))
-    })
+    });

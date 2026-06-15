@@ -7,31 +7,38 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/u
 
 interface OptionsMenuProps {
     isEditing: boolean;
+    showRssFetcher?: boolean;
     onEditModeClick: () => void;
     onRssFetcherClick: () => void;
 }
 
 
-export const OptionsMenu = ({ isEditing, onEditModeClick, onRssFetcherClick }: OptionsMenuProps) => {
+export const OptionsMenu = ({ isEditing, onEditModeClick, onRssFetcherClick, showRssFetcher = true }: OptionsMenuProps) => {
     const { currentUser } = useAuth();
     const lastRssUpdate = formatDateTime(currentUser?.lastRssUpdate, { includeTime: true, useLocalTz: true });
 
     return (
         <div className="flex items-center gap-3">
             <Button size="sm" onClick={onEditModeClick} variant="outline">
-                <FileEdit className="w-3.5 h-3.5 mr-1"/> {isEditing ? "Exit Bulk Mode" : "Bulk Edit"}
+                <FileEdit className="size-3.5 mr-1"/>{" "}
+                {isEditing ? "Exit Bulk Mode" : "Bulk Edit"}
             </Button>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button size="sm" variant="outline" onClick={onRssFetcherClick} disabled={isEditing}>
-                        <Rss className="w-3.5 h-3.5 mr-1"/> Update Feeds
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" align="end" className="text-sm">
-                    <div>{`Last update: ${lastRssUpdate}`}</div>
-                    <div className="text-xs italic text-amber-800">Max every 30 minutes.</div>
-                </TooltipContent>
-            </Tooltip>
+            {showRssFetcher &&
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button size="sm" variant="outline" onClick={onRssFetcherClick} disabled={isEditing}>
+                            <Rss className="size-3.5 mr-1"/>{" "}
+                            Update Feeds
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" align="end" className="text-sm">
+                        <div>{`Last update: ${lastRssUpdate}`}</div>
+                        <div className="text-xs italic text-amber-800">
+                            Max every 30 minutes.
+                        </div>
+                    </TooltipContent>
+                </Tooltip>
+            }
         </div>
     );
 };

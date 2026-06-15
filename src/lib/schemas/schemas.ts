@@ -3,6 +3,7 @@ import * as z from "zod";
 
 export type CreateRssFeed = z.infer<typeof createRssFeedSchema>;
 export type GeneralSettings = z.infer<typeof generalSettingsSchema>;
+export type UserArticleStatus = z.infer<typeof userArticleStatusSchema>;
 export type UserArticlesSearch = z.infer<typeof userArticlesSearchSchema>;
 
 
@@ -37,6 +38,14 @@ export const userArticlesSearchSchema = z.object({
     page: z.number().positive().optional().catch(1),
     keywordsIds: z.array(z.number().positive()).optional().catch([]),
 })
+
+
+const userArticleStatusSchema = z.enum(["active", "archived", "deleted"]);
+
+
+export const userArticlesQuerySchema = userArticlesSearchSchema.extend({
+    status: userArticleStatusSchema.optional().catch("active"),
+});
 
 
 export const keywordIdSchema = z.object({
