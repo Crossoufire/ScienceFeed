@@ -1,4 +1,14 @@
 {
+    "include": [
+        "**/*.ts",
+        "**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "build",
+        "coverage"
+    ],
     "compilerOptions": {
         "strict": true,
         "esModuleInterop": true,
@@ -18,24 +28,13 @@
         "skipLibCheck": true,
         "target": "ES2022",
         "allowJs": true,
-        "forceConsistentCasingInFileNames": true,
-        "baseUrl": ".",
         "noEmit": true,
         "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true,
         "paths": {
             "@/*": [
                 "./src/*"
             ]
         }
-    },
-    "include": [
-        "**/*.ts",
-        "**/*.tsx"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist",
-        "build",
-        "coverage"
-    ]
+    }
 }

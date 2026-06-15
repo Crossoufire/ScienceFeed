@@ -1,7 +1,7 @@
 import {join} from "path";
 import {eq} from "drizzle-orm";
 import {readFile} from "fs/promises";
-import {db} from "@/lib/server/database";
+import {db} from "@/lib/server/database/db";
 import {createServerOnlyFn} from "@tanstack/react-start";
 import {rssFeed as rssFeedTable} from "@/lib/server/database/schema";
 
@@ -12,7 +12,7 @@ export const seedDatabaseWithRssFeeds = createServerOnlyFn(() => async () => {
     const rssFeedsToSeed: { data: { publisher: string, url: string, journal: string }[] } = JSON.parse(rssFeedsAsString);
 
     for (const rssFeed of rssFeedsToSeed.data) {
-        const existingRssFeed = await db
+        const existingRssFeed = db
             .select()
             .from(rssFeedTable)
             .where(eq(rssFeedTable.url, rssFeed.url))

@@ -1,4 +1,3 @@
-import React from "react";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {rssManagerOptions} from "@/lib/client/react-query";
@@ -9,13 +8,15 @@ import {CreateNewRSSFeed} from "@/lib/client/components/rss-manager/create-feed"
 
 
 export const Route = createFileRoute("/_private/rss-manager")({
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(rssManagerOptions()),
+    loader: ({ context: { queryClient } }) => {
+        return queryClient.ensureQueryData(rssManagerOptions);
+    },
     component: RssManager,
 });
 
 
 function RssManager() {
-    const userRssFeeds = useSuspenseQuery(rssManagerOptions()).data;
+    const userRssFeeds = useSuspenseQuery(rssManagerOptions).data;
 
     return (
         <PageTitle title="RSS Feeds Manager" subtitle="Search and Manage your RSS feeds.">

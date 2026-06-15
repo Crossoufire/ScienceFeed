@@ -9,7 +9,12 @@ export type RssItem = {
 
 
 export async function parseRssFeed(url: string): Promise<RssItem[]> {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+        },
+    });
+
     if (!res.ok) {
         throw new Error(`Failed to fetch RSS feed. HTTP ${res.status} ${res.statusText}`);
     }

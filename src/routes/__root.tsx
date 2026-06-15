@@ -1,6 +1,6 @@
 /// <reference types="vite/client"/>
+import React, {lazy} from "react";
 import appCss from "@/styles.css?url";
-import React, {lazy, Suspense} from "react";
 import {authOptions} from "@/lib/client/react-query";
 import type {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/client/components/ui/sonner";
@@ -10,7 +10,10 @@ import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstac
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-    beforeLoad: async ({ context: { queryClient } }) => queryClient.prefetchQuery(authOptions),
+    ssr: false,
+    beforeLoad: async ({ context: { queryClient } }) => {
+        return queryClient.ensureQueryData(authOptions);
+    },
     head: () => ({
         meta: [
             { charSet: "utf-8" },
@@ -21,21 +24,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         links: [{ rel: "stylesheet", href: appCss }],
     }),
     component: RootComponent,
+    shellComponent: RootComponent,
 });
 
 
 function RootComponent() {
-    return (
-        <RootDocument>
-            <Suspense fallback={<div>Loading...</div>}>
-                <Outlet/>
-            </Suspense>
-        </RootDocument>
-    );
-}
-
-
-function RootDocument({ children }: { readonly children: React.ReactNode }) {
     useNProgress();
 
     return (
@@ -47,11 +40,12 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
 
         <ThemeProvider>
             <Toaster richColors/>
-            {children}
+            <Outlet/>
         </ThemeProvider>
 
-        {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-left"/>}
-        {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-right"/>}
+        {import.meta.env.DEV &&
+            <ReactQueryDevtools buttonPosition="bottom-right"/>
+        }
 
         <Scripts/>
         </body>
@@ -59,10 +53,6 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
     );
 }
 
-
-const TanStackRouterDevtools = lazy(() =>
-    import("@tanstack/react-router-devtools").then((res) => ({ default: res.TanStackRouterDevtools }))
-);
 
 const ReactQueryDevtools = lazy(() =>
     import("@tanstack/react-query-devtools").then((res) => ({ default: res.ReactQueryDevtools }))

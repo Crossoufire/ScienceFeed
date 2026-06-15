@@ -6,17 +6,19 @@ import {UserKeyword} from "@/lib/types/types";
 import {createFileRoute} from "@tanstack/react-router";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
+import {userKeywordsOptions} from "@/lib/client/react-query";
 import {PageTitle} from "@/lib/client/components/page-title";
 import {PauseCircle, PlayCircle, Plus, Trash2} from "lucide-react";
 import {useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {queryKeys, userKeywordsOptions} from "@/lib/client/react-query";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {useAddKeywordMutation, useDeleteKeywordMutation, useToggleKeywordMutation} from "@/lib/client/react-query/mutations";
 
 
 export const Route = createFileRoute("/_private/keywords")({
     component: KeywordManagerPage,
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(userKeywordsOptions()),
+    loader: ({ context: { queryClient } }) => {
+        return queryClient.ensureQueryData(userKeywordsOptions);
+    },
 });
 
 
@@ -27,7 +29,7 @@ function KeywordManagerPage() {
     const toggleKeywordMutation = useToggleKeywordMutation();
     const [newKeyword, setNewKeyword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const userKeywords = useSuspenseQuery(userKeywordsOptions()).data;
+    const userKeywords = useSuspenseQuery(userKeywordsOptions).data;
 
     const handleAddNewKeyword = () => {
         if (newKeyword.trim() === "") {
@@ -42,7 +44,7 @@ function KeywordManagerPage() {
             onError: () => toast.error("Failed to add new keyword"),
             onSuccess: async () => {
                 setNewKeyword("");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.userKeywordsKey() });
+                await queryClient.invalidateQueries({ queryKey: userKeywordsOptions.queryKey });
             },
         });
     };
@@ -52,28 +54,30 @@ function KeywordManagerPage() {
 
         deleteKeywordMutation.mutate({ data: { keywordId: keyword.id } }, {
             onError: () => toast.error("Failed to delete keyword"),
-            onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.userKeywordsKey() }),
+            onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeywordsOptions.queryKey }),
         });
     };
 
     const handleToggleKeyword = async (keyword: UserKeyword) => {
         if (keyword.active) {
-            if (!confirm(`By deactivating this keyword, the associated articles will not be shown in your dashboard anymore. Do you want to continue?`)) return;
+            if (!confirm(`By deactivating this keyword, the associated articles will 
+            not be shown in your dashboard anymore. Do you want to continue?`)) return;
         }
         else {
-            if (!confirm(`By activating this keyword, the associated articles will be shown in your dashboard. Do you want to continue?`)) return;
+            if (!confirm(`By activating this keyword, the associated articles will be 
+            shown in your dashboard. Do you want to continue?`)) return;
         }
 
         toggleKeywordMutation.mutate({ data: { keywordId: keyword.id, active: !keyword.active } }, {
             onError: () => toast.error("Failed to toggle the keyword"),
-            onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.userKeywordsKey() }),
+            onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeywordsOptions.queryKey }),
         });
     };
 
     return (
         <PageTitle title="Keyword Manager" subtitle="Manage your RSS keywords.">
             <div className="mt-4">
-                <div className="flex items-center gap-3 max-sm:w-full w-[400px]">
+                <div className="flex items-center gap-3 max-sm:w-full w-100">
                     <Input
                         value={newKeyword}
                         placeholder="Enter a new keyword"
@@ -98,7 +102,7 @@ function KeywordManagerPage() {
                         <TableHead className="text-center">Read</TableHead>
                         <TableHead className="text-center">Archived</TableHead>
                         <TableHead className="text-center">Deleted</TableHead>
-                        <TableHead className="w-[120px] text-center">Actions</TableHead>
+                        <TableHead className="w-30 text-center">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

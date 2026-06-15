@@ -1,27 +1,48 @@
+import path from "path";
 import {defineConfig} from "vite";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
-import viteReact from "@vitejs/plugin-react";
-import tsConfigPaths from "vite-tsconfig-paths";
 import {tanstackStart} from "@tanstack/react-start/plugin/vite";
+import react, {reactCompilerPreset} from "@vitejs/plugin-react";
+import {reactClickToComponent} from "vite-plugin-react-click-to-component";
 
 
 export default defineConfig({
+    resolve: {
+        tsconfigPaths: true,
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+        },
+    },
     plugins: [
-        tsConfigPaths({ projects: ["./tsconfig.json"] }),
         tanstackStart({
+            prerender: {
+                failOnError: false,
+                retryCount: 3,
+                retryDelay: 500,
+            },
             spa: {
                 enabled: true,
             },
             router: {
                 semicolons: true,
                 quoteStyle: "double",
+                codeSplittingOptions: {
+                    defaultBehavior: [
+                        [
+                            "component",
+                            "pendingComponent",
+                            "errorComponent",
+                            "notFoundComponent",
+                            "loader",
+                        ],
+                    ],
+                },
             },
         }),
-        viteReact({
-            babel: {
-                plugins: [["babel-plugin-react-compiler", { target: "19" }]],
-            },
-        }),
+        react(),
+        reactClickToComponent(),
+        babel({ presets: [reactCompilerPreset()] }),
         tailwindcss(),
     ],
 });

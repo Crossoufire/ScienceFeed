@@ -1,5 +1,5 @@
 import pLimit from "p-limit";
-import {db} from "@/lib/server/database";
+import {db} from "@/lib/server/database/db";
 import {and, eq, inArray} from "drizzle-orm";
 import {cleanHtmlWithRegex, findMatchingKeywordsRegex, parseRssFeed, RssItem} from "@/lib/utils/rss-parser";
 import {article, keyword, rssFeed, user, userArticle, userArticleKeyword, userRssFeed} from "@/lib/server/database/schema";

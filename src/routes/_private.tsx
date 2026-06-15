@@ -10,8 +10,9 @@ import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSe
 export const Route = createFileRoute("/_private")({
     beforeLoad: ({ context: { queryClient } }) => {
         const currentUser = queryClient.getQueryData(authOptions.queryKey);
+
         if (!currentUser) {
-            throw redirect({ to: "/" });
+            throw redirect({ to: "/", replace: true });
         }
     },
     component: PrivateLayout,
@@ -36,7 +37,7 @@ export function PrivateLayout() {
             <SidebarInset>
                 <header
                     className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear
-                    group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 z-50">
+                    group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 z-50">
                     <div className="flex items-center gap-2 px-4">
                         <SidebarTrigger className="-ml-1"/>
                         <Separator

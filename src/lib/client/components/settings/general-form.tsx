@@ -3,10 +3,10 @@ import * as React from "react";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/lib/client/hooks/use-auth";
+import {GeneralSettings} from "@/lib/schemas/schemas";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
 import {Switch} from "@/lib/client/components/ui/switch";
-import {GeneralSettings} from "@/lib/types/types";
 import {useGeneralMutation} from "@/lib/client/react-query/mutations";
 import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 
@@ -28,7 +28,7 @@ export const GeneralForm = () => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-[350px] max-sm:w-full">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-87.5 max-sm:w-full">
                 <div className="space-y-8">
                     {errorMessage &&
                         <p className="text-destructive text-sm">
@@ -90,7 +90,7 @@ export const GeneralForm = () => {
                                         min={1}
                                         max={50}
                                         type="number"
-                                        className="w-[80px]"
+                                        className="w-20"
                                         defaultValue={currentUser?.maxArticlesPerEmail}
                                     />
                                 </FormControl>

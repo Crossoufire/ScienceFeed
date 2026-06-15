@@ -1,24 +1,23 @@
-import * as React from "react"
-import {Slot} from "@radix-ui/react-slot"
-import {cva, VariantProps} from "class-variance-authority"
-import {PanelLeftIcon} from "lucide-react"
+import * as React from "react";
+import {cn} from "@/lib/utils/utils";
+import {Slot} from "@radix-ui/react-slot";
+import {PanelLeftIcon} from "lucide-react";
+import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
+import {cva, VariantProps} from "class-variance-authority";
+import {Skeleton} from "@/lib/client/components/ui/skeleton";
+import {Separator} from "@/lib/client/components/ui/separator";
+import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/lib/client/components/ui/sheet";
 
-import {useIsMobile} from "@/lib/client/hooks/use-mobile"
-import {cn} from "@/lib/utils/utils"
-import {Button} from "@/lib/client/components/ui/button"
-import {Input} from "@/lib/client/components/ui/input"
-import {Separator} from "@/lib/client/components/ui/separator"
-import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,} from "@/lib/client/components/ui/sheet"
-import {Skeleton} from "@/lib/client/components/ui/skeleton"
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/lib/client/components/ui/tooltip"
 
-
+const SIDEBAR_WIDTH = "16rem"
+const SIDEBAR_WIDTH_ICON = "3rem"
+const SIDEBAR_WIDTH_MOBILE = "18rem"
+const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContextProps = {
     state: "expanded" | "collapsed"
@@ -54,8 +53,8 @@ function SidebarProvider({
     open?: boolean
     onOpenChange?: (open: boolean) => void
 }) {
-    const isMobile = useIsMobile()
-    const [openMobile, setOpenMobile] = React.useState(false)
+    const isMobile = useBreakpoint("sm");
+    const [openMobile, setOpenMobile] = React.useState(false);
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.

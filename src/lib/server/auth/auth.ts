@@ -1,13 +1,14 @@
 import {serverEnv} from "@/env/server";
+import {clientEnv} from "@/env/client";
 import {betterAuth} from "better-auth";
-import {db} from "@/lib/server/database";
+import {db} from "@/lib/server/database/db";
 import {createServerOnlyFn} from "@tanstack/react-start";
-import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
+import {tanstackStartCookies} from "better-auth/tanstack-start";
 
 
 const getAuthConfig = createServerOnlyFn(() => betterAuth({
-    baseURL: serverEnv.VITE_BASE_URL,
+    baseURL: clientEnv.VITE_BASE_URL,
     database: drizzleAdapter(db, {
         provider: "sqlite",
     }),
@@ -48,10 +49,10 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
     advanced: {
         cookiePrefix: "sf",
         database: {
-            useNumberId: true,
+            generateId: false,
         },
     },
-    plugins: [reactStartCookies()],
+    plugins: [tanstackStartCookies()],
 }));
 
 

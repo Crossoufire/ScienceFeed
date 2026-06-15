@@ -1,4 +1,4 @@
-import {db} from "@/lib/server/database";
+import {db} from "@/lib/server/database/db";
 import {sql} from "drizzle-orm";
 import {account, user} from "@/lib/server/database/schema";
 
@@ -7,7 +7,7 @@ async function migrateUsers() {
     console.log("Starting user migration...");
 
     try {
-        const oldUsers = await db.all(sql`SELECT * FROM user_12345`);
+        const oldUsers: any[] = db.all(sql`SELECT * FROM user_12345`);
         console.log(`Found ${oldUsers.length} users to migrate`);
 
         for (const oldUser of oldUsers) {
@@ -28,11 +28,11 @@ async function migrateUsers() {
             const createdAt = new Date(newUser.createdAt);
             const updatedAt = new Date(newUser.updatedAt);
 
-            // Create account entry for user credentials
             await db
                 .insert(account)
+                // @ts-expect-error - Create account entry for user credentials
                 .values({
-                    accountId: newUser.id,
+                    accountId: String(newUser.id),
                     providerId: null,
                     userId: newUser.id,
                     accessToken: null,

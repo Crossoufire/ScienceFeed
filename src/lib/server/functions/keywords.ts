@@ -1,9 +1,9 @@
-import z from "zod";
-import {db} from "@/lib/server/database";
+import {db} from "@/lib/server/database/db";
 import {and, count, eq, sum} from "drizzle-orm";
 import {createServerFn} from "@tanstack/react-start";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {keyword, userArticle, userArticleKeyword} from "@/lib/server/database/schema";
+import {keywordIdSchema, newKeywordNameSchema, toggleKeywordSchema} from "@/lib/schemas/schemas";
 
 
 export const getUserKeywords = createServerFn({ method: "GET" })
@@ -31,9 +31,9 @@ export const getUserKeywords = createServerFn({ method: "GET" })
 
 export const addUserKeyword = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.object({ name: z.string().min(1) }).parse(data))
+    .validator(newKeywordNameSchema)
     .handler(async ({ data: { name }, context: { currentUser } }) => {
-        const existingKeyword = await db
+        const existingKeyword = db
             .select()
             .from(keyword)
             .where(and(eq(keyword.userId, currentUser.id), eq(keyword.name, name)))
@@ -54,7 +54,7 @@ export const addUserKeyword = createServerFn({ method: "POST" })
 
 export const toggleUserKeyword = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.object({ active: z.boolean(), keywordId: z.number().positive() }).parse(data))
+    .validator(toggleKeywordSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         await db
             .update(keyword)
@@ -65,7 +65,7 @@ export const toggleUserKeyword = createServerFn({ method: "POST" })
 
 export const deleteUserKeyword = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.object({ keywordId: z.number().positive() }).parse(data))
+    .validator(keywordIdSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         await db
             .delete(keyword)

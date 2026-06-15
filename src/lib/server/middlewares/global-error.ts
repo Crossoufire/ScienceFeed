@@ -1,54 +1,35 @@
 import z from "zod";
-import {isRedirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
-import {sendAdminErrorMail} from "@/lib/utils/mail-sender";
-import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
+import {isNotFound, isRedirect} from "@tanstack/react-router";
 
 
 /**
  * Error Types and Logic
  * redirect: thrown in code but returned and handled frontend side by tanstack router.
  * notFound: thrown in code but returned and handled frontend side by tanstack router.
- * FormattedError: Expected Error with pre-formatted message for frontend side.
- * FormattedError(sendMail: true): Error not supposed to happened but pre-formatted message + send mail.
- * FormZodError: Error occurred during Form submission, return the whole error.
- * ZodError: Unexpected Error on validation, send admin email, return generic error message.
- * Error: Unexpected Error anywhere, send admin email, return generic error message.
+ * Error: Unexpected Error anywhere, send admin email, return a generic error message.
  **/
-export const errorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
+export const funcErrorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
     try {
         const results = await next();
-        if ("error" in results && isRedirect(results.error)) {
+        if ("error" in results && results.error !== undefined && !isRedirect(results.error) && !isNotFound(results.error)) {
             throw results.error;
         }
         return results;
     }
     catch (err: any) {
         if (process.env.NODE_ENV !== "production") {
-            console.error("Error:", { err });
+            console.error("ServerFunc Error:", { err });
         }
-        if ("options" in err && isRedirect(err)) {
+
+        if (isRedirect(err) || isNotFound(err)) {
             throw err;
         }
-        if (err instanceof FormattedError) {
-            if (err?.sendMail && process.env.NODE_ENV === "production") {
-                await sendAdminErrorMail(err, "A Specific Formatted Error occurred");
-            }
-            throw err;
-        }
-        else if (err instanceof FormZodError) {
-            throw err;
-        }
-        else if (err instanceof z.ZodError) {
-            if (process.env.NODE_ENV === "production") {
-                await sendAdminErrorMail(err, "A Validation error occurred");
-            }
+
+        if (err instanceof z.ZodError) {
             throw new Error("A Validation error occurred. Please try again later.");
         }
         else {
-            if (process.env.NODE_ENV === "production") {
-                await sendAdminErrorMail(err, "An unexpected error occurred");
-            }
             throw new Error("An Unexpected error occurred. Please try again later.");
         }
     }

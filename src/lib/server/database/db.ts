@@ -1,0 +1,23 @@
+import Database from "bun:sqlite";
+import {serverEnv} from "@/env/server";
+import {drizzle} from "drizzle-orm/bun-sqlite";
+import * as schema from "@/lib/server/database/schema";
+import {createServerOnlyFn} from "@tanstack/react-start";
+
+
+const sqlite = new Database(serverEnv.DATABASE_URL, { create: true });
+
+
+sqlite.run("PRAGMA foreign_keys = ON;");
+sqlite.run("PRAGMA foreign_keys = ON");
+sqlite.run("PRAGMA synchronous = NORMAL");
+sqlite.run("PRAGMA checkpoint(FULL)");
+sqlite.run("PRAGMA busy_timeout = 10000");
+
+
+const getDbConnection = createServerOnlyFn(() => {
+    return drizzle(sqlite, { schema, casing: "snake_case" });
+});
+
+
+export const db = getDbConnection();

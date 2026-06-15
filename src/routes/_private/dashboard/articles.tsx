@@ -1,23 +1,24 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {cn} from "@/lib/utils/utils";
+import {ArticleBulkActions} from "@/lib/types/types";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {userArticlesOptions} from "@/lib/client/react-query";
 import {PageTitle} from "@/lib/client/components/page-title";
 import {Pagination} from "@/lib/client/components/pagination";
 import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
-import {queryKeys, userArticlesOptions} from "@/lib/client/react-query";
-import {ArticleBulkActions, UserArticlesSearch} from "@/lib/types/types";
 import {OptionsMenu} from "@/lib/client/components/articles/options-menu";
 import {InputSearch} from "@/lib/client/components/articles/input-search";
 import {ArticleCard} from "@/lib/client/components/articles/article-card";
 import {KeywordsBadge} from "@/lib/client/components/articles/keywords-badge";
 import {EditionButtons} from "@/lib/client/components/articles/edition-buttons";
+import {UserArticlesSearch, userArticlesSearchSchema} from "@/lib/schemas/schemas";
 import {useArchiveArticles, useDeleteArticles, useRssFetcher} from "@/lib/client/react-query/mutations";
 
 
 export const Route = createFileRoute("/_private/dashboard/articles")({
-    validateSearch: (search) => search as UserArticlesSearch,
+    validateSearch: userArticlesSearchSchema,
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, deps: { search } }) => {
         return queryClient.ensureQueryData(userArticlesOptions(search));
@@ -32,14 +33,14 @@ const DEFAULT = { search: "", page: 1, keywordsIds: [] };
 function ArticlesPage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
+    const rssFetcherMutation = useRssFetcher(filters);
+    const deleteArticlesMutation = useDeleteArticles(filters);
+    const archiveArticlesMutation = useArchiveArticles(filters);
     const [isEditing, setIsEditing] = useState(false);
     const apiData = useSuspenseQuery(userArticlesOptions(filters)).data;
     const [searchQuery, setSearchQuery] = useState(filters?.search ?? "");
     const [selectedArticles, setSelectedArticles] = useState<number[]>([]);
     const [activeKeywordsIds, setActiveKeywordsIds] = useState<number[]>([]);
-    const rssFetcherMutation = useRssFetcher(queryKeys.userArticlesKey(filters));
-    const deleteArticlesMutation = useDeleteArticles(queryKeys.userArticlesKey(filters));
-    const archiveArticlesMutation = useArchiveArticles(queryKeys.userArticlesKey(filters));
 
     const fetchData = async (params: UserArticlesSearch) => {
         await navigate({ search: params });

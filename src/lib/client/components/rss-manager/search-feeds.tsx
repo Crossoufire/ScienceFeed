@@ -1,13 +1,13 @@
 import {toast} from "sonner";
-import {Input} from "@/lib/client/components/ui/input";
 import React, {useRef, useState} from "react";
-import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {SearchRssFeed} from "@/lib/types/types";
-import {Separator} from "@/lib/client/components/ui/separator";
+import {Input} from "@/lib/client/components/ui/input";
 import {CheckCircle, Loader2, Search} from "lucide-react";
-import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
-import {queryKeys, rssSearchOptions} from "@/lib/client/react-query";
+import {useDebounce} from "@/lib/client/hooks/use-debounce";
+import {Separator} from "@/lib/client/components/ui/separator";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
+import {rssManagerOptions, rssSearchOptions} from "@/lib/client/react-query";
 import {useAddRssFeedsToUserMutation} from "@/lib/client/react-query/mutations";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/client/components/ui/command";
 
@@ -28,7 +28,7 @@ export function SearchRSSFeeds() {
             onError: () => toast.error("Failed to add this RSS Feed"),
             onSuccess: async () => {
                 toast.success("RSS Feed successfully added");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.rssManagerKey() });
+                await queryClient.invalidateQueries({ queryKey: rssManagerOptions.queryKey });
             },
         });
     };
@@ -51,15 +51,15 @@ export function SearchRSSFeeds() {
                 <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
                     value={search}
-                    className="w-[350px] pl-8"
+                    className="w-87.5 pl-8"
                     onChange={handleInputChange}
                     placeholder="Search RSS feeds..."
                 />
             </div>
             {isOpen && (debouncedQuery.length >= 2 || isLoading) &&
-                <div className="z-50 absolute w-[500px] rounded-lg border shadow-md mt-1">
+                <div className="z-50 absolute w-125 rounded-lg border shadow-md mt-1">
                     <Command>
-                        <CommandList className="max-h-[350px] overflow-y-auto">
+                        <CommandList className="max-h-87.5 overflow-y-auto">
                             {isLoading &&
                                 <div className="flex items-center justify-center p-4">
                                     <Loader2 className="h-6 w-6 animate-spin"/>
@@ -108,7 +108,7 @@ function SearchComponent({ rssFeed, handleAddRssFeed }: SearchComponentProps) {
                     <div className="text-neutral-600">|</div>
                     <div className="flex items-center">
                         <span className="truncate">{rssFeed.journal}</span>
-                        {rssFeed.isActive && <CheckCircle className="w-4 h-4 ml-2 text-green-500 flex-shrink-0"/>}
+                        {rssFeed.isActive && <CheckCircle className="w-4 h-4 ml-2 text-green-500 shrink-0"/>}
                     </div>
                 </div>
             </CommandItem>

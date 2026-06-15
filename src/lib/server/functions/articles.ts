@@ -1,15 +1,14 @@
-import z from "zod";
-import {db} from "@/lib/server/database";
+import {db} from "@/lib/server/database/db";
 import {createServerFn} from "@tanstack/react-start";
-import {userArticlesSearchSchema} from "@/lib/types/types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {and, count, desc, eq, getTableColumns, inArray, like, or, SQL} from "drizzle-orm";
 import {article, keyword, rssFeed, userArticle, userArticleKeyword} from "@/lib/server/database/schema";
+import {archiveArticlesSchema, deleteArticlesSchema, userArticlesSearchSchema} from "@/lib/schemas/schemas";
 
 
 export const getUserArticles = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator(userArticlesSearchSchema)
+    .validator(userArticlesSearchSchema)
     .handler(async ({ data: { page, search, keywordsIds }, context: { currentUser } }) => {
         const perPage = 20;
         const pageNum = page ?? 1;
@@ -44,7 +43,7 @@ export const getUserArticles = createServerFn({ method: "GET" })
             ]
         }
 
-        const totalArticles = await db
+        const totalArticles = db
             .select({ count: count() })
             .from(userArticle)
             .innerJoin(article, eq(userArticle.articleId, article.id))
@@ -108,7 +107,7 @@ export const getUserArticles = createServerFn({ method: "GET" })
 
 export const archiveArticles = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.object({ articleIds: z.array(z.number().positive()), archive: z.boolean() }).parse(data))
+    .validator(archiveArticlesSchema)
     .handler(async ({ data: { articleIds, archive }, context: { currentUser } }) => {
         await db
             .update(userArticle)
@@ -119,7 +118,7 @@ export const archiveArticles = createServerFn({ method: "POST" })
 
 export const deleteArticles = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.object({ articleIds: z.array(z.number().positive()), isDeleted: z.boolean() }).parse(data))
+    .validator(deleteArticlesSchema)
     .handler(async ({ data: { isDeleted, articleIds }, context: { currentUser } }) => {
         await db
             .update(userArticle)

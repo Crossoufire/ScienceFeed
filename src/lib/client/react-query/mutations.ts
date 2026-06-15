@@ -1,9 +1,9 @@
 import {toast} from "sonner";
-import {DashboardArticles} from "@/lib/types/types";
+import {UserArticlesSearch} from "@/lib/schemas/schemas";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {postGeneralSettings} from "@/lib/server/functions/settings";
-import {authOptions, queryKeys} from "@/lib/client/react-query/queryOptions";
 import {archiveArticles, deleteArticles} from "@/lib/server/functions/articles";
+import {authOptions, userArticlesOptions} from "@/lib/client/react-query/queryOptions";
 import {addUserKeyword, deleteUserKeyword, toggleUserKeyword} from "@/lib/server/functions/keywords";
 import {addRssFeedsToUser, createRssFeed, fetchUserRssFeeds, removeRssFeedsFromUser} from "@/lib/server/functions/rss-feeds";
 
@@ -58,48 +58,47 @@ export const useAddRssFeedsToUserMutation = () => {
 }
 
 
-export const useArchiveArticles = (queryKey: ReturnType<typeof queryKeys.userArticlesKey>) => {
+export const useArchiveArticles = (filters: UserArticlesSearch) => {
     const queryClient = useQueryClient();
+    const queryKey = userArticlesOptions(filters).queryKey;
 
     return useMutation({
         mutationFn: archiveArticles,
         onMutate: async (variables) => {
             await queryClient.cancelQueries({ queryKey });
-            const previousData = queryClient.getQueryData<DashboardArticles>(queryKey);
-            queryClient.setQueryData<DashboardArticles>(queryKey, (oldData) => {
+            const previousData = queryClient.getQueryData(queryKey);
+            queryClient.setQueryData(queryKey, (oldData) => {
                 if (!oldData) return;
                 return {
                     ...oldData,
-                    //@ts-expect-error - I don't know the fuck
                     total: oldData.total - variables.data.articleIds.length,
-                    //@ts-expect-error - I don't know the fuck
                     articles: oldData.articles.filter((article) => !variables.data.articleIds.includes(article.id)),
                 }
             });
             return { previousData };
         },
         onError: (_error, _variables, previousData) => {
-            queryClient.setQueryData(queryKey, previousData);
+            if (!previousData) return;
+            queryClient.setQueryData(queryKey, previousData.previousData);
         },
     });
 }
 
 
-export const useDeleteArticles = (queryKey: ReturnType<typeof queryKeys.userArticlesKey>) => {
+export const useDeleteArticles = (filters: UserArticlesSearch) => {
     const queryClient = useQueryClient();
+    const queryKey = userArticlesOptions(filters).queryKey;
 
     return useMutation({
         mutationFn: deleteArticles,
         onMutate: async (variables) => {
             await queryClient.cancelQueries({ queryKey });
-            const previousData = queryClient.getQueryData<DashboardArticles>(queryKey);
-            queryClient.setQueryData<DashboardArticles>(queryKey, (oldData) => {
-                if (!oldData) return;
+            const previousData = queryClient.getQueryData(queryKey);
+            queryClient.setQueryData(queryKey, (oldData) => {
+                if (!oldData || !variables) return;
                 return {
                     ...oldData,
-                    //@ts-expect-error - I don't know the fuck
                     total: oldData.total - variables.data.articleIds.length,
-                    //@ts-expect-error - I don't know the fuck
                     articles: oldData.articles.filter((article) => !variables.data.articleIds.includes(article.id)),
                 }
             });
@@ -107,20 +106,21 @@ export const useDeleteArticles = (queryKey: ReturnType<typeof queryKeys.userArti
             return { previousData };
         },
         onError: (_error, _variables, previousData) => {
-            queryClient.setQueryData(queryKey, previousData);
+            if (!previousData) return;
+            queryClient.setQueryData(queryKey, previousData.previousData);
         },
     });
 }
 
 
-export const useRssFetcher = (queryKey: ReturnType<typeof queryKeys.userArticlesKey>) => {
+export const useRssFetcher = (filters: UserArticlesSearch) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: fetchUserRssFeeds,
         onError: () => toast.error("An error occurred while running the RSS Fetcher"),
         onSuccess: async (data) => {
-            await queryClient.invalidateQueries({ queryKey });
+            await queryClient.invalidateQueries({ queryKey: userArticlesOptions(filters).queryKey });
             if (data) {
                 return toast.warning(data?.warn);
             }

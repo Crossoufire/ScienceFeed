@@ -2,11 +2,11 @@ import {toast} from "sonner";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Loader2, Plus} from "lucide-react";
-import {Input} from "@/lib/client/components/ui/input";
-import {queryKeys} from "@/lib/client/react-query";
-import {Button} from "@/lib/client/components/ui/button";
-import {CreateRssFeed} from "@/lib/types/types";
+import {CreateRssFeed} from "@/lib/schemas/schemas";
 import {useQueryClient} from "@tanstack/react-query";
+import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
+import {rssManagerOptions} from "@/lib/client/react-query";
 import {useCreateRssFeedMutation} from "@/lib/client/react-query/mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
@@ -31,7 +31,7 @@ export function CreateNewRSSFeed() {
                 form.reset();
                 setOpen(false);
                 toast.success("RSS Feed successfully added");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.rssManagerKey() });
+                await queryClient.invalidateQueries({ queryKey: rssManagerOptions.queryKey });
             },
         });
     };
@@ -59,7 +59,7 @@ export function CreateNewRSSFeed() {
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="http://feeds.rsc.org/rss/cp"
+                                            placeholder="https://feeds.rsc.org/rss/cp"
                                         />
                                     </FormControl>
                                     <FormMessage/>

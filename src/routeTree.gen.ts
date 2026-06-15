@@ -73,20 +73,20 @@ const PrivateDashboardArchivedRoute =
   } as any);
 
 export interface FileRoutesByFullPath {
+  "/": typeof PublicIndexRoute;
   "/keywords": typeof PrivateKeywordsRoute;
   "/rss-manager": typeof PrivateRssManagerRoute;
   "/settings": typeof PrivateSettingsRoute;
-  "/": typeof PublicIndexRoute;
   "/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
   "/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
   "/api/auth/$": typeof ApiAuthSplatRoute;
 }
 export interface FileRoutesByTo {
+  "/": typeof PublicIndexRoute;
   "/keywords": typeof PrivateKeywordsRoute;
   "/rss-manager": typeof PrivateRssManagerRoute;
   "/settings": typeof PrivateSettingsRoute;
-  "/": typeof PublicIndexRoute;
   "/dashboard/archived": typeof PrivateDashboardArchivedRoute;
   "/dashboard/articles": typeof PrivateDashboardArticlesRoute;
   "/dashboard/trash-bin": typeof PrivateDashboardTrashBinRoute;
@@ -108,20 +108,20 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
+    | "/"
     | "/keywords"
     | "/rss-manager"
     | "/settings"
-    | "/"
     | "/dashboard/archived"
     | "/dashboard/articles"
     | "/dashboard/trash-bin"
     | "/api/auth/$";
   fileRoutesByTo: FileRoutesByTo;
   to:
+    | "/"
     | "/keywords"
     | "/rss-manager"
     | "/settings"
-    | "/"
     | "/dashboard/archived"
     | "/dashboard/articles"
     | "/dashboard/trash-bin"
@@ -151,14 +151,14 @@ declare module "@tanstack/react-router" {
     "/_public": {
       id: "/_public";
       path: "";
-      fullPath: "";
+      fullPath: "/";
       preLoaderRoute: typeof PublicRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/_private": {
       id: "/_private";
       path: "";
-      fullPath: "";
+      fullPath: "/";
       preLoaderRoute: typeof PrivateRouteImport;
       parentRoute: typeof rootRouteImport;
     };
@@ -263,10 +263,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>();
 
 import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
+import type { startInstance } from "./start.ts";
 declare module "@tanstack/react-start" {
   interface Register {
     ssr: true;
     router: Awaited<ReturnType<typeof getRouter>>;
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>;
   }
 }

@@ -1,12 +1,16 @@
 node_modules
+package-lock.json
+yarn.lock
 
 .DS_Store
 .cache
 .env
+.env.docker
 
 .data
 .vercel
 .output
+.vinxi
 .wrangler
 .netlify
 dist
@@ -14,6 +18,16 @@ dist
 /api/
 /server/build
 /public/build
-/instance/*
+
+.idea
+**/site.db
+/instance/**
+
+**/public/static
+!**/public/static/seed-rss-feeds.json
 
 .tanstack
+/tsconfig.tsbuildinfo
+**/routeTree.gen.ts
+bun.lock
+how-errors-works.md

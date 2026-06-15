@@ -1,11 +1,10 @@
-import z from "zod";
-import {db} from "@/lib/server/database";
+import {db} from "@/lib/server/database/db";
 import {createServerFn} from "@tanstack/react-start";
-import {createRssFeedSchema} from "@/lib/types/types";
 import {and, eq, inArray, like, or, sql} from "drizzle-orm";
+import {fetchAndFilterArticles} from "@/lib/utils/fetch-articles";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {keyword, rssFeed, user, userRssFeed} from "@/lib/server/database/schema";
-import {fetchAndFilterArticles} from "@/lib/utils/fetch-articles";
+import {createRssFeedSchema, feedsIdsSchema, querySearchSchema, rssIdsSchema} from "@/lib/schemas/schemas";
 
 
 export const getUserRssFeeds = createServerFn({ method: "GET" })
@@ -30,8 +29,8 @@ export const getUserRssFeeds = createServerFn({ method: "GET" })
 
 export const rssFeedSearch = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.string().min(1).parse(data))
-    .handler(async ({ data: query, context: { currentUser } }) => {
+    .validator(querySearchSchema)
+    .handler(async ({ data: { query }, context: { currentUser } }) => {
         const rssSearchResults = await db
             .select()
             .from(rssFeed)
@@ -60,9 +59,9 @@ export const rssFeedSearch = createServerFn({ method: "GET" })
 
 export const createRssFeed = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator(createRssFeedSchema)
+    .validator(createRssFeedSchema)
     .handler(async ({ data: { url, journal, publisher }, context: { currentUser } }) => {
-        const existingFeed = await db
+        const existingFeed = db
             .select()
             .from(rssFeed)
             .where(eq(rssFeed.url, url))
@@ -92,7 +91,7 @@ export const createRssFeed = createServerFn({ method: "POST" })
 
 export const addRssFeedsToUser = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.object({ feedsIds: z.array(z.number().positive()) }).parse(data))
+    .validator(feedsIdsSchema)
     .handler(async ({ data: { feedsIds }, context: { currentUser } }) => {
         const existingUserFeeds = await db
             .select({ rssFeedId: userRssFeed.rssFeedId })
@@ -113,7 +112,7 @@ export const addRssFeedsToUser = createServerFn({ method: "POST" })
 
 export const removeRssFeedsFromUser = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => z.object({ rssIds: z.array(z.number().positive()) }).parse(data))
+    .validator(rssIdsSchema)
     .handler(async ({ data: { rssIds }, context: { currentUser } }) => {
         await db
             .delete(userRssFeed)
