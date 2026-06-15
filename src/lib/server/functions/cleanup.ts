@@ -1,6 +1,6 @@
 import {db} from "@/lib/server/database/db";
 import {and, eq, lt, sql} from "drizzle-orm";
-import {userArticle} from "@/lib/server/database/schema";
+import {article, userArticle} from "@/lib/server/database/schema";
 
 
 export async function cleanupDeletedArticles(retentionDays = 180) {
@@ -14,8 +14,18 @@ export async function cleanupDeletedArticles(retentionDays = 180) {
         ))
         .returning({ id: userArticle.id });
 
+    const deletedArticles = await db
+        .delete(article)
+        .where(sql`not exists (
+            select 1
+            from ${userArticle}
+            where ${userArticle.articleId} = ${article.id}
+        )`)
+        .returning({ id: article.id });
+
     return {
         retentionDays: safeRetentionDays,
         deletedUserArticles: deletedRows.length,
+        deletedOrphanArticles: deletedArticles.length,
     };
 }
