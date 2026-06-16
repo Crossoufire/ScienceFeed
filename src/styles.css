@@ -214,8 +214,8 @@
     --border-subtle: oklch(0.29 0.010 255);
     --border-strong: oklch(0.39 0.030 255);
     --foreground-soft: oklch(0.90 0.006 255);
-    --foreground-muted: oklch(0.70 0.018 255);
-    --foreground-subtle: oklch(0.61 0.016 255);
+    --foreground-muted: oklch(0.796 0.012 252.111);
+    --foreground-subtle: oklch(0.687 0.015 254.643);
 
     --success: oklch(0.70 0.095 155);
     --success-muted: oklch(0.29 0.038 155);

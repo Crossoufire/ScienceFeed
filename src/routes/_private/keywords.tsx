@@ -103,7 +103,7 @@ function KeywordManagerPage() {
     return (
         <PageTitle title="Keyword Manager" subtitle="Manage your RSS keywords.">
             <div className="mt-3">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div className="w-full sm:w-100 sm:max-w-full">
                         <div className="relative">
                             <Tags className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-subtle"/>
@@ -134,7 +134,7 @@ function KeywordManagerPage() {
                         variant="ghost"
                         onClick={handleAddNewKeyword}
                         disabled={addKeywordMutation.isPending || trimmedKeyword.length === 0}
-                        className="w-full border border-primary/30 bg-primary/15 text-primary hover:bg-primary/25 hover:text-primary sm:w-auto"
+                        className="w-full border border-primary/30 bg-primary/15 hover:bg-primary/25 sm:w-auto"
                     >
                         {addKeywordMutation.isPending ?
                             <Loader2 className="size-4 animate-spin"/>

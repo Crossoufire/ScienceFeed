@@ -51,11 +51,7 @@ export function CreateNewRSSFeed() {
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button
-                    size="sm"
-                    variant="ghost"
-                    className="w-full border border-primary/30 bg-primary/15 text-primary hover:bg-primary/25 hover:text-primary sm:w-auto"
-                >
+                <Button size="sm" variant="ghost" className="w-full border border-primary/30 bg-primary/15 hover:bg-primary/25 sm:w-auto">
                     <Plus className="size-4"/> Add RSS Feed
                 </Button>
             </DialogTrigger>
@@ -63,7 +59,7 @@ export function CreateNewRSSFeed() {
                 <DialogHeader>
                     <DialogTitle>Add RSS Feed</DialogTitle>
                     <DialogDescription>Add a new RSS feed to your account.</DialogDescription>
-                </DialogHeader>
+                </DialogHeader>A
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField

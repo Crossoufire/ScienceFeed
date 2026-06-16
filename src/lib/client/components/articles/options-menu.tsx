@@ -33,9 +33,6 @@ export const OptionsMenu = ({ isEditing, onEditModeClick, onRssFetcherClick, sho
                     </TooltipTrigger>
                     <TooltipContent side="top" align="end" className="text-sm">
                         <div>{`Last update: ${lastRssUpdate}`}</div>
-                        <div className="text-xs italic text-amber-800">
-                            Max every 30 minutes.
-                        </div>
                     </TooltipContent>
                 </Tooltip>
             }
