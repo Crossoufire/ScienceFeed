@@ -1,5 +1,4 @@
 import {toast} from "sonner";
-import * as React from "react";
 import {useState} from "react";
 import {cn} from "@/lib/utils/utils";
 import {UserKeyword} from "@/lib/types/types";
@@ -9,8 +8,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {userKeywordsOptions} from "@/lib/client/react-query";
 import {PageTitle} from "@/lib/client/components/page-title";
-import {PauseCircle, PlayCircle, Plus, Trash2} from "lucide-react";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
+import {Loader2, PauseCircle, PlayCircle, Plus, Tags, Trash2} from "lucide-react";
 import {useAddKeywordMutation, useDeleteKeywordMutation, useToggleKeywordMutation} from "@/lib/client/react-query/mutations";
 
 
@@ -28,34 +26,61 @@ function KeywordManagerPage() {
     const toggleKeywordMutation = useToggleKeywordMutation();
     const [newKeyword, setNewKeyword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [pendingToggleKeywordId, setPendingToggleKeywordId] = useState<number | null>(null);
+    const [pendingDeleteKeywordId, setPendingDeleteKeywordId] = useState<number | null>(null);
     const userKeywords = useSuspenseQuery(userKeywordsOptions).data;
+    const sortedKeywords = [...userKeywords].sort((a, b) => {
+        if (a.active !== b.active) return a.active ? -1 : 1;
+        return a.name.localeCompare(b.name);
+    });
+    const activeCount = userKeywords.filter((keyword) => keyword.active).length;
+    const inactiveCount = userKeywords.length - activeCount;
+    const totalLinkedArticles = userKeywords.reduce((total, keyword) => total + Number(keyword.totalArticles ?? 0), 0);
+    const trimmedKeyword = newKeyword.trim();
+    const normalizedKeyword = trimmedKeyword.toLocaleLowerCase();
 
     const handleAddNewKeyword = () => {
-        if (newKeyword.trim() === "") {
+        if (addKeywordMutation.isPending) return;
+
+        if (trimmedKeyword === "") {
             return setErrorMessage("Keyword cannot be empty");
         }
 
-        if (userKeywords.some((k) => k.name === newKeyword.trim())) {
+        if (userKeywords.some((k) => k.name.toLocaleLowerCase() === normalizedKeyword)) {
             return setErrorMessage("Keyword name already exists");
         }
 
-        addKeywordMutation.mutate({ data: { name: newKeyword.trim() } }, {
-            onError: () => toast.error("Failed to add new keyword"),
+        setErrorMessage("");
+        addKeywordMutation.mutate({ data: { name: trimmedKeyword } }, {
+            onError: (error) => {
+                setErrorMessage(error?.message ?? "Failed to add new keyword");
+                toast.error("Failed to add new keyword");
+            },
             onSuccess: () => {
                 setNewKeyword("");
             },
         });
     };
 
-    const handleDeleteKeyword = async (keyword: UserKeyword) => {
-        if (!confirm(`Are you sure ? This keyword will be removed from (${keyword.totalArticles}) articles. All the articles that only have this keyword will also be deleted.`)) return;
+    const handleDeleteKeyword = (keyword: UserKeyword) => {
+        if (pendingDeleteKeywordId !== null || pendingToggleKeywordId !== null) return;
+        if (!confirm(`Delete "${keyword.name}"? This keyword will be removed from ${formatCount(keyword.totalArticles)} article(s).`)) return;
 
+        setPendingDeleteKeywordId(keyword.id);
         deleteKeywordMutation.mutate({ data: { keywordId: keyword.id } }, {
-            onError: () => toast.error("Failed to delete keyword"),
+            onError: () => {
+                setPendingDeleteKeywordId(null);
+                toast.error("Failed to delete keyword");
+            },
+            onSuccess: () => {
+                setPendingDeleteKeywordId(null);
+            },
         });
     };
 
-    const handleToggleKeyword = async (keyword: UserKeyword) => {
+    const handleToggleKeyword = (keyword: UserKeyword) => {
+        if (pendingToggleKeywordId !== null || pendingDeleteKeywordId !== null) return;
+
         if (keyword.active) {
             if (!confirm(`By deactivating this keyword, the associated articles will not be shown in your dashboard anymore. Do you want to continue?`)) return;
         }
@@ -63,74 +88,171 @@ function KeywordManagerPage() {
             if (!confirm(`By activating this keyword, the associated articles will be shown in your dashboard. Do you want to continue?`)) return;
         }
 
+        setPendingToggleKeywordId(keyword.id);
         toggleKeywordMutation.mutate({ data: { keywordId: keyword.id, active: !keyword.active } }, {
-            onError: () => toast.error("Failed to toggle the keyword"),
+            onError: () => {
+                setPendingToggleKeywordId(null);
+                toast.error("Failed to toggle the keyword");
+            },
+            onSuccess: () => {
+                setPendingToggleKeywordId(null);
+            },
         });
     };
 
     return (
         <PageTitle title="Keyword Manager" subtitle="Manage your RSS keywords.">
             <div className="mt-4">
-                <div className="flex items-center gap-3 max-sm:w-full w-100">
-                    <Input
-                        value={newKeyword}
-                        placeholder="Enter a new keyword"
-                        onChange={(ev) => setNewKeyword(ev.target.value)}
-                        onKeyDown={(ev) => (ev.key === "Enter") && handleAddNewKeyword()}
-                    />
-                    <Button size="sm" onClick={handleAddNewKeyword} disabled={addKeywordMutation.isPending}>
-                        <Plus className="h-4 w-4"/> Add Keyword
+                <div className="flex flex-wrap items-start gap-3">
+                    <div className="w-full max-w-xl">
+                        <div className="relative">
+                            <Tags className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8f96a3]"/>
+                            <Input
+                                value={newKeyword}
+                                className="h-10 border-[#343434] bg-[#202020] pl-9 text-sm"
+                                placeholder="Add a keyword..."
+                                onChange={(ev) => {
+                                    setNewKeyword(ev.target.value);
+                                    if (errorMessage) setErrorMessage("");
+                                }}
+                                onKeyDown={(ev) => {
+                                    if (ev.key === "Enter") {
+                                        ev.preventDefault();
+                                        handleAddNewKeyword();
+                                    }
+                                }}
+                            />
+                        </div>
+                        {errorMessage &&
+                            <p className="mt-2 text-sm text-[#e7b9b9]">
+                                {errorMessage}
+                            </p>
+                        }
+                    </div>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleAddNewKeyword}
+                        disabled={addKeywordMutation.isPending || trimmedKeyword.length === 0}
+                        className="h-10 border border-[#363636] bg-[#222222] px-3 text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
+                    >
+                        {addKeywordMutation.isPending ?
+                            <Loader2 className="size-4 animate-spin"/>
+                            :
+                            <Plus className="size-4"/>
+                        }
+                        Add Keyword
                     </Button>
                 </div>
-                {errorMessage &&
-                    <p className="text-destructive text-sm">
-                        {errorMessage}
-                    </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#9ba3af]">
+                    <StatPill label="Total" value={userKeywords.length}/>
+                    <StatPill label="Active" value={activeCount}/>
+                    <StatPill label="Paused" value={inactiveCount}/>
+                    <StatPill label="Linked articles" value={totalLinkedArticles}/>
+                </div>
+            </div>
+
+            <div className="mt-6 overflow-hidden rounded-lg border border-[#303030] bg-[#181818]">
+                {sortedKeywords.length === 0 ?
+                    <div className="py-10 text-center text-sm text-[#9ba3af]">
+                        No keywords added yet.
+                    </div>
+                    :
+                    <div className="divide-y divide-[#282828]">
+                        {sortedKeywords.map((keyword) => {
+                            const isToggling = pendingToggleKeywordId === keyword.id;
+                            const isDeleting = pendingDeleteKeywordId === keyword.id;
+                            const isActionLocked = pendingToggleKeywordId !== null || pendingDeleteKeywordId !== null;
+
+                            return (
+                                <div
+                                    key={keyword.id}
+                                    className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-[#202020]"
+                                >
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <span
+                                            className={cn(
+                                                "size-2 shrink-0 rounded-full",
+                                                keyword.active ? "bg-[#9fb7b4]" : "bg-[#777777]",
+                                            )}
+                                            aria-hidden="true"
+                                        />
+                                        <div className="min-w-0">
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                <p className="truncate text-sm font-semibold text-[#f3f5f4]" title={keyword.name}>
+                                                    {keyword.name}
+                                                </p>
+                                                <span
+                                                    className={cn(
+                                                        "rounded-full border px-2 py-0.5 text-[11px]",
+                                                        keyword.active
+                                                            ? "border-[#53605f] bg-[#2f3a39] text-[#d7e4e2]"
+                                                            : "border-[#3a3a3a] bg-[#242424] text-[#aeb6c2]",
+                                                    )}
+                                                >
+                                                    {keyword.active ? "Active" : "Paused"}
+                                                </span>
+                                            </div>
+                                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-[#8f96a3]">
+                                                <span>{formatCount(keyword.totalArticles)} total</span>
+                                                <span>{formatCount(keyword.archivedArticles)} archived</span>
+                                                <span>{formatCount(keyword.deletedArticles)} deleted</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex shrink-0 items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            title={keyword.active ? "Pause keyword" : "Activate keyword"}
+                                            disabled={isActionLocked}
+                                            onClick={() => handleToggleKeyword(keyword)}
+                                            className="h-8 border border-[#363636] bg-transparent px-3 text-[#d8dee8] hover:bg-[#262626] hover:text-white"
+                                        >
+                                            {isToggling ?
+                                                <Loader2 className="size-4 animate-spin"/>
+                                                : keyword.active ?
+                                                    <PauseCircle className="size-4"/>
+                                                    :
+                                                    <PlayCircle className="size-4"/>
+                                            }
+                                            {keyword.active ? "Pause" : "Activate"}
+                                        </Button>
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            title="Delete keyword"
+                                            disabled={isActionLocked}
+                                            onClick={() => handleDeleteKeyword(keyword)}
+                                            className="size-8 text-[#9ca3af] hover:bg-[#332424] hover:text-[#f4d6d6]"
+                                        >
+                                            {isDeleting ?
+                                                <Loader2 className="size-4 animate-spin"/>
+                                                :
+                                                <Trash2 className="size-4"/>
+                                            }
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 }
             </div>
-            <Table className="mt-6">
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="text-center">Keyword</TableHead>
-                        <TableHead className="text-center">Total</TableHead>
-                        <TableHead className="text-center">Read</TableHead>
-                        <TableHead className="text-center">Archived</TableHead>
-                        <TableHead className="text-center">Deleted</TableHead>
-                        <TableHead className="w-30 text-center">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {userKeywords.map((keyword) =>
-                        <TableRow key={keyword.id} className="text-base">
-                            <TableCell>
-                                <div className={cn("font-semibold", keyword.active ? "text-green-500" : "text-amber-500")}>
-                                    {keyword.name}
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-center">{keyword.totalArticles}</TableCell>
-                            <TableCell className="text-center">{keyword.readArticles ?? "-"}</TableCell>
-                            <TableCell className="text-center">{keyword.archivedArticles ?? "-"}</TableCell>
-                            <TableCell className="text-center">{keyword.deletedArticles ?? "-"}</TableCell>
-                            <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        size="sm"
-                                        onClick={() => handleToggleKeyword(keyword)}
-                                        variant={keyword.active ? "warning" : "green"}
-                                        title={keyword.active ? "Deactivate" : "Activate"}
-                                        className={keyword.active ? "" : "bg-green-700"}
-                                    >
-                                        {keyword.active ? <PauseCircle className="h-4 w-4"/> : <PlayCircle className="h-4 w-4"/>}
-                                    </Button>
-                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteKeyword(keyword)}>
-                                        <Trash2 className="h-4 w-4"/>
-                                    </Button>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
         </PageTitle>
     );
+}
+
+
+function StatPill({ label, value }: { label: string; value: number }) {
+    return (
+        <span className="rounded-full border border-[#353535] bg-[#222222] px-2.5 py-1">
+            {label}: {value}
+        </span>
+    );
+}
+
+
+function formatCount(value: unknown) {
+    return Number(value ?? 0);
 }
