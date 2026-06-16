@@ -116,10 +116,8 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
     };
 
     const onArchiveClick = (articleIds: number[], archive = mode === "active") => {
+        setSelectedArticles([]);
         archiveArticlesMutation.mutate({ data: { articleIds, archive } }, {
-            onSuccess: () => {
-                setSelectedArticles([]);
-            },
             onError: () => {
                 return toast.error(`Failed to ${archive ? "archive" : "unarchive"} the article(s)`);
             },
@@ -127,10 +125,8 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
     };
 
     const onDeleteClick = (articleIds: number[], isDeleted = true) => {
+        setSelectedArticles([]);
         deleteArticlesMutation.mutate({ data: { articleIds, isDeleted } }, {
-            onSuccess: () => {
-                setSelectedArticles([]);
-            },
             onError: () => {
                 return toast.error(`Failed to ${isDeleted ? "delete" : "restore"} the article(s)`);
             },
@@ -239,12 +235,10 @@ const modeConfig = {
             {
                 label: "Archive Selected",
                 action: "archive" as const,
-                variant: "warning" as const
             },
             {
                 label: "Delete Selected",
                 action: "delete" as const,
-                variant: "destructive" as const
             },
         ],
     },
@@ -257,12 +251,10 @@ const modeConfig = {
             {
                 label: "Unarchive Selected",
                 action: "unarchive" as const,
-                variant: "secondary" as const
             },
             {
                 label: "Delete Selected",
                 action: "delete" as const,
-                variant: "destructive" as const
             },
         ],
     },
@@ -275,7 +267,6 @@ const modeConfig = {
             {
                 label: "Restore Selected",
                 action: "restore" as const,
-                variant: "secondary" as const,
             },
         ],
     },

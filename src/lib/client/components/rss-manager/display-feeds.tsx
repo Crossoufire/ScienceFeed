@@ -2,26 +2,20 @@ import React from "react";
 import {toast} from "sonner";
 import {Trash} from "lucide-react";
 import {UserRssFeed} from "@/lib/types/types";
-import {useQueryClient} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
-import {rssManagerOptions} from "@/lib/client/react-query";
 import {MutedText} from "@/lib/client/components/muted-text";
 import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {useRemoveUserRssFeedMutation} from "@/lib/client/react-query/mutations";
 
 
 export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) {
-    const queryClient = useQueryClient();
     const isMobile = useBreakpoint("sm");
     const removeUserRssFeedMutation = useRemoveUserRssFeedMutation();
 
     const handleRemoveRssFeed = (rssFeed: UserRssFeed) => {
         removeUserRssFeedMutation.mutate({ data: { rssIds: [rssFeed.id] } }, {
             onError: () => toast.error("Failed to remove this RSS Feed"),
-            onSuccess: async () => {
-                toast.success("RSS Feed successfully removed");
-                await queryClient.invalidateQueries({ queryKey: rssManagerOptions.queryKey });
-            },
+            onSuccess: () => toast.success("RSS Feed successfully removed"),
         });
     };
 

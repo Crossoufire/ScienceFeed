@@ -24,10 +24,18 @@ export const KeywordsBadge = ({ isDisabled, keywords, activeKeywordsIds, onKeywo
         <>
             {keywords.map((keyword) =>
                 <Badge
+                    variant="outline"
                     key={keyword.name}
-                    className={cn(isDisabled && "cursor-auto")}
                     onClick={() => checkIfCanClick(keyword.id)}
-                    variant={activeKeywordsIds.includes(keyword.id) ? "label" : "secondary"}
+                    className={cn(
+                        "cursor-pointer rounded-full border px-2.5 py-1 text-xs transition-colors",
+                        activeKeywordsIds.includes(keyword.id)
+                            ? "border-[#53605f] bg-[#2f3a39] text-[#f3f5f4] hover:bg-[#384544]"
+                            : "border-[#343434] bg-[#222222] text-[#aeb6c2] hover:bg-[#2a2a2a] hover:text-white",
+                        isDisabled && (activeKeywordsIds.includes(keyword.id)
+                            ? "cursor-default opacity-60 hover:bg-[#2f3a39] hover:text-[#f3f5f4]"
+                            : "cursor-default opacity-60 hover:bg-[#222222] hover:text-[#aeb6c2]"),
+                    )}
                 >
                     {keyword.name}
                 </Badge>

@@ -1,19 +1,18 @@
 import {toast} from "sonner";
 import React, {useRef, useState} from "react";
+import {useQuery} from "@tanstack/react-query";
 import {SearchRssFeed} from "@/lib/types/types";
 import {Input} from "@/lib/client/components/ui/input";
+import {rssSearchOptions} from "@/lib/client/react-query";
 import {CheckCircle, Loader2, Search} from "lucide-react";
 import {useDebounce} from "@/lib/client/hooks/use-debounce";
 import {Separator} from "@/lib/client/components/ui/separator";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
-import {rssManagerOptions, rssSearchOptions} from "@/lib/client/react-query";
 import {useAddRssFeedsToUserMutation} from "@/lib/client/react-query/mutations";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/client/components/ui/command";
 
 
 export function SearchRSSFeeds() {
-    const queryClient = useQueryClient();
     const commandRef = useRef(null);
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
@@ -26,10 +25,7 @@ export function SearchRSSFeeds() {
 
         addRssFeedsMutation.mutate({ data: { feedsIds: [rssFeed.id] } }, {
             onError: () => toast.error("Failed to add this RSS Feed"),
-            onSuccess: async () => {
-                toast.success("RSS Feed successfully added");
-                await queryClient.invalidateQueries({ queryKey: rssManagerOptions.queryKey });
-            },
+            onSuccess: () => toast.success("RSS Feed successfully added"),
         });
     };
 

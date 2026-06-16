@@ -3,13 +3,13 @@ import * as React from "react";
 import {useState} from "react";
 import {cn} from "@/lib/utils/utils";
 import {UserKeyword} from "@/lib/types/types";
-import {createFileRoute} from "@tanstack/react-router";
 import {Input} from "@/lib/client/components/ui/input";
+import {createFileRoute} from "@tanstack/react-router";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {Button} from "@/lib/client/components/ui/button";
 import {userKeywordsOptions} from "@/lib/client/react-query";
 import {PageTitle} from "@/lib/client/components/page-title";
 import {PauseCircle, PlayCircle, Plus, Trash2} from "lucide-react";
-import {useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {useAddKeywordMutation, useDeleteKeywordMutation, useToggleKeywordMutation} from "@/lib/client/react-query/mutations";
 
@@ -23,7 +23,6 @@ export const Route = createFileRoute("/_private/keywords")({
 
 
 function KeywordManagerPage() {
-    const queryClient = useQueryClient();
     const addKeywordMutation = useAddKeywordMutation();
     const deleteKeywordMutation = useDeleteKeywordMutation();
     const toggleKeywordMutation = useToggleKeywordMutation();
@@ -42,9 +41,8 @@ function KeywordManagerPage() {
 
         addKeywordMutation.mutate({ data: { name: newKeyword.trim() } }, {
             onError: () => toast.error("Failed to add new keyword"),
-            onSuccess: async () => {
+            onSuccess: () => {
                 setNewKeyword("");
-                await queryClient.invalidateQueries({ queryKey: userKeywordsOptions.queryKey });
             },
         });
     };
@@ -54,23 +52,19 @@ function KeywordManagerPage() {
 
         deleteKeywordMutation.mutate({ data: { keywordId: keyword.id } }, {
             onError: () => toast.error("Failed to delete keyword"),
-            onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeywordsOptions.queryKey }),
         });
     };
 
     const handleToggleKeyword = async (keyword: UserKeyword) => {
         if (keyword.active) {
-            if (!confirm(`By deactivating this keyword, the associated articles will 
-            not be shown in your dashboard anymore. Do you want to continue?`)) return;
+            if (!confirm(`By deactivating this keyword, the associated articles will not be shown in your dashboard anymore. Do you want to continue?`)) return;
         }
         else {
-            if (!confirm(`By activating this keyword, the associated articles will be 
-            shown in your dashboard. Do you want to continue?`)) return;
+            if (!confirm(`By activating this keyword, the associated articles will be shown in your dashboard. Do you want to continue?`)) return;
         }
 
         toggleKeywordMutation.mutate({ data: { keywordId: keyword.id, active: !keyword.active } }, {
             onError: () => toast.error("Failed to toggle the keyword"),
-            onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeywordsOptions.queryKey }),
         });
     };
 

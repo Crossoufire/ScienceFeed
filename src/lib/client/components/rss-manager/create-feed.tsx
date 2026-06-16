@@ -3,17 +3,14 @@ import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Loader2, Plus} from "lucide-react";
 import {CreateRssFeed} from "@/lib/schemas/schemas";
-import {useQueryClient} from "@tanstack/react-query";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
-import {rssManagerOptions} from "@/lib/client/react-query";
 import {useCreateRssFeedMutation} from "@/lib/client/react-query/mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/lib/client/components/ui/dialog";
 
 
 export function CreateNewRSSFeed() {
-    const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const createRssFeedMutation = useCreateRssFeedMutation();
     const form = useForm<CreateRssFeed>({
@@ -27,11 +24,10 @@ export function CreateNewRSSFeed() {
     const onSubmit = (data: CreateRssFeed) => {
         createRssFeedMutation.mutate({ data }, {
             onError: (error) => toast.error(error?.message ?? "Failed to add this RSS Feed"),
-            onSuccess: async () => {
+            onSuccess: () => {
                 form.reset();
                 setOpen(false);
                 toast.success("RSS Feed successfully added");
-                await queryClient.invalidateQueries({ queryKey: rssManagerOptions.queryKey });
             },
         });
     };
