@@ -102,14 +102,14 @@ function KeywordManagerPage() {
 
     return (
         <PageTitle title="Keyword Manager" subtitle="Manage your RSS keywords.">
-            <div className="mt-4">
-                <div className="flex flex-wrap items-start gap-3">
-                    <div className="w-full max-w-xl">
+            <div className="mt-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-4">
+                    <div className="w-100 max-w-full">
                         <div className="relative">
                             <Tags className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8f96a3]"/>
                             <Input
                                 value={newKeyword}
-                                className="h-10 border-[#343434] bg-[#202020] pl-9 text-sm"
+                                className="pl-9"
                                 placeholder="Add a keyword..."
                                 onChange={(ev) => {
                                     setNewKeyword(ev.target.value);
@@ -134,7 +134,7 @@ function KeywordManagerPage() {
                         variant="ghost"
                         onClick={handleAddNewKeyword}
                         disabled={addKeywordMutation.isPending || trimmedKeyword.length === 0}
-                        className="h-10 border border-[#363636] bg-[#222222] px-3 text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
+                        className="border border-[#363636] bg-[#222222] text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
                     >
                         {addKeywordMutation.isPending ?
                             <Loader2 className="size-4 animate-spin"/>
@@ -144,7 +144,7 @@ function KeywordManagerPage() {
                         Add Keyword
                     </Button>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#9ba3af]">
+                <div className="mt-4 flex flex-wrap gap-3 text-xs text-[#9ba3af]">
                     <StatPill label="Total" value={userKeywords.length}/>
                     <StatPill label="Active" value={activeCount}/>
                     <StatPill label="Paused" value={inactiveCount}/>

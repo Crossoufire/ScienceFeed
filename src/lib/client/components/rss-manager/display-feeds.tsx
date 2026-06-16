@@ -40,7 +40,7 @@ export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) 
     }, {});
 
     return (
-        <div className="mt-6 space-y-5">
+        <div className="mt-6 space-y-4">
             {userRssFeeds.length === 0 &&
                 <div className="rounded-lg border border-dashed border-[#343434] py-10 text-center text-sm text-[#9ba3af]">
                     No RSS feeds added yet.

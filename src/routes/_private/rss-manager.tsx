@@ -21,12 +21,12 @@ function RssManager() {
 
     return (
         <PageTitle title="RSS Feeds Manager" subtitle="Search and Manage your RSS feeds.">
-            <div className="mt-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="mt-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-4">
                     <SearchRSSFeeds/>
                     <CreateNewRSSFeed/>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#9ba3af]">
+                <div className="mt-4 flex flex-wrap gap-3 text-xs text-[#9ba3af]">
                     <span className="rounded-full border border-[#353535] bg-[#222222] px-2.5 py-1">
                         {userRssFeeds.length} feeds
                     </span>

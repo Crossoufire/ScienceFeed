@@ -49,15 +49,15 @@ export function SearchRSSFeeds() {
     useOnClickOutside(commandRef, resetSearch);
 
     return (
-        <div ref={commandRef} className="relative w-full max-w-xl">
+        <div ref={commandRef} className="relative w-100 max-w-full">
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8f96a3]"/>
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/>
                 <Input
                     value={search}
                     onChange={handleInputChange}
                     placeholder="Search RSS feeds..."
                     onFocus={() => setIsOpen(true)}
-                    className="h-10 w-full border-[#343434] bg-[#202020] pl-9 text-sm"
+                    className="pl-9"
                 />
             </div>
             {isOpen && (debouncedQuery.length >= 2 || isLoading) &&

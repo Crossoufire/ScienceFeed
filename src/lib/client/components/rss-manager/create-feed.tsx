@@ -54,7 +54,7 @@ export function CreateNewRSSFeed() {
                 <Button
                     size="sm"
                     variant="ghost"
-                    className="h-10 border border-[#363636] bg-[#222222] px-3 text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
+                    className="border border-[#363636] bg-[#222222] text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
                 >
                     <Plus className="size-4"/> Add RSS Feed
                 </Button>
