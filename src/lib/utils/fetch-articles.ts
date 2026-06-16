@@ -1,8 +1,8 @@
 import pLimit from "p-limit";
 import {db} from "@/lib/server/database/db";
 import {and, eq, inArray, sql} from "drizzle-orm";
-import {cleanHtmlWithRegex, findMatchingKeywordsRegex, parseRssFeed, RssItem} from "@/lib/utils/rss-parser";
 import {article, keyword, rssFeed, user, userArticle, userArticleKeyword, userRssFeed} from "@/lib/server/database/schema";
+import {cleanHtmlWithRegex, findMatchingKeywordsRegex, parseRssFeed, RssFetchError, RssItem} from "@/lib/utils/rss-parser";
 
 
 type Feed = {
@@ -21,6 +21,25 @@ export type FetchArticlesResult = {
         journal: string;
         publisher: string;
     }[];
+}
+
+const ACS_FEED_CONCURRENCY = 1;
+const ACS_FEED_DELAY_MS = 10_000;
+const GENERAL_FEED_CONCURRENCY = 4;
+
+
+const sleep = (ms: number) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
+function isAcsFeed(url: string) {
+    try {
+        return new URL(url).hostname.endsWith("acs.org");
+    }
+    catch {
+        return false;
+    }
 }
 
 
@@ -72,11 +91,38 @@ export async function fetchAndFilterArticles(targetUserId?: number): Promise<Fet
         .from(rssFeed)
         .where(inArray(rssFeed.id, allRssFeedIds));
 
-    const limit = pLimit(4);
+    let lastAcsFetchAt = 0;
+    const acsLimit = pLimit(ACS_FEED_CONCURRENCY);
+    const generalLimit = pLimit(GENERAL_FEED_CONCURRENCY);
+
+    const waitForAcsFetchSlot = async () => {
+        const now = Date.now();
+        const nextAllowedAt = lastAcsFetchAt + ACS_FEED_DELAY_MS;
+        if (lastAcsFetchAt > 0 && now < nextAllowedAt) {
+            await sleep(nextAllowedAt - now);
+        }
+        lastAcsFetchAt = Date.now();
+    };
+
+    let acsCloudflareChallengeSeen = false;
     const parsedById = new Map<number, { feed: Feed; parsed: RssItem[] }>();
     await Promise.all(feeds.map((f) =>
-        limit(async () => {
+        (isAcsFeed(f.url) ? acsLimit : generalLimit)(async () => {
+            const feedIsAcs = isAcsFeed(f.url);
+
             try {
+                if (feedIsAcs) {
+                    if (acsCloudflareChallengeSeen) {
+                        throw new RssFetchError(
+                            `Skipped ACS RSS feed ${f.url}. Earlier ACS request in this refresh hit a Cloudflare challenge`,
+                            undefined,
+                            true,
+                        );
+                    }
+
+                    await waitForAcsFetchSlot();
+                }
+
                 const parsed = await parseRssFeed(f.url);
                 parsedById.set(f.id, { feed: f, parsed });
                 result.processedFeeds++;
@@ -91,6 +137,9 @@ export async function fetchAndFilterArticles(targetUserId?: number): Promise<Fet
             }
             catch (error) {
                 const errorMessage = error instanceof Error ? error.message : "Unknown RSS fetch error";
+                if (feedIsAcs && error instanceof RssFetchError && error.isCloudflareChallenge) {
+                    acsCloudflareChallengeSeen = true;
+                }
 
                 await db
                     .update(rssFeed)

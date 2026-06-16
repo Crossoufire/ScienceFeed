@@ -1,7 +1,21 @@
 import {XMLParser} from "fast-xml-parser";
 
 
-const FEEDPARSER_USER_AGENT = "feedparser/6.0.11 +https://github.com/kurtmckee/feedparser/";
+const RSS_FETCH_TIMEOUT_MS = 30_000;
+const CLOUDFLARE_CHALLENGE_HEADER = "challenge";
+const FEEDPARSER_USER_AGENT = "feedparser/6.0.12 +https://github.com/kurtmckee/feedparser/";
+
+
+export class RssFetchError extends Error {
+    constructor(
+        message: string,
+        readonly status?: number,
+        readonly isCloudflareChallenge = false,
+    ) {
+        super(message);
+        this.name = "RssFetchError";
+    }
+}
 
 
 export type RssItem = {
@@ -12,17 +26,26 @@ export type RssItem = {
 
 
 export async function parseRssFeed(url: string): Promise<RssItem[]> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), RSS_FETCH_TIMEOUT_MS);
+
     const res = await fetch(url, {
+        signal: controller.signal,
         headers: {
-            "Cache-Control": "no-cache",
-            "Accept-Language": "en-US,en;q=0.9",
             "User-Agent": FEEDPARSER_USER_AGENT,
-            "Accept": "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5",
+            "Accept": "application/atom+xml,application/rdf+xml,application/rss+xml,application/x-netcdf,application/xml;q=0.9,text/xml;q=0.2,*/*;q=0.1",
+            "A-IM": "feed",
+            "Connection": "close",
         },
-    });
+    }).finally(() => clearTimeout(timeout));
+
+    const isCloudflareChallenge =
+        res.headers.get("cf-mitigated") === CLOUDFLARE_CHALLENGE_HEADER ||
+        res.headers.get("server")?.toLowerCase() === "cloudflare" && res.status === 403;
 
     if (!res.ok) {
-        throw new Error(`Failed to fetch RSS feed ${url}. HTTP ${res.status} ${res.statusText}`);
+        const reason = isCloudflareChallenge ? "Cloudflare challenge" : `${res.status} ${res.statusText}`;
+        throw new RssFetchError(`Failed to fetch RSS feed ${url}. HTTP ${reason}`, res.status, isCloudflareChallenge);
     }
 
     const parser = new XMLParser({
@@ -34,6 +57,13 @@ export async function parseRssFeed(url: string): Promise<RssItem[]> {
     });
 
     const xml = await res.text();
+    if (
+        res.headers.get("cf-mitigated") === CLOUDFLARE_CHALLENGE_HEADER ||
+        /<title>\s*Just a moment\.\.\.\s*<\/title>/i.test(xml)
+    ) {
+        throw new RssFetchError(`Failed to fetch RSS feed ${url}. Cloudflare challenge`, res.status, true);
+    }
+
     const doc = parser.parse(xml);
 
     let items: unknown = doc?.rss?.channel?.item ?? doc?.rdf?.item ?? doc?.channel?.item;
