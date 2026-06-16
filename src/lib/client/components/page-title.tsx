@@ -14,7 +14,7 @@ interface PageTitleProps {
 export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }: PageTitleProps) => {
     return (
         <>
-            <title>{`${title} - MyLists`}</title>
+            <title>{`${title} - ScienceFeed`}</title>
             {onlyHelmet ?
                 children
                 :
