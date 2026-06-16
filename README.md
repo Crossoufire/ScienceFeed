@@ -1,124 +1,74 @@
-## ScienceFeed
+# ScienceFeed
 
-[ScienceFeed](https://science-feed.mylists.info) is a platform allowing you to follow RSS feeds from scientific journals
-and get updates based on keywords.
+ScienceFeed is a small personal RSS reader for science articles.
+It lets users sign in with Google, add RSS feeds, define keywords, and keep a simple list of matching articles.
+It is built with Bun, TanStack Start, React, Drizzle, SQLite, Better Auth, and Tailwind CSS.
 
-## Key Features
+## What it does
 
-* Add personalized keywords
-* Add RSS feeds from scientific journals
-* Mark articles as read or unread, archived or deleted
-* ...
+- Manage RSS feeds.
+- Keep basic settings per user.
+- Filter articles by user keywords.
+- Mark articles as archived or deleted.
+- Run maintenance tasks from a small CLI.
 
-## Support Me
+## Requirements
 
-If you like this work, you can buy me a coffee! &nbsp;
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/crossoufire)
+- Bun
+- Google OAuth credentials
 
----
+## Setup
 
-# Local Deployment
+Install dependencies:
 
-## Prerequisites
-
-* Docker on WSL2
-
-## Steps
-
-1. Clone this repo
-
-```
-git clone https://www.github.com/Crossoufire/ScienceFeed.git
-cd ScienceFeed
+```bash
+bun install
 ```
 
-2. Update the `.env.example` file in the `backend` folder with your own values.
+Create a `.env` file:
 
-```
-cd ScienceFeed/backend
-cp .env.example .env
-```
+```bash
+VITE_BASE_URL=http://localhost:3000
 
-3. Update the `.env.example` file in the `frontend` folder with your own values.
+DATABASE_URL=./instance/site.db
 
-```
-cd ScienceFeed/frontend
-cp .env.example .env
-```
+BETTER_AUTH_SECRET=replace-with-a-long-random-string
 
-4. Go back to the `ScienceFeed` folder root, and run the command:
-
-```
-sudo docker compose up -d --build
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
-5. The site will be served by default at `localhost:2000`.
+Run database migrations:
 
-6. To stop the container, run the command:
-
-```
-sudo docker compose down
+```bash
+bun run dk migrate
 ```
 
----
+Start the dev server:
 
-# Installation for development
-
-## Backend Installation (Python - Flask)
-
-### Prerequisites
-
-* Python 3.10+
-* uv (recommended)
-
-### Steps
-
-1. Clone this repo and install the requirements using uv
-
-```
-git clone https://www.github.com/Crossoufire/ScienceFeed.git
-cd ScienceFeed/backend
-uv sync
+```bash
+bun run dev
 ```
 
-3. Set up a `.flaskenv` file in the `backend` folder.
+The app runs at `http://localhost:3000` by default.
 
-```
-FLASK_APP=server.py
-FLASK_ENV=<development|production>
-```
+## Useful commands
 
-4. Create a `.env` file. See the `config.py` file and the `.env.example` file in the `backend` folder for more details.
-
-5. If using PowerShell (Windows), you need to set up the python path:
-
-```
-$env:PYTHONPATH = "$env:PYTHONPATH;path\to\ScienceFeed"
+```bash
+bun run lint      # run oxlint
+bun run dev       # start the app locally
+bun run build     # build the app and CLI
+bun run knip      # check for unused files/dependencies
 ```
 
-5. Run the command `uv run backend\server.py` from the `ScienceFeed` root folder.
-6. The backend will be served by default at `localhost:5000`.
+CLI tasks:
 
----
-
-# Frontend Installation (Node - React)
-
-## Prerequisites
-
-- npm > 9.0
-- Node.js > 19.0
-
-## Steps
-
-1. Clone this repo and install the requirements using npm
-
-```
-git clone https://www.github.com/Crossoufire/ScienceFeed.git
-cd ScienceFeed/frontend
-npm install
+```bash
+bun run cli fetch-rss-feeds
+bun run cli cleanup-deleted-articles
 ```
 
-2. Create a `.env` file. See the `.env.example` file in the `frontend` folder for more details.
+## Notes
 
-3. Run the command `npm run dev` inside the `ScienceFeed/frontend` folder.
-4. The frontend will be served by default at `localhost:3000`.
+RSS fetching is handled through the CLI, so run it manually or schedule it with cron/systemd if you want regular updates.
+Deleted articles are soft-deleted first; the cleanup command removes old deleted entries and orphaned articles.
