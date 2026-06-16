@@ -14,6 +14,7 @@ export function CreateNewRSSFeed() {
     const [open, setOpen] = useState(false);
     const createRssFeedMutation = useCreateRssFeedMutation();
     const form = useForm<CreateRssFeed>({
+        mode: "onChange",
         defaultValues: {
             url: "",
             journal: "",
@@ -21,8 +22,23 @@ export function CreateNewRSSFeed() {
         }
     });
 
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (createRssFeedMutation.isPending) return;
+
+        setOpen(nextOpen);
+        if (!nextOpen) {
+            form.reset();
+        }
+    };
+
     const onSubmit = (data: CreateRssFeed) => {
-        createRssFeedMutation.mutate({ data }, {
+        createRssFeedMutation.mutate({
+            data: {
+                url: data.url.trim(),
+                journal: data.journal.trim(),
+                publisher: data.publisher.trim(),
+            }
+        }, {
             onError: (error) => toast.error(error?.message ?? "Failed to add this RSS Feed"),
             onSuccess: () => {
                 form.reset();
@@ -33,13 +49,17 @@ export function CreateNewRSSFeed() {
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button size="sm">
+                <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-10 border border-[#363636] bg-[#222222] px-3 text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
+                >
                     <Plus className="size-4"/> Add RSS Feed
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="border-[#333333] bg-[#1b1b1b]">
                 <DialogHeader>
                     <DialogTitle>Add RSS Feed</DialogTitle>
                     <DialogDescription>Add a new RSS feed to your account.</DialogDescription>
@@ -47,8 +67,20 @@ export function CreateNewRSSFeed() {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
-                            control={form.control}
                             name="url"
+                            control={form.control}
+                            rules={{
+                                required: { value: true, message: "URL cannot be empty" },
+                                validate: (value) => {
+                                    try {
+                                        new URL(value);
+                                        return true;
+                                    }
+                                    catch {
+                                        return "Enter a valid URL";
+                                    }
+                                },
+                            }}
                             render={({ field }) =>
                                 <FormItem>
                                     <FormLabel>URL</FormLabel>
@@ -70,7 +102,7 @@ export function CreateNewRSSFeed() {
                                 <FormItem>
                                     <FormLabel>Journal</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Journal Name" {...field}/>
+                                        <Input placeholder="Journal name" {...field}/>
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
@@ -86,18 +118,21 @@ export function CreateNewRSSFeed() {
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="Publisher Name"
+                                            placeholder="Publisher name"
                                         />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
                             }
                         />
-                        <Button type="submit" disabled={createRssFeedMutation.isPending || !form.formState.isDirty || !form.formState.isValid}>
-                            {createRssFeedMutation.isPending ?
-                                <><Loader2 className="animate-spin"/> Adding...</>
-                                :
-                                "Add Feed"
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={createRssFeedMutation.isPending || !form.formState.isDirty || !form.formState.isValid}
+                        >
+                            {createRssFeedMutation.isPending
+                                ? <><Loader2 className="animate-spin"/> Adding...</>
+                                : "Add Feed"
                             }
                         </Button>
                     </form>

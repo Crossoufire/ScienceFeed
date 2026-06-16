@@ -1,21 +1,28 @@
-import React from "react";
 import {toast} from "sonner";
-import {Trash} from "lucide-react";
+import React, {useState} from "react";
+import {Rss, Trash2} from "lucide-react";
 import {UserRssFeed} from "@/lib/types/types";
 import {Button} from "@/lib/client/components/ui/button";
-import {MutedText} from "@/lib/client/components/muted-text";
-import {useBreakpoint} from "@/lib/client/hooks/use-breakpoint";
 import {useRemoveUserRssFeedMutation} from "@/lib/client/react-query/mutations";
 
 
 export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) {
-    const isMobile = useBreakpoint("sm");
     const removeUserRssFeedMutation = useRemoveUserRssFeedMutation();
+    const [removingFeedId, setRemovingFeedId] = useState<number | null>(null);
 
     const handleRemoveRssFeed = (rssFeed: UserRssFeed) => {
+        if (removingFeedId !== null) return;
+
+        setRemovingFeedId(rssFeed.id);
         removeUserRssFeedMutation.mutate({ data: { rssIds: [rssFeed.id] } }, {
-            onError: () => toast.error("Failed to remove this RSS Feed"),
-            onSuccess: () => toast.success("RSS Feed successfully removed"),
+            onError: () => {
+                setRemovingFeedId(null);
+                toast.error("Failed to remove this RSS Feed");
+            },
+            onSuccess: () => {
+                setRemovingFeedId(null);
+                toast.success("RSS Feed successfully removed");
+            },
         });
     };
 
@@ -33,26 +40,57 @@ export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) 
     }, {});
 
     return (
-        <div>
+        <div className="mt-6 space-y-5">
+            {userRssFeeds.length === 0 &&
+                <div className="rounded-lg border border-dashed border-[#343434] py-10 text-center text-sm text-[#9ba3af]">
+                    No RSS feeds added yet.
+                </div>
+            }
             {Object.entries(groupedRssFeeds).map(([publisher, feeds]) => (
-                <div key={publisher}>
-                    <h3 className="text-lg font-semibold mb-2 mt-4">
-                        {publisher}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+                <section key={publisher} className="rounded-lg border border-[#303030] bg-[#181818]">
+                    <div className="flex items-center justify-between gap-3 border-b border-[#303030] px-4 py-3">
+                        <div className="min-w-0">
+                            <h3 className="truncate text-sm font-semibold text-[#f3f5f4]">
+                                {publisher}
+                            </h3>
+                            <p className="text-xs text-[#9ba3af]">
+                                {feeds.length} {feeds.length === 1 ? "feed" : "feeds"}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="divide-y divide-[#282828]">
                         {feeds.map((feed) =>
-                            <div key={feed.id} className="flex items-center justify-between bg-secondary py-2 px-4 rounded-md">
-                                <div>
-                                    <p className="font-medium">{feed.journal}</p>
-                                    {!isMobile && <MutedText>{feed.url}</MutedText>}
+                            <div key={feed.id} className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-[#202020]">
+                                <div className="flex min-w-0 items-start gap-3">
+                                    <div className="mt-0.5 rounded-md border border-[#353535] bg-[#222222] p-2 text-[#9ba3af]">
+                                        <Rss className="size-4"/>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-medium text-[#f3f5f4]" title={feed.journal}>
+                                            {feed.journal}
+                                        </p>
+                                        <p className="mt-0.5 truncate text-xs text-[#8f96a3]" title={feed.url}>
+                                            {feed.url}
+                                        </p>
+                                    </div>
                                 </div>
-                                <Button size="icon" variant="ghost" title="Remove RSS Feed" onClick={() => handleRemoveRssFeed(feed)}>
-                                    <Trash className="h-4 w-4"/>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    title="Remove RSS Feed"
+                                    disabled={removingFeedId !== null}
+                                    className="size-8 shrink-0 text-[#9ca3af] hover:bg-[#332424] hover:text-[#f4d6d6]"
+                                    onClick={() => handleRemoveRssFeed(feed)}
+                                >
+                                    {removingFeedId === feed.id
+                                        ? <span className="size-4 animate-spin rounded-full border-2 border-[#9ca3af] border-t-transparent"/>
+                                        : <Trash2 className="size-4"/>
+                                    }
                                 </Button>
                             </div>
                         )}
                     </div>
-                </div>
+                </section>
             ))}
         </div>
     );

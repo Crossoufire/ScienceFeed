@@ -17,12 +17,23 @@ export const Route = createFileRoute("/_private/rss-manager")({
 
 function RssManager() {
     const userRssFeeds = useSuspenseQuery(rssManagerOptions).data;
+    const publisherCount = new Set(userRssFeeds.map((feed) => feed.publisher)).size;
 
     return (
         <PageTitle title="RSS Feeds Manager" subtitle="Search and Manage your RSS feeds.">
-            <div className="flex flex-wrap items-center justify-between mt-4 gap-3">
-                <SearchRSSFeeds/>
-                <CreateNewRSSFeed/>
+            <div className="mt-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <SearchRSSFeeds/>
+                    <CreateNewRSSFeed/>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#9ba3af]">
+                    <span className="rounded-full border border-[#353535] bg-[#222222] px-2.5 py-1">
+                        {userRssFeeds.length} feeds
+                    </span>
+                    <span className="rounded-full border border-[#353535] bg-[#222222] px-2.5 py-1">
+                        {publisherCount} publishers
+                    </span>
+                </div>
             </div>
             <DisplayFeeds
                 userRssFeeds={userRssFeeds}
