@@ -54,12 +54,12 @@ export function CreateNewRSSFeed() {
                 <Button
                     size="sm"
                     variant="ghost"
-                    className="border border-[#363636] bg-[#222222] text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
+                    className="w-full border border-primary/30 bg-primary/15 text-primary hover:bg-primary/25 hover:text-primary sm:w-auto"
                 >
                     <Plus className="size-4"/> Add RSS Feed
                 </Button>
             </DialogTrigger>
-            <DialogContent className="border-[#333333] bg-[#1b1b1b]">
+            <DialogContent className="border-border-subtle bg-surface-elevated">
                 <DialogHeader>
                     <DialogTitle>Add RSS Feed</DialogTitle>
                     <DialogDescription>Add a new RSS feed to your account.</DialogDescription>

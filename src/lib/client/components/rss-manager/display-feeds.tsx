@@ -42,34 +42,34 @@ export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) 
     return (
         <div className="mt-6 space-y-4">
             {userRssFeeds.length === 0 &&
-                <div className="rounded-lg border border-dashed border-[#343434] py-10 text-center text-sm text-[#9ba3af]">
+                <div className="rounded-lg border border-dashed border-border-subtle py-10 text-center text-sm text-foreground-muted">
                     No RSS feeds added yet.
                 </div>
             }
             {Object.entries(groupedRssFeeds).map(([publisher, feeds]) => (
-                <section key={publisher} className="rounded-lg border border-[#303030] bg-[#181818]">
-                    <div className="flex items-center justify-between gap-3 border-b border-[#303030] px-4 py-3">
+                <section key={publisher} className="rounded-lg border border-border-subtle bg-surface">
+                    <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
                         <div className="min-w-0">
-                            <h3 className="truncate text-sm font-semibold text-[#f3f5f4]">
+                            <h3 className="truncate text-sm font-semibold text-foreground-soft">
                                 {publisher}
                             </h3>
-                            <p className="text-xs text-[#9ba3af]">
+                            <p className="text-xs text-foreground-muted">
                                 {feeds.length} {feeds.length === 1 ? "feed" : "feeds"}
                             </p>
                         </div>
                     </div>
-                    <div className="divide-y divide-[#282828]">
+                    <div className="divide-y divide-border-subtle">
                         {feeds.map((feed) =>
-                            <div key={feed.id} className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-[#202020]">
+                            <div key={feed.id} className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface-hover">
                                 <div className="flex min-w-0 items-start gap-3">
-                                    <div className="mt-0.5 rounded-md border border-[#353535] bg-[#222222] p-2 text-[#9ba3af]">
+                                    <div className="mt-0.5 rounded-md border border-primary/20 bg-primary/10 p-2 text-primary">
                                         <Rss className="size-4"/>
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="truncate text-sm font-medium text-[#f3f5f4]" title={feed.journal}>
+                                        <p className="truncate text-sm font-medium text-foreground-soft" title={feed.journal}>
                                             {feed.journal}
                                         </p>
-                                        <p className="mt-0.5 truncate text-xs text-[#8f96a3]" title={feed.url}>
+                                        <p className="mt-0.5 truncate text-xs text-foreground-subtle" title={feed.url}>
                                             {feed.url}
                                         </p>
                                     </div>
@@ -79,11 +79,11 @@ export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) 
                                     variant="ghost"
                                     title="Remove RSS Feed"
                                     disabled={removingFeedId !== null}
-                                    className="size-8 shrink-0 text-[#9ca3af] hover:bg-[#332424] hover:text-[#f4d6d6]"
+                                    className="size-9 shrink-0 text-foreground-muted hover:bg-danger-muted hover:text-danger-foreground sm:size-8"
                                     onClick={() => handleRemoveRssFeed(feed)}
                                 >
                                     {removingFeedId === feed.id
-                                        ? <span className="size-4 animate-spin rounded-full border-2 border-[#9ca3af] border-t-transparent"/>
+                                        ? <span className="size-4 animate-spin rounded-full border-2 border-foreground-muted border-t-transparent"/>
                                         : <Trash2 className="size-4"/>
                                     }
                                 </Button>

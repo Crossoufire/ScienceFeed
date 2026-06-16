@@ -54,10 +54,10 @@ export const ArticleCard = (props: ArticleCardProps) => {
     return (
         <Card
             onClick={onCardClick}
-            className={cn("relative max-sm:w-full gap-0 overflow-hidden rounded-xl border border-[#333333] bg-[#1b1b1b] " +
-                "p-5 pb-4 text-white shadow-none transition-colors hover:border-[#444444]",
+            className={cn("relative max-sm:w-full gap-0 overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated " +
+                "p-5 pb-4 text-foreground shadow-none transition-colors hover:border-border-strong",
                 isEditing && "cursor-pointer",
-                selected.includes(article.id) && "border-[#d9d9d9]/70 bg-[#202020]",
+                selected.includes(article.id) && "border-primary/70 bg-surface-selected",
             )}
         >
             {isEditing &&
@@ -70,21 +70,21 @@ export const ArticleCard = (props: ArticleCardProps) => {
                 <div className="min-w-0 flex-1">
                     <div className="mb-3 flex min-w-0 items-center gap-2 text-xs">
                         {showActiveDot &&
-                            <span className="size-2 shrink-0 rounded-full bg-[#e5e7eb]" aria-hidden="true"/>
+                            <span className="size-2 shrink-0 rounded-full bg-primary" aria-hidden="true"/>
                         }
-                        <span className="truncate font-semibold text-white">
+                        <span className="truncate font-semibold text-foreground">
                             {article.journal}
                         </span>
                         {article.publisher &&
                             <>
-                                <span className="text-[#777777]" aria-hidden="true">·</span>
-                                <span className="truncate text-[#8f96a3]">
+                                <span className="text-foreground-subtle" aria-hidden="true">·</span>
+                                <span className="truncate text-foreground-subtle">
                                     {article.publisher}
                                 </span>
                             </>
                         }
                     </div>
-                    <h2 className="text-base font-semibold leading-snug text-white">
+                    <h2 className="text-base font-semibold leading-snug text-foreground">
                         <a
                             target="_blank"
                             rel="noopener noreferrer"
@@ -104,7 +104,7 @@ export const ArticleCard = (props: ArticleCardProps) => {
                     href={isEditing ? undefined : article.link}
                     onClick={(ev) => ev.stopPropagation()}
                     className={cn(
-                        "mt-11 shrink-0 rounded-md p-1 text-[#9ca3af] transition-colors hover:bg-white/5 hover:text-white",
+                        "mt-1 shrink-0 rounded-md p-1 text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground sm:mt-11",
                         isEditing && "pointer-events-none opacity-40",
                     )}
                 >
@@ -112,7 +112,7 @@ export const ArticleCard = (props: ArticleCardProps) => {
                 </a>
             </div>
 
-            <p className="mt-5 line-clamp-3 text-sm leading-6 text-[#aeb6c2]">
+            <p className="mt-5 line-clamp-3 text-sm leading-6 text-foreground-muted">
                 {article.summary}
             </p>
 
@@ -121,26 +121,26 @@ export const ArticleCard = (props: ArticleCardProps) => {
                     <Badge
                         key={keyword}
                         variant="secondary"
-                        className="rounded-full border-0 bg-[#292929] px-2.5 py-0.5 text-[11px] font-medium text-white shadow-none"
+                        className="rounded-full border-0 bg-primary/15 px-2.5 py-0.5 text-[11px] font-medium text-primary shadow-none"
                     >
                         {keyword}
                     </Badge>
                 )}
             </div>
 
-            <div className="mt-4 border-t border-[#303030] pt-4">
-                <div className="flex items-center justify-between gap-4">
-                    <span className="min-w-0 truncate text-xs text-[#9ba3af]">
+            <div className="mt-4 border-t border-border-subtle pt-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                    <span className="min-w-0 truncate text-xs text-foreground-muted">
                         {footerDate}
                     </span>
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="flex shrink-0 items-center justify-end gap-1">
                         {showArchiveAction &&
                             <Button
                                 size="icon"
                                 variant="ghost"
                                 title={archiveTitle}
                                 disabled={isEditing}
-                                className="size-8 text-[#9ca3af] hover:bg-white/5 hover:text-white"
+                                className="size-8 text-foreground-muted hover:bg-surface-hover hover:text-foreground"
                                 onClick={(ev) => {
                                     ev.stopPropagation();
                                     onArchiveClick([article.id]);
@@ -155,7 +155,7 @@ export const ArticleCard = (props: ArticleCardProps) => {
                                 variant="ghost"
                                 title={deleteTitle}
                                 disabled={isEditing}
-                                className="size-8 text-[#9ca3af] hover:bg-white/5 hover:text-white"
+                                className="size-8 text-foreground-muted hover:bg-surface-hover hover:text-foreground"
                                 onClick={(ev) => {
                                     ev.stopPropagation();
                                     onDeleteClick([article.id]);

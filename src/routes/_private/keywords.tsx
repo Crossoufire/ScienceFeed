@@ -103,10 +103,10 @@ function KeywordManagerPage() {
     return (
         <PageTitle title="Keyword Manager" subtitle="Manage your RSS keywords.">
             <div className="mt-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-4">
-                    <div className="w-100 max-w-full">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
+                    <div className="w-full sm:w-100 sm:max-w-full">
                         <div className="relative">
-                            <Tags className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8f96a3]"/>
+                            <Tags className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-subtle"/>
                             <Input
                                 value={newKeyword}
                                 className="pl-9"
@@ -124,7 +124,7 @@ function KeywordManagerPage() {
                             />
                         </div>
                         {errorMessage &&
-                            <p className="mt-2 text-sm text-[#e7b9b9]">
+                            <p className="mt-2 text-sm text-danger-foreground">
                                 {errorMessage}
                             </p>
                         }
@@ -134,7 +134,7 @@ function KeywordManagerPage() {
                         variant="ghost"
                         onClick={handleAddNewKeyword}
                         disabled={addKeywordMutation.isPending || trimmedKeyword.length === 0}
-                        className="border border-[#363636] bg-[#222222] text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
+                        className="w-full border border-primary/30 bg-primary/15 text-primary hover:bg-primary/25 hover:text-primary sm:w-auto"
                     >
                         {addKeywordMutation.isPending ?
                             <Loader2 className="size-4 animate-spin"/>
@@ -144,7 +144,7 @@ function KeywordManagerPage() {
                         Add Keyword
                     </Button>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-3 text-xs text-[#9ba3af]">
+                <div className="mt-4 flex flex-wrap gap-3 text-xs text-foreground-muted">
                     <StatPill label="Total" value={userKeywords.length}/>
                     <StatPill label="Active" value={activeCount}/>
                     <StatPill label="Paused" value={inactiveCount}/>
@@ -152,13 +152,13 @@ function KeywordManagerPage() {
                 </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-lg border border-[#303030] bg-[#181818]">
+            <div className="mt-6 overflow-hidden rounded-lg border border-border-subtle bg-surface">
                 {sortedKeywords.length === 0 ?
-                    <div className="py-10 text-center text-sm text-[#9ba3af]">
+                    <div className="py-10 text-center text-sm text-foreground-muted">
                         No keywords added yet.
                     </div>
                     :
-                    <div className="divide-y divide-[#282828]">
+                    <div className="divide-y divide-border-subtle">
                         {sortedKeywords.map((keyword) => {
                             const isToggling = pendingToggleKeywordId === keyword.id;
                             const isDeleting = pendingDeleteKeywordId === keyword.id;
@@ -167,47 +167,47 @@ function KeywordManagerPage() {
                             return (
                                 <div
                                     key={keyword.id}
-                                    className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-[#202020]"
+                                    className="flex flex-col gap-4 px-4 py-3 transition-colors hover:bg-surface-hover sm:flex-row sm:items-center sm:justify-between"
                                 >
-                                    <div className="flex min-w-0 items-center gap-3">
+                                    <div className="flex min-w-0 items-center gap-3 self-stretch sm:self-auto">
                                         <span
                                             className={cn(
                                                 "size-2 shrink-0 rounded-full",
-                                                keyword.active ? "bg-[#9fb7b4]" : "bg-[#777777]",
+                                                keyword.active ? "bg-success" : "bg-foreground-subtle/60",
                                             )}
                                             aria-hidden="true"
                                         />
                                         <div className="min-w-0">
                                             <div className="flex min-w-0 items-center gap-2">
-                                                <p className="truncate text-sm font-semibold text-[#f3f5f4]" title={keyword.name}>
+                                                <p className="truncate text-sm font-semibold text-foreground-soft" title={keyword.name}>
                                                     {keyword.name}
                                                 </p>
                                                 <span
                                                     className={cn(
                                                         "rounded-full border px-2 py-0.5 text-[11px]",
                                                         keyword.active
-                                                            ? "border-[#53605f] bg-[#2f3a39] text-[#d7e4e2]"
-                                                            : "border-[#3a3a3a] bg-[#242424] text-[#aeb6c2]",
+                                                            ? "border-success-border bg-success-muted text-success-foreground"
+                                                            : "border-border-subtle bg-surface-muted text-foreground-muted",
                                                     )}
                                                 >
                                                     {keyword.active ? "Active" : "Paused"}
                                                 </span>
                                             </div>
-                                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-[#8f96a3]">
+                                            <div className="mt-1 flex flex-wrap gap-2 text-xs text-foreground-subtle">
                                                 <span>{formatCount(keyword.totalArticles)} total</span>
                                                 <span>{formatCount(keyword.archivedArticles)} archived</span>
                                                 <span>{formatCount(keyword.deletedArticles)} deleted</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex shrink-0 items-center gap-2">
+                                    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:shrink-0 sm:items-center">
                                         <Button
                                             size="sm"
                                             variant="ghost"
                                             title={keyword.active ? "Pause keyword" : "Activate keyword"}
                                             disabled={isActionLocked}
                                             onClick={() => handleToggleKeyword(keyword)}
-                                            className="h-8 border border-[#363636] bg-transparent px-3 text-[#d8dee8] hover:bg-[#262626] hover:text-white"
+                                            className="h-8 w-full border border-border-strong bg-transparent px-3 text-foreground-soft hover:bg-surface-hover hover:text-foreground sm:w-auto"
                                         >
                                             {isToggling ?
                                                 <Loader2 className="size-4 animate-spin"/>
@@ -224,7 +224,7 @@ function KeywordManagerPage() {
                                             title="Delete keyword"
                                             disabled={isActionLocked}
                                             onClick={() => handleDeleteKeyword(keyword)}
-                                            className="size-8 text-[#9ca3af] hover:bg-[#332424] hover:text-[#f4d6d6]"
+                                            className="h-8 w-full text-foreground-muted hover:bg-danger-muted hover:text-danger-foreground sm:size-8"
                                         >
                                             {isDeleting ?
                                                 <Loader2 className="size-4 animate-spin"/>
@@ -246,7 +246,7 @@ function KeywordManagerPage() {
 
 function StatPill({ label, value }: { label: string; value: number }) {
     return (
-        <span className="rounded-full border border-[#353535] bg-[#222222] px-2.5 py-1">
+        <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1">
             {label}: {value}
         </span>
     );

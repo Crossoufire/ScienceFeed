@@ -25,22 +25,22 @@ export const EditionButtons = ({ selected, totalVisible, isPending = false, acti
     };
 
     return (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#303030] bg-[#181818] px-3 py-2">
-            <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-[#e5e7eb]">
+        <div className="mt-6 flex flex-col gap-3 rounded-lg border border-border-subtle bg-surface px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm font-medium text-foreground-soft">
                     Bulk edit
                 </span>
-                <span className="rounded-full border border-[#353535] bg-[#222222] px-2.5 py-1 text-xs text-[#aeb6c2]">
+                <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs text-foreground-muted">
                     {selectedLabel}
                 </span>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
                 <Button
                     size="sm"
                     variant="ghost"
                     onClick={handleSelectAction}
                     disabled={!hasArticles || isPending}
-                    className="h-8 border border-[#363636] bg-[#222222] px-3 text-[#e5e7eb] hover:bg-[#2b2b2b] hover:text-white"
+                    className="h-8 w-full border border-primary/30 bg-primary/15 px-3 text-primary hover:bg-primary/25 hover:text-primary sm:w-auto"
                 >
                     {allVisibleSelected ? "Deselect All" : "Select All"}
                 </Button>
@@ -52,8 +52,8 @@ export const EditionButtons = ({ selected, totalVisible, isPending = false, acti
                         disabled={selected.length === 0 || isPending}
                         onClick={() => onBulkActionClick(action.action)}
                         className={cn(
-                            "h-8 border border-[#363636] bg-transparent px-3 text-[#d8dee8] hover:bg-[#262626] hover:text-white",
-                            action.action === "delete" && "text-[#e7b9b9] hover:bg-[#332424] hover:text-[#f4d6d6]",
+                            "h-8 w-full border border-border-strong bg-transparent px-3 text-foreground-soft hover:bg-surface-hover hover:text-foreground sm:w-auto",
+                            action.action === "delete" && "text-danger-foreground hover:bg-danger-muted hover:text-danger-foreground",
                         )}
                     >
                         {action.label}

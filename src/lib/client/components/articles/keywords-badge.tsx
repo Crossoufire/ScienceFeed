@@ -30,11 +30,11 @@ export const KeywordsBadge = ({ isDisabled, keywords, activeKeywordsIds, onKeywo
                     className={cn(
                         "cursor-pointer rounded-full border px-2.5 py-1 text-xs transition-colors",
                         activeKeywordsIds.includes(keyword.id)
-                            ? "border-[#53605f] bg-[#2f3a39] text-[#f3f5f4] hover:bg-[#384544]"
-                            : "border-[#343434] bg-[#222222] text-[#aeb6c2] hover:bg-[#2a2a2a] hover:text-white",
+                            ? "border-success-border bg-success-muted text-success-foreground hover:bg-success-muted/80"
+                            : "border-border-subtle bg-surface-muted text-foreground-muted hover:bg-surface-hover hover:text-foreground",
                         isDisabled && (activeKeywordsIds.includes(keyword.id)
-                            ? "cursor-default opacity-60 hover:bg-[#2f3a39] hover:text-[#f3f5f4]"
-                            : "cursor-default opacity-60 hover:bg-[#222222] hover:text-[#aeb6c2]"),
+                            ? "cursor-default opacity-60 hover:bg-success-muted hover:text-success-foreground"
+                            : "cursor-default opacity-60 hover:bg-surface-muted hover:text-foreground-muted"),
                     )}
                 >
                     {keyword.name}

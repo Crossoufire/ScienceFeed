@@ -36,15 +36,15 @@ function PrivateLayout() {
             <AppSidebar/>
             <SidebarInset>
                 <header
-                    className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear
-                    group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 z-50">
-                    <div className="flex items-center gap-2 px-4">
+                    className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 bg-background/95 backdrop-blur transition-[width,height] ease-linear
+                    group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                    <div className="flex min-w-0 items-center gap-2 px-4">
                         <SidebarTrigger className="-ml-1"/>
                         <Separator
                             orientation="vertical"
                             className="mr-2 data-[orientation=vertical]:h-4"
                         />
-                        <Breadcrumb>
+                        <Breadcrumb className="min-w-0">
                             <BreadcrumbList>
                                 <BreadcrumbItem className="hidden md:block">
                                     {location.pathname.indexOf("dashboard") > -1 ?
@@ -54,8 +54,8 @@ function PrivateLayout() {
                                 <BreadcrumbSeparator className="hidden md:block">
                                     <Slash/>
                                 </BreadcrumbSeparator>
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>
+                                <BreadcrumbItem className="min-w-0">
+                                    <BreadcrumbPage className="truncate">
                                         {crumbs[location.pathname]}
                                     </BreadcrumbPage>
                                 </BreadcrumbItem>
@@ -63,7 +63,7 @@ function PrivateLayout() {
                         </Breadcrumb>
                     </div>
                 </header>
-                <div className="w-6xl mx-auto mb-20">
+                <div className="mx-auto mb-20 w-full max-w-6xl px-4 sm:px-6 lg:px-8">
                     <Outlet/>
                 </div>
             </SidebarInset>

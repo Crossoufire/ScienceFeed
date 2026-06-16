@@ -49,7 +49,7 @@ export function SearchRSSFeeds() {
     useOnClickOutside(commandRef, resetSearch);
 
     return (
-        <div ref={commandRef} className="relative w-100 max-w-full">
+        <div ref={commandRef} className="relative w-full sm:w-100 sm:max-w-full">
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/>
                 <Input
@@ -61,12 +61,12 @@ export function SearchRSSFeeds() {
                 />
             </div>
             {isOpen && (debouncedQuery.length >= 2 || isLoading) &&
-                <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-[#333333] bg-[#1b1b1b] shadow-xl">
-                    <Command className="bg-[#1b1b1b]">
+                <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-border-subtle bg-surface-elevated shadow-xl">
+                    <Command className="bg-surface-elevated">
                         <CommandList className="max-h-90 overflow-y-auto p-1">
                             {isLoading &&
                                 <div className="flex items-center justify-center p-4">
-                                    <Loader2 className="size-5 animate-spin text-[#9ba3af]"/>
+                                    <Loader2 className="size-5 animate-spin text-foreground-muted"/>
                                 </div>
                             }
                             {error && (
@@ -111,25 +111,25 @@ function SearchComponent({ rssFeed, isPending, handleAddRssFeed }: SearchCompone
             disabled={isDisabled}
             onSelect={() => handleAddRssFeed(rssFeed)}
             value={`${rssFeed.publisher} ${rssFeed.journal}`}
-            className="cursor-pointer rounded-md px-3 py-2 data-[selected=true]:bg-[#262626]"
+            className="cursor-pointer rounded-md px-3 py-2 data-[selected=true]:bg-surface-hover"
         >
             <div className="flex w-full min-w-0 items-center justify-between gap-3">
                 <div className="min-w-0">
-                    <div className="flex min-w-0 items-center gap-2 text-xs text-[#9ba3af]">
+                    <div className="flex min-w-0 items-center gap-2 text-xs text-foreground-muted">
                         <span className="truncate font-medium" title={rssFeed.publisher}>
                             {rssFeed.publisher}
                         </span>
                     </div>
-                    <div className="mt-0.5 truncate text-sm font-medium text-[#f3f5f4]" title={rssFeed.journal}>
+                    <div className="mt-0.5 truncate text-sm font-medium text-foreground-soft" title={rssFeed.journal}>
                         {rssFeed.journal}
                     </div>
                 </div>
                 <div className="shrink-0">
                     {isPending
-                        ? <Loader2 className="size-4 animate-spin text-[#9ba3af]"/>
+                        ? <Loader2 className="size-4 animate-spin text-foreground-muted"/>
                         : rssFeed.isActive
-                            ? <CheckCircle className="size-4 text-[#9ca3af]"/>
-                            : <Plus className="size-4 text-[#9ca3af]"/>
+                            ? <CheckCircle className="size-4 text-success"/>
+                            : <Plus className="size-4 text-primary"/>
                     }
                 </div>
             </div>

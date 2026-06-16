@@ -147,7 +147,7 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
     return (
         <PageTitle title={`${title} (${apiData.pagination.total})`} subtitle={subtitle}>
             <div className={cn(rssFetcherMutation.isPending && "opacity-50 pointer-events-none")}>
-                <div className="flex flex-wrap items-baseline justify-between gap-4 mt-3">
+                <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-baseline lg:justify-between">
                     <InputSearch
                         search={searchQuery}
                         isDisabled={isEditing}
@@ -161,7 +161,7 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
                         onRssFetcherClick={onRssFetcherClick}
                     />
                 </div>
-                <div className="flex flex-wrap gap-3 mt-4">
+                <div className="mt-4 flex flex-wrap gap-3">
                     <KeywordsBadge
                         isDisabled={isEditing}
                         keywords={apiData.keywords}
@@ -191,7 +191,7 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
                         {config.empty}
                     </div>
                     :
-                    <div className="mt-4 grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+                    <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
                         {apiData.articles.map((article) =>
                             <ArticleCard
                                 key={article.id}

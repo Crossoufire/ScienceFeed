@@ -1,6 +1,6 @@
 import {Link} from "@tanstack/react-router";
 import {Archive, Newspaper, Trash} from "lucide-react";
-import {SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from "@/lib/client/components/ui/sidebar";
+import {SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar} from "@/lib/client/components/ui/sidebar";
 
 
 const items = [
@@ -23,6 +23,8 @@ const items = [
 
 
 export function NavDashboard() {
+    const { setOpenMobile } = useSidebar();
+
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
@@ -30,7 +32,7 @@ export function NavDashboard() {
                 {items.map((item) =>
                     <SidebarMenuItem key={item.name}>
                         <SidebarMenuButton tooltip={item.name} asChild>
-                            <Link to={item.url}>
+                            <Link to={item.url} onClick={() => setOpenMobile(false)}>
                                 <item.icon/>
                                 <span>{item.name}</span>
                             </Link>

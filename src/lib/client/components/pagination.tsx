@@ -63,8 +63,8 @@ export const Pagination = (props: PaginationProps) => {
     };
 
     return (
-        <nav className="flex justify-center items-center mt-8" aria-label="Pagination navigation">
-            <ul className="flex items-center gap-2">
+        <nav className="mt-8 flex w-full items-center overflow-x-auto px-1" aria-label="Pagination navigation">
+            <ul className="mx-auto flex min-w-max items-center gap-1 sm:gap-2">
                 {showNav &&
                     <li>
                         <Button
