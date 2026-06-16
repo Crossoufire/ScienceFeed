@@ -1,6 +1,6 @@
 import {toast} from "sonner";
-import {useState} from "react";
 import {cn} from "@/lib/utils/utils";
+import {useEffect, useState} from "react";
 import {ArticleBulkActions} from "@/lib/types/types";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/client/components/page-title";
@@ -38,6 +38,19 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
     const [selectedArticles, setSelectedArticles] = useState<number[]>([]);
     const apiData = useSuspenseQuery(userArticleListOptions(mode, filters)).data;
     const [activeKeywordsIds, setActiveKeywordsIds] = useState<number[]>(filters.keywordsIds ?? []);
+    const visibleArticleIds = apiData.articles.map((article) => article.id);
+
+    const visibleArticleIdsKey = visibleArticleIds.join(",");
+    const isBulkActionPending = archiveArticlesMutation.isPending || deleteArticlesMutation.isPending;
+
+    useEffect(() => {
+        setSelectedArticles((prev) => {
+            const visibleIds = new Set(visibleArticleIdsKey.split(",").filter(Boolean).map(Number));
+            const next = prev.filter((articleId) => visibleIds.has(articleId));
+
+            return next.length === prev.length ? prev : next;
+        });
+    }, [visibleArticleIdsKey]);
 
     const fetchData = async (params: UserArticlesSearch) => {
         await onSearchChange(params);
@@ -49,6 +62,7 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
     };
 
     const onPageChange = async (newPage: number) => {
+        setSelectedArticles([]);
         await fetchData({ ...filters, page: newPage });
     };
 
@@ -103,6 +117,9 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
 
     const onArchiveClick = (articleIds: number[], archive = mode === "active") => {
         archiveArticlesMutation.mutate({ data: { articleIds, archive } }, {
+            onSuccess: () => {
+                setSelectedArticles([]);
+            },
             onError: () => {
                 return toast.error(`Failed to ${archive ? "archive" : "unarchive"} the article(s)`);
             },
@@ -111,6 +128,9 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
 
     const onDeleteClick = (articleIds: number[], isDeleted = true) => {
         deleteArticlesMutation.mutate({ data: { articleIds, isDeleted } }, {
+            onSuccess: () => {
+                setSelectedArticles([]);
+            },
             onError: () => {
                 return toast.error(`Failed to ${isDeleted ? "delete" : "restore"} the article(s)`);
             },
@@ -157,7 +177,9 @@ export function ArticleDashboard({ mode, title, subtitle, filters, onSearchChang
                     <EditionButtons
                         selected={selectedArticles}
                         actions={config.bulkActions}
+                        isPending={isBulkActionPending}
                         onBulkActionClick={onBulkActionClick}
+                        totalVisible={apiData.articles.length}
                     />
                 }
                 <div className="mb-6 -mt-2">

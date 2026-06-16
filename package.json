@@ -10,10 +10,11 @@
         "knip": "knip-bun",
         "dk": "drizzle-kit",
         "ui": "bunx shadcn@latest",
-        "build": "bun --bun vite build",
+        "cli": "bun --bun src/cli/cli.ts",
         "dev": "bun --bun vite dev --port 3000",
+        "build": "bun --bun vite build && bun run build:cli",
         "migrate:auth": "bun --bun scripts/migrate-script.ts",
-        "cleanup:deleted-articles": "bun --bun scripts/cleanup-deleted-articles.ts",
+        "build:cli": "bun build src/cli/cli.ts --target bun --outfile dist/cli.js",
         "auth:generate": "npx @better-auth/cli@latest generate -y --output src/lib/server/database/schema/auth.schema.ts --config src/lib/server/auth/"
     },
     "dependencies": {
@@ -36,6 +37,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
+        "commander": "^15.0.0",
         "drizzle-orm": "^0.45.2",
         "fast-xml-parser": "^5.9.0",
         "lucide-react": "^1.17.0",

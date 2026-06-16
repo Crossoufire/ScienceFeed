@@ -53,6 +53,10 @@ export const Pagination = (props: PaginationProps) => {
     const canGoNext = safePage < totalPages;
 
     const handlePageChange = (page: number) => {
+        if (isDisabled) {
+            return;
+        }
+
         if (page >= 1 && page <= totalPages && page !== currentPage) {
             onChangePage(page);
         }
@@ -65,7 +69,7 @@ export const Pagination = (props: PaginationProps) => {
                     <li>
                         <Button
                             size="sm"
-                            disabled={!canGoPrevious}
+                            disabled={!canGoPrevious || isDisabled}
                             aria-label="Go to previous page"
                             variant={canGoPrevious ? "secondary" : "ghost"}
                             onClick={() => handlePageChange(safePage - 1)}
@@ -82,6 +86,7 @@ export const Pagination = (props: PaginationProps) => {
                             <Button
                                 size="sm"
                                 aria-label={`Go to page ${page}`}
+                                disabled={isDisabled}
                                 onClick={() => handlePageChange(page)}
                                 variant={page === safePage ? "default" : "ghost"}
                                 aria-current={page === safePage ? "page" : undefined}

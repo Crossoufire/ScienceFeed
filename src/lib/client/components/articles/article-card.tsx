@@ -1,11 +1,10 @@
 import {UserArticle} from "@/lib/types/types";
 import {cn, formatDateTime} from "@/lib/utils/utils";
+import {Card} from "@/lib/client/components/ui/card";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {Button} from "@/lib/client/components/ui/button";
 import {Checkbox} from "@/lib/client/components/ui/checkbox";
-import {Archive, Info, RotateCcw, Trash2} from "lucide-react";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/client/components/ui/tooltip";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {Archive, ExternalLink, RotateCcw, Trash2} from "lucide-react";
 
 
 interface ArticleCardProps {
@@ -41,6 +40,10 @@ export const ArticleCard = (props: ArticleCardProps) => {
     const ArchiveIcon = archiveIcon === "restore" ? RotateCcw : Archive;
     const stateLabel = article.isDeleted ? "Deleted" : article.isArchived ? "Archived" : null;
     const stateDate = article.isDeleted ? article.markedAsDeletedDate : article.markedAsArchivedDate;
+    const showActiveDot = !article.isDeleted && !article.isArchived;
+    const footerDate = stateLabel && stateDate
+        ? `${stateLabel} ${formatDateTime(stateDate, { useLocalTz: true })}`
+        : `Added ${formatDateTime(article.addedDate, { useLocalTz: true })}`;
 
     const onCardClick = () => {
         if (isEditing) {
@@ -49,90 +52,119 @@ export const ArticleCard = (props: ArticleCardProps) => {
     };
 
     return (
-        <Card onClick={onCardClick} className={cn("relative pb-0 bg-cyan-950 max-sm:w-full flex flex-col", isEditing && "cursor-pointer")}>
-            <div className="flex items-center gap-2">
-                {isEditing &&
-                    <div className="ml-3">
-                        <Checkbox checked={selected.includes(article.id)}/>
-                    </div>
-                }
-                <div className="w-full">
-                    <CardHeader>
-                        <CardTitle>
-                            <a target="_blank" rel="noopener noreferrer" href={isEditing ? undefined : article.link}
-                               className={cn("line-clamp-2", !isEditing && "hover:underline")}>
-                                {article.title}
-                            </a>
-                        </CardTitle>
-                        <CardDescription>
-                            <div className="font-medium">
-                                {article.publisher} - {article.journal}
-                            </div>
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="mt-3">
-                        <div className="text-sm line-clamp-3">
-                            {article.summary}
-                        </div>
-                    </CardContent>
+        <Card
+            onClick={onCardClick}
+            className={cn("relative max-sm:w-full gap-0 overflow-hidden rounded-xl border border-[#333333] bg-[#1b1b1b] " +
+                "p-5 pb-4 text-white shadow-none transition-colors hover:border-[#444444]",
+                isEditing && "cursor-pointer",
+                selected.includes(article.id) && "border-[#d9d9d9]/70 bg-[#202020]",
+            )}
+        >
+            {isEditing &&
+                <div className="absolute left-4 top-4 z-10">
+                    <Checkbox checked={selected.includes(article.id)}/>
                 </div>
-            </div>
-            <div className="mt-auto flex items-center justify-between pb-3 px-3">
-                <div className="flex flex-wrap gap-2">
-                    {article.keywords.map((keyword) =>
-                        <Badge key={keyword} variant="outline" className="text-xs bg-background">
-                            {keyword}
-                        </Badge>
-                    )}
-                </div>
-                <div className="text-sm flex items-center flex-wrap justify-end gap-2">
-                    {stateLabel && stateDate &&
-                        <span className="text-xs text-muted-foreground">
-                            {stateLabel}: {formatDateTime(stateDate, { includeTime: true, useLocalTz: true })}
+            }
+
+            <div className={cn("flex min-w-0 items-start gap-3", isEditing && "pl-7")}>
+                <div className="min-w-0 flex-1">
+                    <div className="mb-3 flex min-w-0 items-center gap-2 text-xs">
+                        {showActiveDot &&
+                            <span className="size-2 shrink-0 rounded-full bg-[#e5e7eb]" aria-hidden="true"/>
+                        }
+                        <span className="truncate font-semibold text-white">
+                            {article.journal}
                         </span>
-                    }
-                    {showArchiveAction &&
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            title={archiveTitle}
-                            disabled={isEditing}
-                            onClick={(ev) => {
-                                ev.stopPropagation();
-                                onArchiveClick([article.id]);
-                            }}
+                        {article.publisher &&
+                            <>
+                                <span className="text-[#777777]" aria-hidden="true">·</span>
+                                <span className="truncate text-[#8f96a3]">
+                                    {article.publisher}
+                                </span>
+                            </>
+                        }
+                    </div>
+                    <h2 className="text-base font-semibold leading-snug text-white">
+                        <a
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={isEditing ? undefined : article.link}
+                            className={cn("line-clamp-2", !isEditing && "hover:underline")}
+                            onClick={(ev) => ev.stopPropagation()}
                         >
-                            <ArchiveIcon className="h-4 w-4"/>
-                        </Button>
-                    }
-                    {showDeleteAction &&
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            title={deleteTitle}
-                            disabled={isEditing}
-                            onClick={(ev) => {
-                                ev.stopPropagation();
-                                onDeleteClick([article.id]);
-                            }}
-                        >
-                            <Trash2 className="h-4 w-4"/>
-                        </Button>
-                    }
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Info className="w-4 h-4"/>
-                        </TooltipTrigger>
-                        <TooltipContent side="left" className="font-semibold space-y-1">
-                            <div>Added: {formatDateTime(article.addedDate, { includeTime: true, useLocalTz: true })}</div>
-                            {article.markedAsArchivedDate &&
-                                <div>Archived: {formatDateTime(article.markedAsArchivedDate, { includeTime: true, useLocalTz: true })}</div>
-                            }
-                            {article.markedAsDeletedDate &&
-                                <div>Deleted: {formatDateTime(article.markedAsDeletedDate, { includeTime: true, useLocalTz: true })}</div>
-                            }
-                        </TooltipContent>
-                    </Tooltip>
+                            {article.title}
+                        </a>
+                    </h2>
+                </div>
+
+                <a
+                    target="_blank"
+                    title="Open article"
+                    rel="noopener noreferrer"
+                    href={isEditing ? undefined : article.link}
+                    onClick={(ev) => ev.stopPropagation()}
+                    className={cn(
+                        "mt-11 shrink-0 rounded-md p-1 text-[#9ca3af] transition-colors hover:bg-white/5 hover:text-white",
+                        isEditing && "pointer-events-none opacity-40",
+                    )}
+                >
+                    <ExternalLink className="size-4"/>
+                </a>
+            </div>
+
+            <p className="mt-5 line-clamp-3 text-sm leading-6 text-[#aeb6c2]">
+                {article.summary}
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+                {article.keywords.map((keyword) =>
+                    <Badge
+                        key={keyword}
+                        variant="secondary"
+                        className="rounded-full border-0 bg-[#292929] px-2.5 py-0.5 text-[11px] font-medium text-white shadow-none"
+                    >
+                        {keyword}
+                    </Badge>
+                )}
+            </div>
+
+            <div className="mt-4 border-t border-[#303030] pt-4">
+                <div className="flex items-center justify-between gap-4">
+                    <span className="min-w-0 truncate text-xs text-[#9ba3af]">
+                        {footerDate}
+                    </span>
+                    <div className="flex shrink-0 items-center gap-1">
+                        {showArchiveAction &&
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                title={archiveTitle}
+                                disabled={isEditing}
+                                className="size-8 text-[#9ca3af] hover:bg-white/5 hover:text-white"
+                                onClick={(ev) => {
+                                    ev.stopPropagation();
+                                    onArchiveClick([article.id]);
+                                }}
+                            >
+                                <ArchiveIcon className="size-4"/>
+                            </Button>
+                        }
+                        {showDeleteAction &&
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                title={deleteTitle}
+                                disabled={isEditing}
+                                className="size-8 text-[#9ca3af] hover:bg-white/5 hover:text-white"
+                                onClick={(ev) => {
+                                    ev.stopPropagation();
+                                    onDeleteClick([article.id]);
+                                }}
+                            >
+                                <Trash2 className="size-4"/>
+                            </Button>
+                        }
+                    </div>
                 </div>
             </div>
         </Card>

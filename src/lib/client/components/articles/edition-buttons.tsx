@@ -1,10 +1,12 @@
-import {type ComponentProps, useState} from "react";
+import {type ComponentProps} from "react";
 import {ArticleBulkActions} from "@/lib/types/types";
 import {Button} from "@/lib/client/components/ui/button";
 
 
 interface EditionButtonsProps {
     selected: number[];
+    isPending?: boolean;
+    totalVisible: number;
     onBulkActionClick: (action: ArticleBulkActions) => void;
     actions?: {
         label: string;
@@ -14,27 +16,29 @@ interface EditionButtonsProps {
 }
 
 
-export const EditionButtons = ({ selected, actions = defaultActions, onBulkActionClick }: EditionButtonsProps) => {
-    const [selectAll, setSelectAll] = useState(true);
+export const EditionButtons = ({ selected, totalVisible, isPending = false, actions = defaultActions, onBulkActionClick }: EditionButtonsProps) => {
+    const hasArticles = totalVisible > 0;
+    const allVisibleSelected = hasArticles && selected.length === totalVisible;
+    const selectedLabel = hasArticles ? `${selected.length} / ${totalVisible} selected` : "0 selected";
 
     const handleSelectAction = () => {
-        if (selectAll) onBulkActionClick("select")
-        else onBulkActionClick("deselect")
-
-        setSelectAll(!selectAll);
+        onBulkActionClick(allVisibleSelected ? "deselect" : "select");
     };
 
     return (
-        <div className="flex items-center justify-end gap-4 mt-4">
-            <Button size="sm" onClick={handleSelectAction}>
-                {selectAll ? "Select All" : "Deselect All"}
+        <div className="flex flex-wrap items-center justify-end gap-4 mt-4">
+            <div className="text-sm text-muted-foreground">
+                {selectedLabel}
+            </div>
+            <Button size="sm" onClick={handleSelectAction} disabled={!hasArticles || isPending}>
+                {allVisibleSelected ? "Deselect All" : "Select All"}
             </Button>
             {actions.map((action) =>
                 <Button
                     size="sm"
                     key={action.action}
                     variant={action.variant}
-                    disabled={selected.length === 0}
+                    disabled={selected.length === 0 || isPending}
                     onClick={() => onBulkActionClick(action.action)}
                 >
                     {action.label}
