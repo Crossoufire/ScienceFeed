@@ -1,6 +1,6 @@
 import pLimit from "p-limit";
 import {db} from "@/lib/server/database/db";
-import {and, eq, inArray} from "drizzle-orm";
+import {and, eq, inArray, sql} from "drizzle-orm";
 import {cleanHtmlWithRegex, findMatchingKeywordsRegex, parseRssFeed, RssItem} from "@/lib/utils/rss-parser";
 import {article, keyword, rssFeed, user, userArticle, userArticleKeyword, userRssFeed} from "@/lib/server/database/schema";
 
@@ -80,14 +80,32 @@ export async function fetchAndFilterArticles(targetUserId?: number): Promise<Fet
                 const parsed = await parseRssFeed(f.url);
                 parsedById.set(f.id, { feed: f, parsed });
                 result.processedFeeds++;
+
+                await db
+                    .update(rssFeed)
+                    .set({
+                        lastFetchError: null,
+                        lastFetchDate: sql`(CURRENT_TIMESTAMP)`,
+                    })
+                    .where(eq(rssFeed.id, f.id));
             }
             catch (error) {
+                const errorMessage = error instanceof Error ? error.message : "Unknown RSS fetch error";
+
+                await db
+                    .update(rssFeed)
+                    .set({
+                        lastFetchError: errorMessage,
+                        lastFetchDate: sql`(CURRENT_TIMESTAMP)`,
+                    })
+                    .where(eq(rssFeed.id, f.id));
+
                 result.failedFeeds.push({
                     url: f.url,
                     feedId: f.id,
                     journal: f.journal,
+                    error: errorMessage,
                     publisher: f.publisher,
-                    error: error instanceof Error ? error.message : "Unknown RSS fetch error",
                 });
             }
         }),

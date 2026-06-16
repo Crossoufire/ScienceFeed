@@ -146,6 +146,7 @@ export const useRssFetcher = () => {
             await Promise.all([
                 invalidateArticleLists(queryClient),
                 queryClient.invalidateQueries({ queryKey: authOptions.queryKey }),
+                queryClient.invalidateQueries({ queryKey: rssManagerOptions.queryKey }),
             ]);
 
             if (data) return toast.warning(data?.warn);

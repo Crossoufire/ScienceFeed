@@ -19,6 +19,8 @@ export const getUserRssFeeds = createServerFn({ method: "GET" })
                 publisher: rssFeed.publisher,
                 userRssFeedId: userRssFeed.id,
                 rssFeedId: userRssFeed.rssFeedId,
+                lastFetchDate: rssFeed.lastFetchDate,
+                lastFetchError: rssFeed.lastFetchError,
             })
             .from(userRssFeed)
             .innerJoin(rssFeed, eq(userRssFeed.rssFeedId, rssFeed.id))

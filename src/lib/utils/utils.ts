@@ -14,23 +14,35 @@ interface FormatDateTimeOptions {
 }
 
 
+const parseDateInput = (dateInput: string | number) => {
+    if (typeof dateInput === "number") {
+        return new Date(dateInput.toString().length === 10 ? dateInput * 1000 : dateInput);
+    }
+
+    const hasTime = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(dateInput);
+
+    if (hasTime) {
+        return new Date(`${dateInput.replace(" ", "T")}Z`);
+    }
+
+    return new Date(dateInput);
+};
+
+
 export const formatDateTime = (dateInput: string | number | null | undefined, options: FormatDateTimeOptions = {}) => {
     if (!dateInput) return "-";
 
-    let date = new Date(dateInput);
-    if (typeof dateInput === "number" && dateInput.toString().length === 10) {
-        date = new Date(dateInput * 1000);
-    }
+    const date = parseDateInput(dateInput);
 
     if (isNaN(date.getTime())) return "-";
 
     const formatOptions: Intl.DateTimeFormatOptions = {
-        timeZone: options.useLocalTz ? new Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC",
         year: "numeric",
         month: options.onlyYear ? undefined : "short",
         day: options.onlyYear ? undefined : "numeric",
         hour: options.includeTime ? "numeric" : undefined,
         minute: options.includeTime ? "numeric" : undefined,
+        timeZone: options.useLocalTz ? new Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC",
         hour12: false,
     };
 

@@ -9,6 +9,8 @@ export const rssFeed = sqliteTable("rss_feed", {
     publisher: text().notNull(),
     journal: text().notNull(),
     url: text().unique().notNull(),
+    lastFetchDate: text("last_fetch_date"),
+    lastFetchError: text("last_fetch_error"),
 });
 
 

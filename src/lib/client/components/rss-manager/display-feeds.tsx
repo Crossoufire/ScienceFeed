@@ -1,7 +1,8 @@
 import {toast} from "sonner";
 import React, {useState} from "react";
-import {Rss, Trash2} from "lucide-react";
 import {UserRssFeed} from "@/lib/types/types";
+import {formatDateTime} from "@/lib/utils/utils";
+import {AlertTriangle, Rss, Trash2} from "lucide-react";
 import {Button} from "@/lib/client/components/ui/button";
 import {useRemoveUserRssFeedMutation} from "@/lib/client/react-query/mutations";
 
@@ -72,6 +73,20 @@ export function DisplayFeeds({ userRssFeeds }: { userRssFeeds: UserRssFeed[] }) 
                                         <p className="mt-0.5 truncate text-xs text-foreground-subtle" title={feed.url}>
                                             {feed.url}
                                         </p>
+                                        <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground-muted">
+                                            <span>
+                                                Last fetch: {feed.lastFetchDate ? formatDateTime(feed.lastFetchDate, { includeTime: true, useLocalTz: true }) : "Not fetched yet"}
+                                            </span>
+                                            {feed.lastFetchError &&
+                                                <span
+                                                    title={feed.lastFetchError}
+                                                    className="inline-flex min-w-0 items-center gap-1 text-amber-500"
+                                                >
+                                                    <AlertTriangle className="size-3.5 shrink-0"/>
+                                                    <span className="truncate">Fetch failed</span>
+                                                </span>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                                 <Button

@@ -315,6 +315,19 @@ function createAppIndexes() {
 }
 
 
+function migrateRssFeedFetchStatusColumns() {
+    const rssFeedColumns = columnNames("rss_feed");
+
+    if (!rssFeedColumns.includes("last_fetch_date")) {
+        sqlite.run("ALTER TABLE rss_feed ADD COLUMN last_fetch_date text");
+    }
+
+    if (!rssFeedColumns.includes("last_fetch_error")) {
+        sqlite.run("ALTER TABLE rss_feed ADD COLUMN last_fetch_error text");
+    }
+}
+
+
 function archiveLegacyTokenTable() {
     if (!tableExists("token")) {
         return;
@@ -342,6 +355,7 @@ function migrateDatabase() {
         removeOrphanRows();
         archiveLegacyTokenTable();
         createBetterAuthTables();
+        migrateRssFeedFetchStatusColumns();
         createAppIndexes();
     })();
     sqlite.run("PRAGMA foreign_keys = ON");
